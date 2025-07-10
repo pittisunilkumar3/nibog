@@ -410,9 +410,9 @@ function BookingConfirmationContent() {
                   </h3>
                   <p className="text-sm">
                     {ticketDetails?.[0]?.event_date ? 
-                      `${new Date(ticketDetails[0].event_date).toLocaleDateString()} at ${new Date(ticketDetails[0].event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : 
+                      `${new Date(ticketDetails[0].event_date).toLocaleDateString()}` : 
                       bookingDetails?.event_date ? 
-                      `${new Date(bookingDetails.event_date).toLocaleDateString()} at ${new Date(bookingDetails.event_date).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}` : 
+                      `${new Date(bookingDetails.event_date).toLocaleDateString()}` : 
                       "Date not available"}
                   </p>
                 </div>

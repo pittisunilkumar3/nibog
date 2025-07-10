@@ -190,7 +190,7 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     
     // Date text
     pdf.setFontSize(12);
-    pdf.text(ticketData.eventDateTime || ticketData.eventDate, cardX + cardWidth/2, cardY + 48, { align: 'center' });
+    pdf.text(ticketData.eventDate, cardX + cardWidth/2, cardY + 48, { align: 'center' });
     
     // Content area starts after header
     const contentStartY = cardY + headerHeight;
