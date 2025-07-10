@@ -22,6 +22,9 @@ export interface TicketEmailData {
 
 /**
  * Send ticket email to parent with QR code and ticket details
+ * 
+ * @param ticketData The ticket data for generating and sending email
+ * @returns Object with success status and optional error message
  */
 export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ success: boolean; error?: string }> {
   try {
@@ -50,69 +53,136 @@ export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ su
     }
 
     const settings = emailSettings[0];
-
     console.log('🎫 Email settings retrieved successfully');
 
     // Generate ticket HTML content
     const htmlContent = await generateTicketHTML(ticketData);
-
-    console.log(`🎫 HTML content generated, preparing QR code attachment for email...`);
+    console.log(`🎫 HTML content generated successfully`);
 
     // Generate QR code as buffer for attachment
     const qrCodeBuffer = await generateQRCodeBuffer(ticketData.qrCodeData);
     console.log('🎫 QR code buffer generated, size:', qrCodeBuffer.length, 'bytes');
 
-    // Debug: Log ticket details being sent to PDF API
-    console.log('🎫 Ticket details being sent to PDF API:', {
-      count: ticketData.ticketDetails?.length || 0,
-      sampleTicket: ticketData.ticketDetails?.[0] ? {
-        parent_name: ticketData.ticketDetails[0].parent_name,
-        child_name: ticketData.ticketDetails[0].child_name,
-        event_title: ticketData.ticketDetails[0].event_title,
-        start_time: ticketData.ticketDetails[0].start_time,
-        end_time: ticketData.ticketDetails[0].end_time,
-        slot_title: ticketData.ticketDetails[0].slot_title,
-        custom_title: ticketData.ticketDetails[0].custom_title,
-        game_name: ticketData.ticketDetails[0].game_name
-      } : 'No ticket details available'
+    // Debug: Log ticket details being sent to API
+    console.log('🎫 Ticket details summary:', {
+      bookingId: ticketData.bookingId,
+      bookingRef: ticketData.bookingRef,
+      childName: ticketData.childName,
+      eventTitle: ticketData.eventTitle,
+      ticketsCount: ticketData.ticketDetails?.length || 0
     });
 
     // Get the app URL from the same helper used in PhonePe config
     const { getAppUrl } = await import('@/config/phonepe');
     const appUrl = getAppUrl();
-    console.log(`🎫 Using app URL for ticket email API: ${appUrl}`);
     
-    // Send email using attachment API for better email client compatibility
-    const emailResponse = await fetch(`${appUrl}/api/send-ticket-email-with-attachment`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        to: ticketData.parentEmail,
-        subject: `🎫 Your Tickets - ${ticketData.eventTitle} | NIBOG`,
-        html: htmlContent,
-        settings: settings,
-        qrCodeBuffer: Array.from(qrCodeBuffer),
-        bookingRef: ticketData.bookingRef,
-        ticketDetails: ticketData.ticketDetails // Pass actual ticket data for better PDF generation
-      }),
+    // Prepare the email payload once
+    const emailPayload = {
+      to: ticketData.parentEmail,
+      subject: `🎫 Your Tickets - ${ticketData.eventTitle} | NIBOG`,
+      html: htmlContent,
+      settings: settings,
+      qrCodeBuffer: Array.from(qrCodeBuffer),
+      bookingRef: ticketData.bookingRef,
+      ticketDetails: ticketData.ticketDetails
+    };
+    
+    // Log all URL options we'll try for sending email
+    console.log('🎫 Environment details:', {
+      appUrl,
+      nodeEnv: process.env.NODE_ENV,
+      vercelUrl: process.env.VERCEL_URL || 'not set',
+      vercelEnv: process.env.VERCEL_ENV || 'not set',
+      baseUrl: typeof window !== 'undefined' ? window.location.origin : 'server-side'
     });
-
-    if (!emailResponse.ok) {
-      const errorData = await emailResponse.json();
-      console.error(`🎫 Ticket email sending failed:`, errorData);
+    
+    // Create a list of URLs to try in order
+    const apiUrls = [];
+    
+    // 1. Try using the dynamic app URL first (from getAppUrl)
+    if (appUrl) apiUrls.push(appUrl);
+    
+    // 2. Use absolute URL with current hostname if in browser
+    if (typeof window !== 'undefined') {
+      apiUrls.push(window.location.origin);
+    }
+    
+    // 3. Use VERCEL_URL if available (for Vercel deployments)
+    if (process.env.VERCEL_URL) {
+      apiUrls.push(`https://${process.env.VERCEL_URL}`);
+    }
+    
+    // 4. Add common fallbacks
+    if (process.env.NODE_ENV === 'production') {
+      apiUrls.push('https://nibog.in');
+      apiUrls.push('https://nibog-ten.vercel.app');
+    } else {
+      // Local development fallbacks
+      apiUrls.push('http://localhost:3000');
+    }
+    
+    // Remove duplicates from the URL list
+    const uniqueApiUrls = [...new Set(apiUrls)];
+    console.log('🎫 Will try these base URLs in order:', uniqueApiUrls);
+    
+    // Try each URL in sequence until one works
+    let succeeded = false;
+    let lastError = null;
+    let lastResponse = null;
+    
+    for (let i = 0; i < uniqueApiUrls.length; i++) {
+      const baseUrl = uniqueApiUrls[i];
+      const fullApiUrl = `${baseUrl}/api/send-ticket-email-with-attachment`;
+      
+      try {
+        console.log(`🎫 [ATTEMPT ${i+1}] Trying: ${fullApiUrl}`);
+        
+        const response = await fetch(fullApiUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(emailPayload),
+        });
+        
+        lastResponse = response;
+        console.log(`🎫 [ATTEMPT ${i+1}] Response status:`, response.status);
+        
+        let responseData;
+        try {
+          responseData = await response.json();
+          console.log(`🎫 [ATTEMPT ${i+1}] Response data:`, responseData);
+        } catch (parseError) {
+          console.error(`🎫 [ATTEMPT ${i+1}] Could not parse JSON response:`, parseError);
+          responseData = { error: 'Could not parse response' };
+        }
+        
+        if (response.ok) {
+          console.log(`🎫 Success! Email sent via ${fullApiUrl}`);
+          succeeded = true;
+          break; // Exit the loop on success
+        } else {
+          lastError = responseData.error || `Failed with status ${response.status}`;
+        }
+      } catch (error) {
+        console.error(`🎫 [ATTEMPT ${i+1}] Network error:`, error);
+        lastError = error instanceof Error ? error.message : 'Network error';
+      }
+      
+      console.log(`🎫 [ATTEMPT ${i+1}] Failed, trying next URL if available...`);
+    }
+    
+    // Return final result
+    if (succeeded) {
+      console.log(`🎫 Ticket email sent successfully to ${ticketData.parentEmail}`);
+      return { success: true };
+    } else {
+      console.error('🎫 All attempts failed to send ticket email');
       return {
         success: false,
-        error: errorData.error || `Failed to send ticket email: ${emailResponse.status}`
+        error: lastError || 'Failed to send ticket email after multiple attempts'
       };
     }
-
-    console.log(`🎫 Ticket email sent successfully to ${ticketData.parentEmail}`);
-    return { success: true };
-
   } catch (error) {
-    console.error(`🎫 Error sending ticket email:`, error);
+    console.error(`🎫 Unhandled error in sendTicketEmail:`, error);
     return {
       success: false,
       error: error instanceof Error ? error.message : 'Unknown error occurred'
