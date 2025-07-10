@@ -345,9 +345,9 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     // Website URL (centered)
     pdf.setFontSize(10);
     pdf.setTextColor(59, 130, 246); // Blue for URL
-    // Use dynamic URL based on environment or default to nibog.in
-    const websiteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nibog.in';
-    pdf.text(websiteUrl.replace(/^https?:\/\//, ''), cardX + cardWidth/2, footerY + 20, { align: 'center' });
+    // Always use nibog.in for production consistency
+    const websiteUrl = 'nibog.in';
+    pdf.text(websiteUrl, cardX + cardWidth/2, footerY + 20, { align: 'center' });
     
     // Thank you message (centered, green)
     pdf.setFontSize(12);
