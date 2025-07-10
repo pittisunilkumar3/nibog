@@ -63,7 +63,7 @@ export const getAppUrl = (): string => {
   }
   
   // Final fallback for server-side
-  return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nibog-seven.vercel.app';
+  return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nibog-ten.vercel.app';
 };
 
 // Determine if we're in production mode
