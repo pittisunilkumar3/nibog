@@ -1352,6 +1352,143 @@ export default function RegisterEventClientPage() {
               {/* City Selection - Moved to the top */}
               <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
                 <h3 className="text-sm font-medium text-primary flex items-center gap-2">
+                    <div className="bg-primary/10 p-1 rounded-full">
+                      <MapPin className="h-4 w-4 text-primary" />
+                    </div>
+                    Select Your City
+                  </h3>
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-1">
+                      <span>City</span>
+                      <span className="text-xs text-primary/70">(Required)</span>
+                    </Label>
+                    {isLoadingCities ? (
+                      <div className="flex h-10 items-center rounded-md border border-input px-3 py-2 text-sm">
+                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                        <span className="text-muted-foreground">Loading cities...</span>
+                      </div>
+                    ) : cityError ? (
+                      <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
+                        {cityError}
+                      </div>
+                    ) : (
+                      <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0}>
+                        <SelectTrigger className={cn(
+                          "border-dashed transition-all duration-200",
+                          selectedCity ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
+                        )}>
+                          <SelectValue placeholder={cities.length === 0 ? "No cities available" : "Select your city"} />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px] overflow-y-auto border-2 border-primary/10 shadow-xl">
+                          <div className="p-2 bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-primary/10 sticky top-0 z-10">
+                            <h3 className="text-sm font-medium text-primary">Select Your City</h3>
+                          </div>
+                          <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 p-1">
+                            {cities.map((city) => (
+                              <SelectItem key={city.id} value={city.name} className="rounded-md hover:bg-primary/5 transition-colors duration-200">
+                                {city.name}
+                              </SelectItem>
+                            ))}
+                          </div>
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+
+                  {selectedCity && (
+                    <div className="space-y-2 mt-4 pt-4 border-t border-dashed border-primary/10">
+                      <Label className="flex items-center gap-1">
+                        <span>Event</span>
+                        <span className="text-xs text-primary/70">(Required)</span>
+                      </Label>
+                      {isLoadingEvents ? (
+                        <div className="flex h-10 items-center rounded-md border border-input px-3 py-2 text-sm">
+                          <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                          <span className="text-muted-foreground">Loading events...</span>
+                        </div>
+                      ) : eventError ? (
+                        <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
+                          {eventError}
+                        </div>
+                      ) : getUniqueEventTypes().length > 0 ? (
+                        <Select
+                          value={selectedEventType}
+                          onValueChange={handleEventTypeChange}
+                          disabled={getUniqueEventTypes().length === 0}
+                        >
+                          <SelectTrigger className={cn(
+                            "border-dashed transition-all duration-200",
+                            selectedEventType ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
+                          )}>
+                            <SelectValue placeholder="Select an event" />
+                          </SelectTrigger>
+                          <SelectContent className="border-2 border-primary/10 shadow-xl">
+                            <div className="p-2 bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-primary/10 sticky top-0 z-10">
+                              <h3 className="text-sm font-medium text-primary">Select an Event</h3>
+                            </div>
+                            {getUniqueEventTypes().map((eventType) => (
+                              <SelectItem key={eventType} value={eventType} className="rounded-md hover:bg-primary/5 transition-colors duration-200">
+                                {eventType}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      ) : (
+                        <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
+                          No events found for this city
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {selectedCity && selectedEventType && (
+                    <div className="space-y-2 mt-4 pt-4 border-t border-dashed border-primary/10">
+                      <Label className="flex items-center gap-1">
+                        <span>Event Details</span>
+                      </Label>
+                      {eligibleEvents.length > 0 ? (
+                        <div className="grid gap-3 sm:grid-cols-1">
+                          {eligibleEvents.map((event) => (
+                            <div
+                              key={event.id}
+                              className="flex items-start space-x-3 rounded-lg border-2 p-3 transition-all duration-200 border-primary/30 bg-primary/5 shadow-md"
+                            >
+                              <div className="space-y-1 flex-1">
+                                <div className="font-medium text-lg">
+                                  {format(new Date(event.date), "PPP")}
+                                </div>
+                                <p className="text-sm text-muted-foreground">{event.venue}</p>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:from-yellow-950 dark:to-amber-950 border border-yellow-100 dark:border-yellow-900 shadow-inner">
+                          <div className="flex items-start">
+                            <div className="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900 rounded-full p-1">
+                              <Info className="h-5 w-5 text-yellow-500 dark:text-yellow-400" aria-hidden="true" />
+                            </div>
+                            <div className="ml-3">
+                              <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                                No event details available
+                              </h3>
+                              <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
+                                <p>
+                                  Could not load details for {selectedEventType} in {selectedCity}.
+                                  Please try a different event or city.
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+              </div>
+
+              <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
+                <h3 className="text-sm font-medium text-primary flex items-center gap-2">
                   <div className="bg-primary/10 p-1 rounded-full">
                     <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
                       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
@@ -1540,143 +1677,11 @@ export default function RegisterEventClientPage() {
               </div>
 
               <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
-                <h3 className="text-sm font-medium text-primary flex items-center gap-2">
-                  <div className="bg-primary/10 p-1 rounded-full">
-                    <MapPin className="h-4 w-4 text-primary" />
-                  </div>
-                  Select Your City
-                </h3>
-                <div className="space-y-2">
-                  <Label className="flex items-center gap-1">
-                    <span>City</span>
-                    <span className="text-xs text-primary/70">(Required)</span>
-                  </Label>
-                  {isLoadingCities ? (
-                    <div className="flex h-10 items-center rounded-md border border-input px-3 py-2 text-sm">
-                      <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                      <span className="text-muted-foreground">Loading cities...</span>
-                    </div>
-                  ) : cityError ? (
-                    <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                      {cityError}
-                    </div>
-                  ) : (
-                    <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0}>
-                      <SelectTrigger className={cn(
-                        "border-dashed transition-all duration-200",
-                        selectedCity ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
-                      )}>
-                        <SelectValue placeholder={cities.length === 0 ? "No cities available" : "Select your city"} />
-                      </SelectTrigger>
-                      <SelectContent className="max-h-[300px] overflow-y-auto border-2 border-primary/10 shadow-xl">
-                        <div className="p-2 bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-primary/10 sticky top-0 z-10">
-                          <h3 className="text-sm font-medium text-primary">Select Your City</h3>
-                        </div>
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-1 p-1">
-                          {cities.map((city) => (
-                            <SelectItem key={city.id} value={city.name} className="rounded-md hover:bg-primary/5 transition-colors duration-200">
-                              {city.name}
-                            </SelectItem>
-                          ))}
-                        </div>
-                      </SelectContent>
-                    </Select>
-                  )}
-                </div>
-
-                {selectedCity && (
-                  <div className="space-y-2 mt-4 pt-4 border-t border-dashed border-primary/10">
-                    <Label className="flex items-center gap-1">
-                      <span>Event</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
-                    </Label>
-                    {isLoadingEvents ? (
-                      <div className="flex h-10 items-center rounded-md border border-input px-3 py-2 text-sm">
-                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                        <span className="text-muted-foreground">Loading events...</span>
-                      </div>
-                    ) : eventError ? (
-                      <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                        {eventError}
-                      </div>
-                    ) : getUniqueEventTypes().length > 0 ? (
-                      <Select
-                        value={selectedEventType}
-                        onValueChange={handleEventTypeChange}
-                        disabled={getUniqueEventTypes().length === 0}
-                      >
-                        <SelectTrigger className={cn(
-                          "border-dashed transition-all duration-200",
-                          selectedEventType ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
-                        )}>
-                          <SelectValue placeholder="Select an event" />
-                        </SelectTrigger>
-                        <SelectContent className="border-2 border-primary/10 shadow-xl">
-                          <div className="p-2 bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-primary/10 sticky top-0 z-10">
-                            <h3 className="text-sm font-medium text-primary">Select an Event</h3>
-                          </div>
-                          {getUniqueEventTypes().map((eventType) => (
-                            <SelectItem key={eventType} value={eventType} className="rounded-md hover:bg-primary/5 transition-colors duration-200">
-                              {eventType}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    ) : (
-                      <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                        No events found for this city
-                      </div>
-                    )}
-                  </div>
-                )}
-
-                {selectedCity && selectedEventType && (
-                  <div className="space-y-2 mt-4 pt-4 border-t border-dashed border-primary/10">
-                    <Label className="flex items-center gap-1">
-                      <span>Event Details</span>
-                    </Label>
-                    {eligibleEvents.length > 0 ? (
-                      <div className="grid gap-3 sm:grid-cols-1">
-                        {eligibleEvents.map((event) => (
-                          <div
-                            key={event.id}
-                            className="flex items-start space-x-3 rounded-lg border-2 p-3 transition-all duration-200 border-primary/30 bg-primary/5 shadow-md"
-                          >
-                            <div className="space-y-1 flex-1">
-                              <div className="font-medium text-lg">
-                                {format(new Date(event.date), "PPP")}
-                              </div>
-                              <p className="text-sm text-muted-foreground">{event.venue}</p>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    ) : (
-                      <div className="rounded-lg bg-gradient-to-r from-yellow-50 to-amber-50 p-4 dark:from-yellow-950 dark:to-amber-950 border border-yellow-100 dark:border-yellow-900 shadow-inner">
-                        <div className="flex items-start">
-                          <div className="flex-shrink-0 bg-yellow-100 dark:bg-yellow-900 rounded-full p-1">
-                            <Info className="h-5 w-5 text-yellow-500 dark:text-yellow-400" aria-hidden="true" />
-                          </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
-                              No event details available
-                            </h3>
-                            <div className="mt-2 text-sm text-yellow-700 dark:text-yellow-400">
-                              <p>
-                                Could not load details for {selectedEventType} in {selectedCity}.
-                                Please try a different event or city.
-                              </p>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
+                
                 
                 {/* Games Section - Only shown when child age and event are selected */}
                 {selectedCity && selectedEventType && childAgeMonths !== null && (
-                  <div className="space-y-2 mt-4 pt-4 border-t border-dashed border-primary/10">
+                  <div className="space-y-2">
                     <Label className="flex items-center gap-1">
                       <span>Available Games</span>
                       <span className="text-xs text-primary/70">(Required)</span>
@@ -1768,27 +1773,33 @@ export default function RegisterEventClientPage() {
                                         <div
                                           key={slot.id}
                                           className={cn(
-                                            "flex items-center justify-between p-3 rounded-lg border cursor-pointer transition-all duration-200",
+                                            "flex items-center justify-between p-3 rounded-lg border transition-all duration-200",
                                             isSelected
                                               ? "border-primary bg-primary/10 shadow-md"
-                                              : "border-muted hover:border-primary/30 hover:bg-primary/5"
+                                              : slot.max_participants <= 0
+                                                ? "border-muted bg-gray-100 dark:bg-gray-800 opacity-70"
+                                                : "border-muted hover:border-primary/30 hover:bg-primary/5 cursor-pointer"
                                           )}
-                                          onClick={() => handleGameSelection(slot.id)}
+                                          onClick={() => slot.max_participants > 0 && handleGameSelection(slot.id)}
                                         >
                                           <div className="flex items-center space-x-3">
                                             <input
                                               type="radio"
                                               name={`game-${gameInfo.game_id}`}
                                               checked={isSelected}
-                                              onChange={() => handleGameSelection(slot.id)}
-                                              className="text-primary focus:ring-primary"
+                                              onChange={() => slot.max_participants > 0 && handleGameSelection(slot.id)}
+                                              disabled={slot.max_participants <= 0}
+                                              className={`${slot.max_participants <= 0 ? 'opacity-50 cursor-not-allowed' : 'text-primary focus:ring-primary'}`}
                                             />
                                             <div>
                                               <div className="font-medium text-sm">
                                                 {slot.start_time} - {slot.end_time}
                                               </div>
-                                              <div className="text-xs text-muted-foreground">
-                                                Max {slot.max_participants} participants
+                                              <div className={`text-xs ${slot.max_participants <= 0 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                                                {slot.max_participants <= 0 
+                                                  ? 'Max participants reached' 
+                                                  : `Max ${slot.max_participants} participants`
+                                                }
                                               </div>
                                             </div>
                                           </div>
