@@ -186,11 +186,11 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.setTextColor(255, 255, 255);
     pdf.setFont('helvetica', 'bold');
     pdf.setFontSize(16);
-    pdf.text('NEW INDIA BABY OLYMPIC GAMES VIZAG SEASON-2', cardX + cardWidth/2, cardY + 30, { align: 'center' });
+    pdf.text(ticketData.eventTitle.toUpperCase(), cardX + cardWidth/2, cardY + 30, { align: 'center' });
     
     // Date text
     pdf.setFontSize(12);
-    pdf.text('12/8/2025 at 12:00 am', cardX + cardWidth/2, cardY + 48, { align: 'center' });
+    pdf.text(ticketData.eventDateTime || ticketData.eventDate, cardX + cardWidth/2, cardY + 48, { align: 'center' });
     
     // Content area starts after header
     const contentStartY = cardY + headerHeight;
@@ -238,8 +238,8 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(11);
-    // Use security code with PPT prefix - make it dynamic
-    const formattedTicketNumber = `PPT${ticketData.securityCode}`;
+    // Use bookingRef for ticket number (already has PPT prefix)
+    const formattedTicketNumber = bookingRef || `PPT${ticketData.securityCode}`;
     pdf.text(formattedTicketNumber, rightSectionX, labelY + 18);
     
     // GAMES (top right)
@@ -261,7 +261,7 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     // TIME (below GAMES)
     pdf.setFontSize(9);
     pdf.setTextColor(34, 197, 94); // Green color for time
-    pdf.text('10:00:00 - 20:00:00', rightColumnX, labelY + 32);
+    pdf.text(ticketData.slotTiming || `${ticketData.startTime} - ${ticketData.endTime}`, rightColumnX, labelY + 32);
     
     // Grid layout - second row
     labelY += 55;
@@ -275,7 +275,8 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(11);
-    pdf.text('Pitti Sunil Kumar', rightSectionX, labelY + 18);
+    // Use the actual child name from ticket data instead of hardcoded value
+    pdf.text(ticketData.childName || 'Participant', rightSectionX, labelY + 18);
     
     // PRICE (middle right)
     pdf.setFont('helvetica', 'normal');
@@ -286,22 +287,10 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(11);
-    // Format price with exact spacing between each character as in the image
-    // Using the correct Unicode for Indian Rupee symbol (₹) - U+20B9
+    // Format price with 'Rs.' prefix instead of rupee symbol to ensure compatibility
     const priceValue = ticketData.gamePrice.toFixed(2);
-    const priceDigits = priceValue.toString().split('');
-    let formattedPrice = '₹';
-    
-    // Add two spaces after the rupee symbol
-    formattedPrice += '  ';
-    
-    // Add each digit with two spaces between them
-    for (let i = 0; i < priceDigits.length; i++) {
-      formattedPrice += priceDigits[i];
-      if (i < priceDigits.length - 1) {
-        formattedPrice += '  ';
-      }
-    }
+    // Use 'Rs.' prefix which is more reliable in PDFs than Unicode symbols
+    let formattedPrice = `Rs. ${priceValue}`;
     
     pdf.text(formattedPrice, rightColumnX, labelY + 18);
     
@@ -317,17 +306,22 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.setFont('helvetica', 'bold');
     pdf.setTextColor(50, 50, 50);
     pdf.setFontSize(11);
-    pdf.text('S3 Sports Arena', rightSectionX, labelY + 18);
+    pdf.text(ticketData.eventVenue, rightSectionX, labelY + 18);
     
-    // Venue address (smaller text)
+    // Venue address in multiple lines for better formatting
     pdf.setFont('helvetica', 'normal');
-    pdf.setFontSize(7);
-    pdf.setTextColor(150, 150, 150);
-    const venueAddress = "Besides, Women's College Grounds, MVP Main Rd, Sector 8, MVP Colony, Visakhapatnam, Andhra Pradesh 530017, Vizag, AP";
-    const maxWidth = 180; // Increased width for better text wrapping
-    const textLines = pdf.splitTextToSize(venueAddress, maxWidth);
-    for (let i = 0; i < textLines.length; i++) {
-      pdf.text(textLines[i], rightSectionX, labelY + 28 + (i * 8));
+    pdf.setFontSize(9);
+    pdf.setTextColor(120, 120, 120);
+    
+    // Split venue address into multiple lines if needed
+    if (ticketData.venueAddress) {
+      const addressLines = ticketData.venueAddress.length > 30 ? 
+        [ticketData.venueAddress.substring(0, 30), ticketData.venueAddress.substring(30)] : 
+        [ticketData.venueAddress];
+      
+      addressLines.forEach((line, index) => {
+        pdf.text(line, rightSectionX, labelY + 32 + (index * 12));
+      });
     }
     
     // SECURITY CODE (bottom right)
@@ -348,16 +342,20 @@ async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCode
     pdf.line(cardX + 50, footerY, cardX + cardWidth - 50, footerY); // Adjusted for increased card width
     pdf.setLineDashPattern([], 0);
     
-    // https://nibog.com URL (centered)
+    // Website URL (centered)
     pdf.setFontSize(10);
     pdf.setTextColor(59, 130, 246); // Blue for URL
-    pdf.text('https://nibog.com', cardX + cardWidth/2, footerY + 20, { align: 'center' });
+    // Use dynamic URL based on environment or default to nibog.in
+    const websiteUrl = process.env.NEXT_PUBLIC_APP_URL || 'https://nibog.in';
+    pdf.text(websiteUrl.replace(/^https?:\/\//, ''), cardX + cardWidth/2, footerY + 20, { align: 'center' });
     
     // Thank you message (centered, green)
     pdf.setFontSize(12);
     pdf.setTextColor(39, 199, 90); // Exact green color from image
     pdf.setFont('helvetica', 'bold');
-    pdf.text('Thank you for choosing NIBOG!', cardX + cardWidth/2, footerY + 40, { align: 'center' });
+    // Extract event organization name from event title or use first word
+    const orgName = ticketData.eventTitle.split(' ')[0] || 'NIBOG';
+    pdf.text(`Thank you for choosing ${orgName}!`, cardX + cardWidth/2, footerY + 40, { align: 'center' });
     
     // "We can't wait" text (centered, gray)
     pdf.setFontSize(10);
@@ -404,11 +402,11 @@ function validateAndExtractTicketData(ticketDetails?: any[], bookingRef?: string
     gameName: 'Event Games',
     gameDescription: '',
     gamePrice: 0,
-    formattedPrice: '₹0.00',
+    formattedPrice: 'Rs. 0.00',
     slotTiming: '',
     startTime: '',
     endTime: '',
-    securityCode: bookingRef?.replace(/[^0-9]/g, '') || '000',
+    securityCode: '000', // Will be replaced with booking_id if available
     hasCompleteData: false,
     missingFields: []
   };
@@ -469,10 +467,11 @@ function validateAndExtractTicketData(ticketDetails?: any[], bookingRef?: string
   result.gameName = ticket.custom_title?.trim() || ticket.slot_title?.trim() || ticket.game_name?.trim() || 'Event Games';
   result.gameDescription = ticket.custom_description?.trim() || ticket.slot_description?.trim() || ticket.game_description?.trim() || '';
 
-  // Pricing with priority
+  // Pricing with priority - ensure rupee symbol is present
   const priceValue = parseFloat(ticket.custom_price || ticket.slot_price || ticket.game_price || '0') || 0;
   result.gamePrice = priceValue;
-  result.formattedPrice = `₹${priceValue.toFixed(2)}`;
+  // Format with 'Rs.' prefix which is more reliable than Unicode symbols
+  result.formattedPrice = `Rs. ${priceValue.toFixed(2)}`;
 
   // Slot timing
   if (ticket.start_time && ticket.end_time) {
@@ -481,17 +480,22 @@ function validateAndExtractTicketData(ticketDetails?: any[], bookingRef?: string
     result.slotTiming = `${result.startTime} - ${result.endTime}`;
   }
 
+  // Use booking_id as security code (to match booking confirmation page)
+  if (ticket.booking_id) {
+    // Use the numeric booking_id as security code
+    result.securityCode = ticket.booking_id.toString();
+  } else if (ticket.security_code) {
+    // Fall back to security code from ticket if no booking_id
+    result.securityCode = ticket.security_code.toString().trim();
+  } else if (bookingRef) {
+    // Last resort: use booking reference
+    result.securityCode = bookingRef;
+  }
+
   result.hasCompleteData = missingFields.length === 0;
   result.missingFields = missingFields;
 
-  console.log('📄 Validated data:', {
-    hasCompleteData: result.hasCompleteData,
-    missingFields: missingFields,
-    gameName: result.gameName,
-    gameDescription: result.gameDescription,
-    slotTiming: result.slotTiming,
-    formattedPrice: result.formattedPrice
-  });
+  console.log('📄 Validated data:', result);
 
   return result;
 }
