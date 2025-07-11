@@ -18,6 +18,8 @@ declare module 'lucide-react' {
   export const Trophy: LucideIcon;
   export const Award: LucideIcon;
   export const Star: LucideIcon;
+  export const AlertTriangle: LucideIcon;
+  export const Trash: LucideIcon;
   
   // Add any other icons you use from lucide-react
 }

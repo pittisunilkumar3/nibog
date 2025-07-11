@@ -21,7 +21,7 @@ export default function NewGameTemplate() {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [minAge, setMinAge] = useState(0)
-  const [maxAge, setMaxAge] = useState(90) // Support games up to 90 months
+  const [maxAge, setMaxAge] = useState(300) // Support games up to 90 months
   const [duration, setDuration] = useState(60)
   const [isActive, setIsActive] = useState(true)
   const [newCategory, setNewCategory] = useState("")
@@ -173,13 +173,13 @@ export default function NewGameTemplate() {
                         value={maxAge}
                         onChange={(e) => {
                           const value = parseInt(e.target.value);
-                          if (!isNaN(value) && value >= minAge && value <= 90) {
+                          if (!isNaN(value) && value >= minAge && value <= 300) {
                             setMaxAge(value);
                           }
                         }}
                         className="w-16 h-8"
                         min={minAge}
-                        max={90}
+                        max={300}
                       />
                       <span>months</span>
                     </div>
@@ -188,7 +188,7 @@ export default function NewGameTemplate() {
                     <Slider
                       value={[minAge, maxAge]}
                       min={0}
-                      max={90}
+                      max={300}
                       step={1}
                       onValueChange={(value) => {
                         setMinAge(value[0])
