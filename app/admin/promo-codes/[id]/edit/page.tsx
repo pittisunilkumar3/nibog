@@ -115,13 +115,18 @@ export default function EditPromoCodePage({ params }: Props) {
         setSelectedGames(formData.selectedGames)
         setUsageCount(formData.usageCount)
 
-        // Set status based on promo code data
-        if (promoCodeData.valid_to) {
-          const validToDate = new Date(promoCodeData.valid_to)
-          const currentDate = new Date()
-          setStatus(validToDate < currentDate ? "expired" : "active")
+        // Set status from form data (which is derived from is_active)
+        if (formData.formData.status) {
+          setStatus(formData.formData.status)
         } else {
-          setStatus("active")
+          // Fallback logic if status is not available in form data
+          if (promoCodeData.valid_to) {
+            const validToDate = new Date(promoCodeData.valid_to)
+            const currentDate = new Date()
+            setStatus(validToDate < currentDate ? "expired" : (promoCodeData.is_active === false ? "inactive" : "active"))
+          } else {
+            setStatus(promoCodeData.is_active === false ? "inactive" : "active")
+          }
         }
 
       } catch (error: any) {

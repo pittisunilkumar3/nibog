@@ -68,11 +68,33 @@ interface PromoCode {
   usageLimit: number
   usageCount: number
   status: "active" | "inactive" | "expired"
-  applicableEvents: string[]
+  applicableEvents: Array<{
+    id: number
+    title: string
+  }>
   createdAt: string
   lastUpdatedAt: string
   description: string
-  // Additional event and game details
+  // All events and games data
+  eventsData?: Array<{
+    event_details: {
+      id: number
+      title: string
+      description?: string
+      event_date: string
+      status: string
+    }
+    games: Array<{
+      id: number
+      game_name: string
+      description?: string
+      min_age: number
+      max_age: number
+      duration_minutes: number
+      categories: string[]
+    }>
+  }>
+  // Currently selected event and game details
   eventDetails?: {
     id: number
     title: string
@@ -138,9 +160,10 @@ const fetchPromoCodeDetails = async (id: string): Promise<PromoCode> => {
     }
 
     const responseData = await response.json()
+    console.log('API Response:', JSON.stringify(responseData, null, 2))
 
     // The API returns an array with one object, so we need to extract the first item
-    let data: PromoCodeAPIResponse
+    let data: any
     if (Array.isArray(responseData)) {
       if (responseData.length === 0) {
         throw new Error('Promo code not found')
@@ -154,57 +177,132 @@ const fetchPromoCodeDetails = async (id: string): Promise<PromoCode> => {
       throw new Error('Promo code not found')
     }
 
-    // Transform API data to component format
-    const validFrom = safeDateParse(data.valid_from)
-    const validTo = safeDateParse(data.valid_to)
-    const currentDate = new Date()
+    // Check if the response has the new nested structure with promo_data
+    if (data.promo_data) {
+      const promoDetails = data.promo_data.promo_details || {}
+      const events = data.promo_data.events || []
 
-    // Determine status
-    let status: "active" | "inactive" | "expired" = "inactive"
-    if (data.promo_code_active) {
-      if (isValidDate(data.valid_to)) {
-        const validToDate = new Date(data.valid_to)
-        status = validToDate < currentDate ? "expired" : "active"
-      } else {
-        status = "active" // If we can't parse the date, assume it's active if the flag says so
+      // Get the first event and game for details (can be expanded to show all)
+      const firstEvent = events && events.length > 0 ? events[0] : null
+      const firstGame = firstEvent && firstEvent.games && firstEvent.games.length > 0 ? firstEvent.games[0] : null
+      const eventDetails = firstEvent && firstEvent.event_details ? firstEvent.event_details : null
+
+      // Extract applicable events with id and title
+      const applicableEvents = events && events.length > 0 ? 
+        events.map(event => event && event.event_details ? {
+          id: event.event_details.id || 0,
+          title: event.event_details.title || 'Unknown Event'
+        } : {
+          id: 0,
+          title: 'Unknown Event'
+        }) : 
+        []
+
+      // Transform API data to component format
+      const validFrom = safeDateParse(promoDetails.valid_from)
+      const validTo = safeDateParse(promoDetails.valid_to)
+      const currentDate = new Date()
+
+      // Determine status
+      let status: "active" | "inactive" | "expired" = "inactive"
+      if (promoDetails.is_active) {
+        if (isValidDate(promoDetails.valid_to)) {
+          const validToDate = new Date(promoDetails.valid_to)
+          status = validToDate < currentDate ? "expired" : "active"
+        } else {
+          status = "active" // If we can't parse the date, assume it's active if the flag says so
+        }
       }
-    }
 
-    // Extract applicable events - for now just use the event title
-    const applicableEvents = data.event_title ? [data.event_title] : ["All"]
+      // Safely construct the return object with defensive checks for all properties
+      return {
+        id: promoDetails && promoDetails.id ? promoDetails.id.toString() : 'unknown',
+        code: promoDetails && promoDetails.promo_code ? promoDetails.promo_code : 'Unknown Code',
+        discount: promoDetails && promoDetails.value !== undefined ? promoDetails.value : 0,
+        discountType: promoDetails && promoDetails.type ? promoDetails.type : 'percentage',
+        maxDiscount: promoDetails && promoDetails.maximum_discount_amount !== undefined ? promoDetails.maximum_discount_amount : null,
+        minPurchase: promoDetails && promoDetails.minimum_purchase_amount !== undefined ? promoDetails.minimum_purchase_amount : 0,
+        validFrom,
+        validTo,
+        usageLimit: promoDetails && promoDetails.usage_limit !== undefined ? promoDetails.usage_limit : 0,
+        usageCount: promoDetails && promoDetails.usage_count !== undefined ? promoDetails.usage_count : 0,
+        status,
+        applicableEvents: applicableEvents && applicableEvents.length > 0 ? applicableEvents : [{ id: 0, title: "All" }],
+        createdAt: safeDateParse(promoDetails && promoDetails.created_at),
+        lastUpdatedAt: safeDateParse(promoDetails && promoDetails.updated_at),
+        description: promoDetails && promoDetails.description ? promoDetails.description : 'No description available',
+        eventsData: events,
+        eventDetails: eventDetails ? {
+          id: eventDetails.id || 0,
+          title: eventDetails.title || 'Unknown Event',
+          description: '', // Not available in the new API response
+          date: safeDateParse(eventDetails.event_date),
+          status: eventDetails.status || 'Unknown'
+        } : undefined,
+        gameDetails: firstGame ? {
+          id: firstGame.id || 0,
+          name: firstGame.game_name || 'Unknown Game',
+          description: '', // Not available in the new API response
+          minAge: typeof firstGame.min_age === 'number' ? firstGame.min_age : 0,
+          maxAge: typeof firstGame.max_age === 'number' ? firstGame.max_age : 0,
+          duration: typeof firstGame.duration_minutes === 'number' ? firstGame.duration_minutes : 0,
+          categories: Array.isArray(firstGame.categories) ? firstGame.categories : []
+        } : undefined
+      }
+    } else {
+      // Handle the old API response format (flat structure) for backward compatibility
+      // Transform API data to component format
+      const validFrom = safeDateParse(data.valid_from)
+      const validTo = safeDateParse(data.valid_to)
+      const currentDate = new Date()
 
-    return {
-      id: data.promo_code_id?.toString() || 'unknown',
-      code: data.promo_code || 'Unknown Code',
-      discount: data.value ? parseFloat(data.value) : 0,
-      discountType: data.type || 'percentage',
-      maxDiscount: data.maximum_discount_amount ? parseFloat(data.maximum_discount_amount) : null,
-      minPurchase: data.minimum_purchase_amount ? parseFloat(data.minimum_purchase_amount) : 0,
-      validFrom,
-      validTo,
-      usageLimit: data.usage_limit || 0,
-      usageCount: data.usage_count || 0,
-      status,
-      applicableEvents,
-      createdAt: safeDateParse(data.promo_created_at),
-      lastUpdatedAt: safeDateParse(data.promo_updated_at),
-      description: data.description || 'No description available',
-      eventDetails: data.event_id ? {
-        id: data.event_id,
-        title: data.event_title || 'Unknown Event',
-        description: data.event_description || 'No description available',
-        date: safeDateParse(data.event_date),
-        status: data.event_status || 'Unknown'
-      } : undefined,
-      gameDetails: data.game_id ? {
-        id: data.game_id,
-        name: data.game_name || 'Unknown Game',
-        description: data.game_description || 'No description available',
-        minAge: data.min_age || 0,
-        maxAge: data.max_age || 0,
-        duration: data.duration_minutes || 0,
-        categories: data.categories || []
-      } : undefined
+      // Determine status
+      let status: "active" | "inactive" | "expired" = "inactive"
+      if (data.promo_code_active) {
+        if (isValidDate(data.valid_to)) {
+          const validToDate = new Date(data.valid_to)
+          status = validToDate < currentDate ? "expired" : "active"
+        } else {
+          status = "active" // If we can't parse the date, assume it's active if the flag says so
+        }
+      }
+
+      // Extract applicable events with id and title
+      const applicableEvents = data.event_title ? [{ id: data.event_id || 0, title: data.event_title }] : [{ id: 0, title: "All" }]
+
+      return {
+        id: data.promo_code_id?.toString() || 'unknown',
+        code: data.promo_code || 'Unknown Code',
+        discount: data.value ? parseFloat(data.value) : 0,
+        discountType: data.type || 'percentage',
+        maxDiscount: data.maximum_discount_amount ? parseFloat(data.maximum_discount_amount) : null,
+        minPurchase: data.minimum_purchase_amount ? parseFloat(data.minimum_purchase_amount) : 0,
+        validFrom,
+        validTo,
+        usageLimit: data.usage_limit || 0,
+        usageCount: data.usage_count || 0,
+        status,
+        applicableEvents,
+        createdAt: safeDateParse(data.promo_created_at),
+        lastUpdatedAt: safeDateParse(data.promo_updated_at),
+        description: data.description || 'No description available',
+        eventDetails: data.event_id ? {
+          id: data.event_id,
+          title: data.event_title || 'Unknown Event',
+          description: data.event_description || 'No description available',
+          date: safeDateParse(data.event_date),
+          status: data.event_status || 'Unknown'
+        } : undefined,
+        gameDetails: data.game_id ? {
+          id: data.game_id,
+          name: data.game_name || 'Unknown Game',
+          description: data.game_description || 'No description available',
+          minAge: data.min_age || 0,
+          maxAge: data.max_age || 0,
+          duration: data.duration_minutes || 0,
+          categories: data.categories || []
+        } : undefined
+      }
     }
   } catch (error) {
     console.error('Error fetching promo code details:', error)
@@ -241,6 +339,7 @@ export default function PromoCodeDetailPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
+  const [selectedEventId, setSelectedEventId] = useState<number | null>(null)
 
   // Fetch promo code details on component mount
   useEffect(() => {
@@ -250,6 +349,11 @@ export default function PromoCodeDetailPage({ params }: Props) {
         setError(null)
         const details = await fetchPromoCodeDetails(promoCodeId)
         setPromoCode(details)
+        
+        // Set the first event as selected by default if available
+        if (details.eventsData && details.eventsData.length > 0 && details.eventsData[0].event_details) {
+          setSelectedEventId(details.eventsData[0].event_details.id)
+        }
       } catch (err: any) {
         setError(err.message || 'Failed to load promo code details. Please try again.')
         console.error('Error loading promo code details:', err)
@@ -260,6 +364,48 @@ export default function PromoCodeDetailPage({ params }: Props) {
 
     loadPromoCodeDetails()
   }, [promoCodeId])
+  
+  // Handle event selection
+  const handleEventSelect = (eventId: number) => {
+    if (!promoCode || !promoCode.eventsData) return
+    
+    setSelectedEventId(eventId)
+    
+    // Find the selected event
+    const selectedEvent = promoCode.eventsData.find(event => 
+      event.event_details && event.event_details.id === eventId
+    )
+    
+    if (selectedEvent) {
+      const eventDetails = selectedEvent.event_details
+      const firstGame = selectedEvent.games && selectedEvent.games.length > 0 ? selectedEvent.games[0] : null
+      
+      // Update promoCode with selected event details
+      setPromoCode(prev => {
+        if (!prev) return prev
+        
+        return {
+          ...prev,
+          eventDetails: eventDetails ? {
+            id: eventDetails.id || 0,
+            title: eventDetails.title || 'Unknown Event',
+            description: eventDetails.description || '',
+            date: safeDateParse(eventDetails.event_date),
+            status: eventDetails.status || 'Unknown'
+          } : undefined,
+          gameDetails: firstGame ? {
+            id: firstGame.id || 0,
+            name: firstGame.game_name || 'Unknown Game',
+            description: firstGame.description || '',
+            minAge: typeof firstGame.min_age === 'number' ? firstGame.min_age : 0,
+            maxAge: typeof firstGame.max_age === 'number' ? firstGame.max_age : 0,
+            duration: typeof firstGame.duration_minutes === 'number' ? firstGame.duration_minutes : 0,
+            categories: Array.isArray(firstGame.categories) ? firstGame.categories : []
+          } : undefined
+        }
+      })
+    }
+  }
   
   // Handle copy promo code
   const handleCopyPromoCode = () => {
@@ -523,12 +669,19 @@ export default function PromoCodeDetailPage({ params }: Props) {
             <div>
               <h3 className="mb-2 font-medium">Applicable Events</h3>
               <div className="space-y-2">
-                {promoCode.applicableEvents.length === 1 && promoCode.applicableEvents[0] === "All" ? (
+                {promoCode.applicableEvents.length === 1 && promoCode.applicableEvents[0].title === "All" ? (
                   <p className="text-sm text-muted-foreground">This promo code is applicable to all events.</p>
                 ) : (
                   <div className="flex flex-wrap gap-2">
                     {promoCode.applicableEvents.map((event, index) => (
-                      <Badge key={index} variant="outline">{event}</Badge>
+                      <Badge 
+                        key={index} 
+                        variant={selectedEventId === event.id ? "default" : "outline"}
+                        className={`cursor-pointer ${selectedEventId === event.id ? 'bg-primary' : ''}`}
+                        onClick={() => handleEventSelect(event.id)}
+                      >
+                        {event.title}
+                      </Badge>
                     ))}
                   </div>
                 )}

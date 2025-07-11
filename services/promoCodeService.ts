@@ -70,6 +70,7 @@ export interface PromoCodeDetail {
   minimum_purchase_amount: number;
   maximum_discount_amount?: number;
   description?: string;
+  is_active?: boolean;
   created_at: string;
   updated_at: string;
   promo_data?: {
@@ -530,6 +531,9 @@ export function transformAPIDataToForm(apiData: PromoCodeDetail) {
     applyToAll = true;
   }
 
+  // Determine status from is_active field
+  const status = promoDetails.is_active !== undefined ? (promoDetails.is_active ? "active" : "inactive") : "active";
+  
   return {
     formData: {
       code: promoDetails.promo_code || '',
@@ -540,7 +544,8 @@ export function transformAPIDataToForm(apiData: PromoCodeDetail) {
       validFrom: promoDetails.valid_from ? formatDateForInput(promoDetails.valid_from) : '',
       validTo: promoDetails.valid_to ? formatDateForInput(promoDetails.valid_to) : '',
       usageLimit: promoDetails.usage_limit !== undefined && promoDetails.usage_limit !== null ? promoDetails.usage_limit.toString() : '0',
-      description: promoDetails.description || ""
+      description: promoDetails.description || "",
+      status: status
     },
     selectedEvents,
     selectedGames,
