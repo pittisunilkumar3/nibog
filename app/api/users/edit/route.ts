@@ -43,11 +43,16 @@ export async function POST(request: Request) {
       );
     }
 
-    if (!userData.city_id || isNaN(Number(userData.city_id))) {
-      return NextResponse.json(
-        { error: "City ID is required and must be a number" },
-        { status: 400 }
-      );
+    // Validate city_id if provided and not null
+    if (userData.city_id !== undefined && userData.city_id !== null) {
+      if (isNaN(Number(userData.city_id))) {
+        return NextResponse.json(
+          { error: "City ID must be a number if provided" },
+          { status: 400 }
+        );
+      }
+      // Convert to number if it's a string
+      userData.city_id = Number(userData.city_id);
     }
 
     console.log(`Server API route: Attempting to edit user with ID: ${userId}`);
@@ -57,13 +62,16 @@ export async function POST(request: Request) {
     console.log("Server API route: Calling API URL:", apiUrl);
     console.log(`Server API route: Request method: POST`);
 
-    // Ensure city_id is a number and normalize boolean fields
+    // Ensure city_id is a number when provided, otherwise keep it null
     const normalizedUserData = {
       ...userData,
       user_id: userId,
-      city_id: Number(userData.city_id),
+      // Preserve null/undefined, only convert to number if provided
+      city_id: userData.city_id !== null && userData.city_id !== undefined ? Number(userData.city_id) : null,
       accept_terms: Boolean(userData.accept_terms)
     };
+    
+    console.log("Server API route: city_id type:", typeof normalizedUserData.city_id, "value:", normalizedUserData.city_id);
 
     // Ensure boolean fields are properly set
     if (userData.is_active !== undefined) {

@@ -37,7 +37,7 @@ export default function EditGameTemplate({ params }: Props) {
   const [name, setName] = useState("")
   const [description, setDescription] = useState("")
   const [minAge, setMinAge] = useState(0)
-  const [maxAge, setMaxAge] = useState(36)
+  const [maxAge, setMaxAge] = useState(300) // Set default max age to 300
   const [duration, setDuration] = useState(60)
   const [isActive, setIsActive] = useState(true)
   const [newCategory, setNewCategory] = useState("")
@@ -70,7 +70,7 @@ export default function EditGameTemplate({ params }: Props) {
         setName(gameData.game_name || "")
         setDescription(gameData.description || "")
         setMinAge(gameData.min_age || 0)
-        setMaxAge(gameData.max_age || 90)
+        setMaxAge(gameData.max_age || 300)
         setDuration(gameData.duration_minutes || 60)
         setIsActive(gameData.is_active || false)
         setCategories(gameData.categories || [])
@@ -263,7 +263,7 @@ export default function EditGameTemplate({ params }: Props) {
                     <Slider
                       value={[minAge, maxAge]}
                       min={0}
-                      max={90}
+                      max={300}
                       step={1}
                       onValueChange={(value) => {
                         setMinAge(value[0])
@@ -286,7 +286,7 @@ export default function EditGameTemplate({ params }: Props) {
                     <Slider
                       value={[duration]}
                       min={30}
-                      max={120}
+                      max={300}
                       step={15}
                       onValueChange={(value) => setDuration(value[0])}
                     />

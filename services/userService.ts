@@ -167,7 +167,7 @@ export interface UpdateUserData {
   email: string;
   phone: string;
   password?: string;
-  city_id: number;
+  city_id?: number | null;
   accept_terms?: boolean;
   is_active?: boolean;
   is_locked?: boolean;
@@ -193,21 +193,28 @@ export async function updateUser(userData: UpdateUserData): Promise<User> {
     throw new Error("Phone is required");
   }
 
-  if (!userData.city_id || isNaN(Number(userData.city_id))) {
-    throw new Error("City ID is required and must be a number");
+  // Make city_id validation optional
+  if (userData.city_id !== undefined && userData.city_id !== null && isNaN(Number(userData.city_id))) {
+    throw new Error("City ID must be a number if provided");
   }
 
   try {
-    // Use our internal API route to avoid CORS issues
-    console.log(`Sending POST request to /api/users/edit with user data`);
-    console.log(`Request body: ${JSON.stringify(userData)}`);
+    // Prepare the data to send, explicitly handling null values
+    const requestData = {
+      ...userData,
+      // Ensure city_id is included as null if explicitly set to null
+      ...(userData.city_id === null && { city_id: null })
+    };
+
+    console.log('Sending POST request to /api/users/edit with user data');
+    console.log('Request body:', JSON.stringify(requestData, null, 2));
 
     const response = await fetch('/api/users/edit', {
-      method: "POST",
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(userData),
+      body: JSON.stringify(requestData),
     });
 
     console.log(`Update user response status: ${response.status}`);
