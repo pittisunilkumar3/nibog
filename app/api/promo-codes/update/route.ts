@@ -33,8 +33,8 @@ export async function POST(request: Request) {
       minimum_purchase_amount: requestData.minimum_purchase_amount,
       maximum_discount_amount: requestData.maximum_discount_amount || null,
       description: requestData.description || "",
-      applicable_events: requestData.applicable_events || [],
-      applicable_games: requestData.applicable_games || []
+      events: requestData.events || [],
+      scope: requestData.scope || "all" // Include the scope field with a default value of "all"
     };
 
     console.log("Server API route: Prepared payload:", JSON.stringify(payload, null, 2));

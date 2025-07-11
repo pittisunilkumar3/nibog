@@ -16,6 +16,7 @@ export interface CreatePromoCodeRequest {
   maximum_discount_amount?: number;
   description?: string;
   events: PromoCodeEvent[];
+  scope: "all" | "events" | "games";
 }
 
 export interface CreatePromoCodeResponse {
@@ -37,8 +38,8 @@ export interface UpdatePromoCodeRequest {
   minimum_purchase_amount: number;
   maximum_discount_amount?: number;
   description?: string;
-  applicable_events: number[];
-  applicable_games: number[];
+  events: Array<{ id: number; games_id: number[] }>;
+  scope: "all" | "events" | "games";
 }
 
 export interface UpdatePromoCodeResponse {
@@ -71,16 +72,23 @@ export interface PromoCodeDetail {
   updated_at: string;
   promo_data?: {
     events: Array<{
-      event_id: number;
-      event_title: string;
       games: Array<{
-        game_id: number;
-        game_title: string;
+        id: number;
+        max_age: number;
+        min_age: number;
+        game_name: string;
+        is_active: boolean;
+        categories: string[];
+        duration_minutes: number;
       }>;
-    }>;
-    games: Array<{
-      game_id: number;
-      game_title: string;
+      event_details: {
+        id: number;
+        title: string;
+        status: string;
+        city_id: number;
+        venue_id: number;
+        event_date: string;
+      };
     }>;
     promo_details: {
       id: number;
@@ -94,6 +102,9 @@ export interface PromoCodeDetail {
       minimum_purchase_amount: number;
       maximum_discount_amount?: number;
       description?: string;
+      is_active?: boolean;
+      created_at?: string;
+      updated_at?: string;
     };
   };
 }
@@ -173,6 +184,9 @@ export function transformFormDataToAPI(
 
   // Prepare events array
   let events: PromoCodeEvent[] = [];
+  
+  // Determine the scope based on selections
+  let scope: "all" | "events" | "games" = "all";
 
   if (applyToAll) {
     // If apply to all, include all events with all their games
@@ -180,6 +194,7 @@ export function transformFormDataToAPI(
       id: parseInt(event.id),
       games_id: event.games.map(game => parseInt(game.id))
     }));
+    scope = "all";
   } else {
     // If specific events selected, map them with their selected games
     events = selectedEvents.map(eventId => {
@@ -195,11 +210,26 @@ export function transformFormDataToAPI(
           return parseInt(parts[1]);
         });
 
+      // If no specific games are selected for this event, include all games from the event
+      if (eventGameIds.length === 0) {
+        return {
+          id: parseInt(eventId),
+          games_id: event.games.map(game => parseInt(game.id))
+        };
+      }
+
       return {
         id: parseInt(eventId),
         games_id: eventGameIds
       };
     });
+    
+    // Check if any specific games are selected across all events
+    const hasSpecificGamesSelected = selectedEvents.some(eventId => {
+      return selectedGames.some(gameId => gameId.startsWith(`${eventId}-`));
+    });
+    
+    scope = hasSpecificGamesSelected ? "games" : "events";
   }
 
   const apiData: CreatePromoCodeRequest = {
@@ -212,7 +242,8 @@ export function transformFormDataToAPI(
     minimum_purchase_amount: parseFloat(formData.minPurchase),
     maximum_discount_amount: formData.maxDiscount ? parseFloat(formData.maxDiscount) : undefined,
     description: formData.description || "",
-    events: events
+    events: events,
+    scope: scope
   };
 
   console.log("=== TRANSFORMATION DEBUG ===");
@@ -282,6 +313,49 @@ export function transformFormDataToUpdateAPI(
     }).filter(gameId => !isNaN(gameId));
   }
 
+  // Determine the scope based on selection
+  let scope: "all" | "events" | "games" = "all";
+  if (!applyToAll) {
+    scope = selectedGames.length > 0 ? "games" : "events";
+  }
+
+  // Create events array in the format expected by the API
+  const events: Array<{ id: number; games_id: number[] }> = [];
+  
+  if (applyToAll) {
+    // If apply to all, include all events with their games
+    allEvents.forEach(event => {
+      events.push({
+        id: parseInt(event.id),
+        games_id: event.games.map(game => parseInt(game.id))
+      });
+    });
+  } else {
+    // If specific events selected, create events array with selected events and their games
+    selectedEvents.forEach(eventId => {
+      const event = allEvents.find(e => e.id === eventId);
+      if (event) {
+        // Get games for this event from selectedGames
+        const eventGames = selectedGames
+          .filter(gameId => gameId.startsWith(`${eventId}-`))
+          .map(gameId => {
+            const parts = gameId.split('-');
+            return parseInt(parts[1]);
+          });
+        
+        // If no specific games selected for this event, include all games
+        const gamesForEvent = eventGames.length > 0 
+          ? eventGames 
+          : event.games.map(game => parseInt(game.id));
+        
+        events.push({
+          id: parseInt(eventId),
+          games_id: gamesForEvent
+        });
+      }
+    });
+  }
+
   const updateData: Omit<UpdatePromoCodeRequest, 'id'> = {
     promo_code: formData.code,
     type: formData.discountType as "percentage" | "fixed",
@@ -293,8 +367,8 @@ export function transformFormDataToUpdateAPI(
     minimum_purchase_amount: parseFloat(formData.minPurchase),
     maximum_discount_amount: formData.maxDiscount ? parseFloat(formData.maxDiscount) : undefined,
     description: formData.description || "",
-    applicable_events: applicableEvents,
-    applicable_games: applicableGames
+    events: events,
+    scope: scope
   };
 
   console.log("=== UPDATE TRANSFORMATION DEBUG ===");
@@ -414,16 +488,35 @@ export function transformAPIDataToForm(apiData: PromoCodeDetail) {
   let selectedEvents: string[] = [];
   let selectedGames: string[] = [];
   let applyToAll = false;
+  
+  // Get the promo details - either from the nested structure or from the top level
+  const promoDetails = apiData.promo_data?.promo_details || apiData;
+  console.log("Using promo details:", promoDetails);
 
   if (apiData.promo_data?.events) {
-    selectedEvents = apiData.promo_data.events.map(event => event.event_id.toString());
+    console.log("Processing promo data events:", apiData.promo_data.events);
+    
+    // Safely map event IDs with null checks - extract from event_details.id
+    selectedEvents = apiData.promo_data.events
+      .filter(event => event && event.event_details && event.event_details.id !== undefined)
+      .map(event => event.event_details.id.toString());
+    
+    console.log("Selected events after mapping:", selectedEvents);
 
-    // Extract games in the format "eventId-gameId"
+    // Extract games in the format "eventId-gameId" with null checks
     apiData.promo_data.events.forEach(event => {
-      event.games.forEach(game => {
-        selectedGames.push(`${event.event_id}-${game.game_id}`);
-      });
+      if (event && event.event_details && event.event_details.id !== undefined && Array.isArray(event.games)) {
+        const eventId = event.event_details.id;
+        
+        event.games.forEach(game => {
+          if (game && game.id !== undefined) {
+            selectedGames.push(`${eventId}-${game.id}`);
+          }
+        });
+      }
     });
+    
+    console.log("Selected games after mapping:", selectedGames);
   }
 
   // If no specific events are selected, assume apply to all
@@ -433,20 +526,20 @@ export function transformAPIDataToForm(apiData: PromoCodeDetail) {
 
   return {
     formData: {
-      code: apiData.promo_code,
-      discount: apiData.value.toString(),
-      discountType: apiData.type,
-      maxDiscount: apiData.maximum_discount_amount ? apiData.maximum_discount_amount.toString() : "",
-      minPurchase: apiData.minimum_purchase_amount.toString(),
-      validFrom: formatDateForInput(apiData.valid_from),
-      validTo: formatDateForInput(apiData.valid_to),
-      usageLimit: apiData.usage_limit.toString(),
-      description: apiData.description || ""
+      code: promoDetails.promo_code || '',
+      discount: promoDetails.value !== undefined && promoDetails.value !== null ? promoDetails.value.toString() : '0',
+      discountType: promoDetails.type || 'percentage',
+      maxDiscount: promoDetails.maximum_discount_amount !== undefined && promoDetails.maximum_discount_amount !== null ? promoDetails.maximum_discount_amount.toString() : "",
+      minPurchase: promoDetails.minimum_purchase_amount !== undefined && promoDetails.minimum_purchase_amount !== null ? promoDetails.minimum_purchase_amount.toString() : '0',
+      validFrom: promoDetails.valid_from ? formatDateForInput(promoDetails.valid_from) : '',
+      validTo: promoDetails.valid_to ? formatDateForInput(promoDetails.valid_to) : '',
+      usageLimit: promoDetails.usage_limit !== undefined && promoDetails.usage_limit !== null ? promoDetails.usage_limit.toString() : '0',
+      description: promoDetails.description || ""
     },
     selectedEvents,
     selectedGames,
     applyToAll,
-    usageCount: apiData.usage_count || 0
+    usageCount: promoDetails.usage_count || 0
   };
 }
 

@@ -281,7 +281,9 @@ export default function EditPromoCodePage({ params }: Props) {
     if (checked) {
       setSelectedEvents([...selectedEvents, eventId])
     } else {
-      setSelectedEvents(selectedEvents.filter(e => e !== eventId))
+      setSelectedEvents(selectedEvents.filter(id => id !== eventId))
+      // Also remove any games associated with this event
+      setSelectedGames(selectedGames.filter(gameId => !gameId.startsWith(`${eventId}-`)))
     }
   }
 
@@ -289,7 +291,7 @@ export default function EditPromoCodePage({ params }: Props) {
     if (checked) {
       setSelectedGames([...selectedGames, gameId])
     } else {
-      setSelectedGames(selectedGames.filter(g => g !== gameId))
+      setSelectedGames(selectedGames.filter(id => id !== gameId))
     }
   }
 
@@ -496,6 +498,7 @@ export default function EditPromoCodePage({ params }: Props) {
                   onCheckedChange={(checked) => {
                     if (checked) {
                       setSelectedEvents([])
+                      setSelectedGames([])
                     }
                     setApplyToAll(!!checked)
                   }} 
@@ -504,7 +507,7 @@ export default function EditPromoCodePage({ params }: Props) {
                   htmlFor="applyToAll"
                   className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
                 >
-                  Apply to all events
+                  Apply to all events and games
                 </label>
               </div>
               
@@ -512,40 +515,84 @@ export default function EditPromoCodePage({ params }: Props) {
                 <div className="space-y-4">
                   {isLoadingEvents ? (
                     <div className="flex items-center justify-center py-4">
-                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      <span className="text-sm text-muted-foreground">Loading events...</span>
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
+                      <span className="ml-2 text-sm text-muted-foreground">Loading events...</span>
                     </div>
                   ) : eventsError ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-red-500">{eventsError}</p>
+                    <div className="text-sm text-red-500 p-3 bg-red-50 rounded-md">
+                      Error loading events: {eventsError}
                     </div>
                   ) : events.length === 0 ? (
-                    <div className="text-center py-4">
-                      <p className="text-sm text-muted-foreground">No events available</p>
+                    <div className="text-sm text-muted-foreground p-3 bg-gray-50 rounded-md">
+                      No events available
                     </div>
                   ) : (
-                    <div className="grid gap-2 sm:grid-cols-2">
-                      {events.map((event) => (
-                        <div key={event.id} className="flex items-center space-x-2">
-                          <Checkbox
-                            id={`event-${event.id}`}
-                            checked={selectedEvents.includes(event.id)}
-                            onCheckedChange={(checked) => handleEventChange(event.id, !!checked)}
-                          />
-                          <label
-                            htmlFor={`event-${event.id}`}
-                            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
-                          >
-                            {event.name}
-                          </label>
+                    <>
+                      <div>
+                        <h4 className="text-sm font-medium mb-2">Select Events:</h4>
+                        <div className="grid gap-2 sm:grid-cols-2">
+                          {events.map((event) => (
+                            <div key={event.id} className="space-y-2">
+                              <div className="flex items-center space-x-2">
+                                <Checkbox
+                                  id={`event-${event.id}`}
+                                  checked={selectedEvents.includes(event.id)}
+                                  onCheckedChange={(checked) => {
+                                    if (checked) {
+                                      setSelectedEvents([...selectedEvents, event.id])
+                                    } else {
+                                      setSelectedEvents(selectedEvents.filter(e => e !== event.id))
+                                      // Remove games from this event
+                                      const eventGameIds = event.games.map(g => `${event.id}-${g.id}`)
+                                      setSelectedGames(selectedGames.filter(g => !eventGameIds.includes(g)))
+                                    }
+                                  }}
+                                />
+                                <label
+                                  htmlFor={`event-${event.id}`}
+                                  className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                >
+                                  {event.name}
+                                </label>
+                              </div>
+
+                              {selectedEvents.includes(event.id) && event.games.length > 0 && (
+                                <div className="ml-6 space-y-1">
+                                  <p className="text-xs text-muted-foreground">Games in this event:</p>
+                                  {event.games.map((game) => (
+                                    <div key={game.id} className="flex items-center space-x-2">
+                                      <Checkbox
+                                        id={`game-${event.id}-${game.id}`}
+                                        checked={selectedGames.includes(`${event.id}-${game.id}`)}
+                                        onCheckedChange={(checked) => {
+                                          const gameId = `${event.id}-${game.id}`
+                                          if (checked) {
+                                            setSelectedGames([...selectedGames, gameId])
+                                          } else {
+                                            setSelectedGames(selectedGames.filter(g => g !== gameId))
+                                          }
+                                        }}
+                                      />
+                                      <label
+                                        htmlFor={`game-${event.id}-${game.id}`}
+                                        className="text-xs leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70"
+                                      >
+                                        {game.name}
+                                      </label>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+                            </div>
+                          ))}
                         </div>
-                      ))}
-                    </div>
+                      </div>
+                    </>
                   )}
                 </div>
               )}
               
-              {!applyToAll && selectedEvents.length === 0 && (
+              {!applyToAll && selectedEvents.length === 0 && !isLoadingEvents && (
                 <p className="text-sm text-red-500">
                   Please select at least one event or apply to all events.
                 </p>
