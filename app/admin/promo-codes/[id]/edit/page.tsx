@@ -653,11 +653,11 @@ export default function EditPromoCodePage({ params }: Props) {
               <div className="grid gap-4 sm:grid-cols-2">
                 <div className="rounded-lg border p-4">
                   <h3 className="text-sm font-medium text-muted-foreground">Usage Count</h3>
-                  <p className="mt-2 text-2xl font-bold">{promoCode.usage_count || 0}</p>
+                  <p className="mt-2 text-2xl font-bold">{usageCount}</p>
                 </div>
                 <div className="rounded-lg border p-4">
                   <h3 className="text-sm font-medium text-muted-foreground">Usage Limit</h3>
-                  <p className="mt-2 text-2xl font-bold">{promoCode.usage_limit}</p>
+                  <p className="mt-2 text-2xl font-bold">{usageLimit}</p>
                 </div>
               </div>
               <div className="mt-4">
@@ -666,12 +666,12 @@ export default function EditPromoCodePage({ params }: Props) {
                   <div
                     className="h-full rounded-full bg-primary"
                     style={{
-                      width: `${((promoCode.usage_count || 0) / promoCode.usage_limit) * 100}%`,
+                      width: `${(usageCount / parseInt(usageLimit)) * 100}%`,
                     }}
                   />
                 </div>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  {Math.round(((promoCode.usage_count || 0) / promoCode.usage_limit) * 100)}% of total limit used
+                  {Math.round((usageCount / parseInt(usageLimit)) * 100)}% of total limit used
                 </p>
               </div>
             </CardContent>
