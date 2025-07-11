@@ -62,47 +62,84 @@ async function fetchCityVenues(cityId: number) {
   }
 }
 
-// Mock events data - in a real app, this would come from an API
-// In a future implementation, we would create an eventService.ts file
-const events = [
-  {
-    id: "1",
-    title: "Baby Crawling",
-    city_id: 1,
-    venue: "Gachibowli Indoor Stadium",
-    date: "2025-10-26",
-    registrations: 45,
-    status: "upcoming",
-  },
-  {
-    id: "2",
-    title: "Baby Walker",
-    city_id: 1,
-    venue: "Gachibowli Indoor Stadium",
-    date: "2025-10-26",
-    registrations: 38,
-    status: "upcoming",
-  },
-  {
-    id: "3",
-    title: "Running Race",
-    city_id: 1,
-    venue: "Hitex Exhibition Center",
-    date: "2025-11-15",
-    registrations: 52,
-    status: "upcoming",
-  },
-]
+// Function to fetch events for a city
+async function fetchCityEvents(cityId: number): Promise<EventData[]> {
+  try {
+    console.log(`Fetching events for city ID: ${cityId}`);
+    
+    const apiUrl = 'https://ai.alviongs.com/webhook/v1/nibog/get-upcoming-event/bycity/id';
+    const response = await fetch(apiUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        city_id: cityId
+      })
+    });
+    
+    if (!response.ok) {
+      console.warn(`API returned error status: ${response.status} ${response.statusText}`);
+      return [];
+    }
+    
+    const eventsData = await response.json();
+    console.log('Events data fetched:', eventsData);
+    
+    // Handle various empty responses
+    if (!eventsData) {
+      console.log('No events data returned from API');
+      return [];
+    }
+    
+    // Handle non-array responses
+    if (!Array.isArray(eventsData)) {
+      console.log('API returned non-array response:', eventsData);
+      return [];
+    }
+    
+    // Return empty array if array is empty
+    if (eventsData.length === 0) {
+      console.log('API returned empty events array');
+      return [];
+    }
+    
+    // Check if the array contains valid event data (at least one event with a title)
+    const validEvents = eventsData.filter(event => 
+      event && 
+      (event.title || event.venue_name || (event.event_date && !isNaN(new Date(event.event_date).getTime())))
+    );
+    
+    if (validEvents.length === 0) {
+      console.log('API returned events but none have valid data');
+      return [];
+    }
+    
+    return validEvents;
+  } catch (error) {
+    console.error('Error fetching city events:', error);
+    return [];
+  }
+}
 
 type PageParams = {
   id: string
+}
+
+// Define interface for event data structure
+interface EventData {
+  event_id: number;
+  title: string;
+  venue_name: string;
+  event_date: string;
+  status: string;
 }
 
 export default function CityDetailsPage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter()
   const [city, setCity] = useState<City | null>(null)
   const [cityVenues, setCityVenues] = useState<any[]>([])
-  const [cityEvents, setCityEvents] = useState<any[]>([])
+  const [cityEvents, setCityEvents] = useState<EventData[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -130,10 +167,14 @@ export default function CityDetailsPage({ params }: { params: Promise<PageParams
           setCityVenues([]);
         }
 
-        // Filter events for this city (using mock data for now)
-        // In a real implementation, we would fetch events by city ID from the API
-        const filteredEvents = events.filter(e => e.city_id === cityId)
-        setCityEvents(filteredEvents)
+        // Fetch events for this city from the API
+        const eventsData = await fetchCityEvents(cityId);
+        // fetchCityEvents returns valid events or an empty array
+        console.log(`Setting ${eventsData.length} events to state`);
+        if (eventsData.length === 0) {
+          console.log('No valid events found for this city');
+        }
+        setCityEvents(eventsData);
 
         setError(null)
       } catch (err) {
@@ -292,29 +333,47 @@ export default function CityDetailsPage({ params }: { params: Promise<PageParams
                 <TableHead>Event Name</TableHead>
                 <TableHead>Venue</TableHead>
                 <TableHead>Date</TableHead>
-                <TableHead>Registrations</TableHead>
                 <TableHead>Status</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {cityEvents.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center">
+                  <TableCell colSpan={4} className="h-24 text-center">
                     No upcoming events in {city.city_name}.
                   </TableCell>
                 </TableRow>
               ) : (
-                cityEvents.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-medium">{event.title}</TableCell>
-                    <TableCell>{event.venue}</TableCell>
-                    <TableCell>{event.date}</TableCell>
-                    <TableCell>{event.registrations}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-blue-500 hover:bg-blue-600">Upcoming</Badge>
-                    </TableCell>
-                  </TableRow>
-                ))
+                cityEvents.map((event, index) => {
+                  // Format date from ISO string to a readable format
+                  let formattedDate = 'No date available';
+                  
+                  try {
+                    if (event.event_date) {
+                      const eventDate = new Date(event.event_date);
+                      if (!isNaN(eventDate.getTime())) {
+                        formattedDate = eventDate.toLocaleDateString('en-IN', { 
+                          year: 'numeric', 
+                          month: 'long', 
+                          day: 'numeric' 
+                        });
+                      }
+                    }
+                  } catch (error) {
+                    console.error('Error formatting date:', error);
+                  }
+                  
+                  return (
+                    <TableRow key={`event-${event.event_id || index}-${index}`}>
+                      <TableCell className="font-medium">{event.title || 'No title'}</TableCell>
+                      <TableCell>{event.venue_name || 'No venue'}</TableCell>
+                      <TableCell>{formattedDate}</TableCell>
+                      <TableCell>
+                        <Badge className="bg-blue-500 hover:bg-blue-600">{event.status || 'Unknown'}</Badge>
+                      </TableCell>
+                    </TableRow>
+                  );
+                })
               )}
             </TableBody>
           </Table>

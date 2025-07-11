@@ -7,11 +7,17 @@ declare module 'lucide-react' {
   // Define the type for Lucide icons
   type LucideIcon = ComponentType<SVGProps<SVGSVGElement>>;
 
-  // Export the icons you're using
+  // Export all the icons used in the project
   export const ArrowLeft: LucideIcon;
   export const Edit: LucideIcon;
   export const MapPin: LucideIcon;
   export const Loader2: LucideIcon;
+  export const Calendar: LucideIcon;
+  export const Clock: LucideIcon;
+  export const Medal: LucideIcon;
+  export const Trophy: LucideIcon;
+  export const Award: LucideIcon;
+  export const Star: LucideIcon;
   
   // Add any other icons you use from lucide-react
 }
