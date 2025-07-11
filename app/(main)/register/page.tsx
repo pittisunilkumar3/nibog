@@ -10,7 +10,6 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useToast } from "@/components/ui/use-toast"
-import CitySelector from "@/components/city-selector"
 import { NibogLogo } from "@/components/nibog-logo"
 
 // Image slideshow component
@@ -86,14 +85,17 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("")
   const [phone, setPhone] = useState("")
   const [password, setPassword] = useState("")
-  const [cityId, setCityId] = useState<number | null>(null)
   const [termsAccepted, setTermsAccepted] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState("")
 
-  const handleCityChange = (id: number) => {
-    setCityId(id)
-  }
+
+  // Email validation function
+  const isValidEmail = (email: string) => {
+    // Basic email validation regex
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    return emailRegex.test(email);
+  };
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -101,8 +103,15 @@ export default function RegisterPage() {
     setError("")
 
     // Validate form
-    if (!fullName || !email || !phone || !password || !cityId) {
+    if (!fullName || !email || !phone || !password) {
       setError("Please fill in all required fields")
+      setIsLoading(false)
+      return
+    }
+
+    // Validate email format
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address")
       setIsLoading(false)
       return
     }
@@ -125,7 +134,7 @@ export default function RegisterPage() {
           email,
           phone,
           password,
-          city_id: cityId,
+          city_id: null,
           accept_terms: termsAccepted
         }),
       })
@@ -238,10 +247,6 @@ export default function RegisterPage() {
                 required
                 className="rounded-xl border-2 border-blue-200 dark:border-blue-800 focus:border-purple-400 dark:focus:border-purple-600 transition-all"
               />
-            </div>
-            <div className="space-y-2">
-              <Label className="text-purple-700 dark:text-purple-300 font-medium">Default City</Label>
-              <CitySelector onCityChange={handleCityChange} />
             </div>
             <div className="flex items-start space-x-2 mt-4">
               <Checkbox

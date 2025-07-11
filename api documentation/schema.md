@@ -168,6 +168,8 @@ CREATE TABLE email_settings (
 -- Enable essential extensions
 CREATE EXTENSION IF NOT EXISTS "pgcrypto";  -- For cryptographic functions
 
+
+
 -- Users table (main entity)
 CREATE TABLE users (
     user_id SERIAL PRIMARY KEY,
@@ -196,6 +198,9 @@ CREATE TABLE users (
     CONSTRAINT valid_email CHECK (email ~* '^[A-Za-z0-9._%-]+@[A-Za-z0-9.-]+[.][A-Za-z]+$'),
     CONSTRAINT valid_phone CHECK (phone ~ '^\+?[0-9]{10,15}$')
 );
+
+
+
 
 -- Indexes for users table
 CREATE UNIQUE INDEX idx_users_email ON users(LOWER(email));

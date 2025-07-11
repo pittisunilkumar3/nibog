@@ -37,11 +37,9 @@ export async function POST(request: Request) {
       );
     }
     
+    // Make city_id optional by setting it to null if not provided
     if (!userData.city_id) {
-      return NextResponse.json(
-        { error: "City ID is required" },
-        { status: 400 }
-      );
+      userData.city_id = null;
     }
     
     if (userData.accept_terms !== true) {
