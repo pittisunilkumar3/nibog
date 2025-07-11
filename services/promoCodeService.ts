@@ -17,6 +17,7 @@ export interface CreatePromoCodeRequest {
   description?: string;
   events: PromoCodeEvent[];
   scope: "all" | "events" | "games";
+  is_active: boolean;
 }
 
 export interface CreatePromoCodeResponse {
@@ -40,6 +41,7 @@ export interface UpdatePromoCodeRequest {
   description?: string;
   events: Array<{ id: number; games_id: number[] }>;
   scope: "all" | "events" | "games";
+  is_active: boolean;
 }
 
 export interface UpdatePromoCodeResponse {
@@ -171,6 +173,7 @@ export function transformFormDataToAPI(
     validTo: string;
     usageLimit: string;
     description: string;
+    status?: string;
   },
   selectedEvents: string[],
   selectedGames: string[],
@@ -243,7 +246,8 @@ export function transformFormDataToAPI(
     maximum_discount_amount: formData.maxDiscount ? parseFloat(formData.maxDiscount) : undefined,
     description: formData.description || "",
     events: events,
-    scope: scope
+    scope: scope,
+    is_active: formData.status ? formData.status === "active" : true
   };
 
   console.log("=== TRANSFORMATION DEBUG ===");
@@ -278,6 +282,7 @@ export function transformFormDataToUpdateAPI(
     validTo: string;
     usageLimit: string;
     description: string;
+    status?: string;
   },
   selectedEvents: string[],
   selectedGames: string[],
@@ -368,7 +373,8 @@ export function transformFormDataToUpdateAPI(
     maximum_discount_amount: formData.maxDiscount ? parseFloat(formData.maxDiscount) : undefined,
     description: formData.description || "",
     events: events,
-    scope: scope
+    scope: scope,
+    is_active: formData.status ? formData.status === "active" : true
   };
 
   console.log("=== UPDATE TRANSFORMATION DEBUG ===");

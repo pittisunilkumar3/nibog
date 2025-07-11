@@ -45,7 +45,8 @@ export async function POST(request: Request) {
       maximum_discount_amount: requestData.maximum_discount_amount || null,
       description: requestData.description || "",
       events: requestData.events || [],
-      scope: requestData.scope || "all" // Include the scope field with a default value of "all"
+      scope: requestData.scope || "all", // Include the scope field with a default value of "all"
+      is_active: requestData.is_active !== undefined ? requestData.is_active : true // Include is_active with default value of true
     };
 
     console.log("Server API route: Prepared payload:", JSON.stringify(payload, null, 2));

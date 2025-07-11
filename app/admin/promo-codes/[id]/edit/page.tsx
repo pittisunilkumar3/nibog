@@ -227,7 +227,8 @@ export default function EditPromoCodePage({ params }: Props) {
           validFrom,
           validTo,
           usageLimit,
-          description
+          description,
+          status
         },
         selectedEvents,
         selectedGames,
