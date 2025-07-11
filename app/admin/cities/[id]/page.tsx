@@ -94,7 +94,11 @@ const events = [
   },
 ]
 
-export default function CityDetailsPage({ params }: { params: { id: string } }) {
+type PageParams = {
+  id: string
+}
+
+export default function CityDetailsPage({ params }: { params: Promise<PageParams> }) {
   const router = useRouter()
   const [city, setCity] = useState<City | null>(null)
   const [cityVenues, setCityVenues] = useState<any[]>([])
