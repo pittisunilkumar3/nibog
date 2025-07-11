@@ -216,91 +216,64 @@ export default function GameDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
-          <CardHeader>
-            <CardTitle>Game Details</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
+      <Card>
+        <CardHeader>
+          <CardTitle>Game Details</CardTitle>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div>
+            <h3 className="mb-2 font-medium">Description</h3>
+            <p className="text-sm text-muted-foreground">{game.description}</p>
+          </div>
+          <Separator />
+          <div className="grid gap-4 sm:grid-cols-3">
             <div>
-              <h3 className="mb-2 font-medium">Description</h3>
-              <p className="text-sm text-muted-foreground">{game.description}</p>
+              <h3 className="mb-2 font-medium">Age Range</h3>
+              <p className="text-sm text-muted-foreground">
+                {game.min_age}-{game.max_age} months
+              </p>
             </div>
-            <Separator />
-            <div className="grid gap-4 sm:grid-cols-3">
-              <div>
-                <h3 className="mb-2 font-medium">Age Range</h3>
-                <p className="text-sm text-muted-foreground">
-                  {game.min_age}-{game.max_age} months
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-2 font-medium">Duration</h3>
-                <p className="text-sm text-muted-foreground">{game.duration_minutes} minutes</p>
-              </div>
-              <div>
-                <h3 className="mb-2 font-medium">Status</h3>
-                {game.is_active ? (
-                  <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                ) : (
-                  <Badge variant="outline">Inactive</Badge>
-                )}
-              </div>
-            </div>
-            <Separator />
             <div>
-              <h3 className="mb-2 font-medium">Categories</h3>
-              <div className="flex flex-wrap gap-2">
-                {game.categories && game.categories.map((category: string) => (
-                  <Badge key={category} variant="secondary">
-                    {category}
-                  </Badge>
-                ))}
-              </div>
+              <h3 className="mb-2 font-medium">Duration</h3>
+              <p className="text-sm text-muted-foreground">{game.duration_minutes} minutes</p>
             </div>
-            <Separator />
-            <div className="grid gap-4 sm:grid-cols-2">
-              <div>
-                <h3 className="mb-2 font-medium">Created By</h3>
-                <p className="text-sm text-muted-foreground">
-                  {game.createdBy} on {game.createdAt}
-                </p>
-              </div>
-              <div>
-                <h3 className="mb-2 font-medium">Last Updated By</h3>
-                <p className="text-sm text-muted-foreground">
-                  {game.lastUpdatedBy} on {game.lastUpdatedAt}
-                </p>
-              </div>
+            <div>
+              <h3 className="mb-2 font-medium">Status</h3>
+              {game.is_active ? (
+                <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
+              ) : (
+                <Badge variant="outline">Inactive</Badge>
+              )}
             </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader>
-            <CardTitle>Usage Statistics</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border p-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Total Events</h3>
-              <p className="mt-2 text-2xl font-bold">{game.events}</p>
+          </div>
+          <Separator />
+          <div>
+            <h3 className="mb-2 font-medium">Categories</h3>
+            <div className="flex flex-wrap gap-2">
+              {game.categories && game.categories.map((category: string) => (
+                <Badge key={category} variant="secondary">
+                  {category}
+                </Badge>
+              ))}
             </div>
-            <div className="rounded-lg border p-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Upcoming Events</h3>
-              <p className="mt-2 text-2xl font-bold">{Math.floor(game.events * 0.7)}</p>
+          </div>
+          <Separator />
+          <div className="grid gap-4 sm:grid-cols-2">
+            <div>
+              <h3 className="mb-2 font-medium">Created By</h3>
+              <p className="text-sm text-muted-foreground">
+                {game.createdBy} on {game.createdAt}
+              </p>
             </div>
-            <div className="rounded-lg border p-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Past Events</h3>
-              <p className="mt-2 text-2xl font-bold">{Math.floor(game.events * 0.3)}</p>
+            <div>
+              <h3 className="mb-2 font-medium">Last Updated By</h3>
+              <p className="text-sm text-muted-foreground">
+                {game.lastUpdatedBy} on {game.lastUpdatedAt}
+              </p>
             </div>
-            <Button className="w-full" variant="outline" asChild>
-              <Link href={`/admin/events?game=${game.id}`}>
-                View All Events
-              </Link>
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }
