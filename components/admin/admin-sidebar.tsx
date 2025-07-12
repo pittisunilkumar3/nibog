@@ -24,107 +24,171 @@ import {
   CheckSquare,
   ChevronDown,
   ChevronRight,
+  TrendingUp,
+  Building2,
+  ShoppingCart,
+  Mail,
+  Award,
+  Star,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
+import { Badge } from "@/components/ui/badge"
+import { Separator } from "@/components/ui/separator"
 
+// Organized admin routes with sections
 const adminRoutes = [
   {
-    href: "/admin",
-    label: "Dashboard",
-    icon: <LayoutDashboard className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/home",
-    label: "Home Section",
-    icon: <Home className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/email",
-    label: "Email Sending",
-    icon: <MessageSquare className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/games",
-    label: "Baby Games",
-    icon: <BarChart3 className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/cities",
-    label: "Cities",
-    icon: <MapPin className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/venues",
-    label: "Venues",
-    icon: <MapPin className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/events",
-    label: "NIBOG Events",
-    icon: <Calendar className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/completed-events",
-    label: "Completed Events",
-    icon: <CheckSquare className="h-5 w-5" />,
-  },
-  
-  {
-    href: "/admin/bookings",
-    label: "Bookings",
-    icon: <Calendar className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/users",
-    label: "Users",
-    icon: <Users className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/payments",
-    label: "Payments",
-    icon: <CreditCard className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/promo-codes",
-    label: "Promo Codes",
-    icon: <Tag className="h-5 w-5" />,
-  },
-  {
-    href: "/admin/add-ons",
-    label: "Add-ons",
-    icon: <Package className="h-5 w-5" />,
-  },
-  {
-    label: "Certificates",
-    icon: <FileText className="h-5 w-5" />,
-    children: [
+    section: "Analytics",
+    items: [
       {
-        href: "/admin/certificate-templates",
-        label: "Certificate Templates",
-      },
-      {
-        href: "/admin/certificates",
-        label: "Generated Certificates",
+        href: "/admin",
+        label: "Dashboard",
+        icon: <LayoutDashboard className="h-4 w-4" />,
+        description: "Overview & Analytics",
       },
     ],
   },
   {
-    href: "/admin/attendance",
-    label: "Attendance",
-    icon: <UserCheck className="h-5 w-5" />,
+    section: "Event Management",
+    items: [
+      {
+        href: "/admin/events",
+        label: "NIBOG Events",
+        icon: <Calendar className="h-4 w-4" />,
+        description: "Manage events",
+        badge: "Active",
+      },
+      {
+        href: "/admin/completed-events",
+        label: "Completed Events",
+        icon: <CheckSquare className="h-4 w-4" />,
+        description: "Past events",
+      },
+      {
+        href: "/admin/games",
+        label: "Baby Games",
+        icon: <BarChart3 className="h-4 w-4" />,
+        description: "Game categories",
+      },
+    ],
   },
   {
-    href: "/admin/testimonials",
-    label: "Testimonials",
-    icon: <MessageSquare className="h-5 w-5" />,
+    section: "Bookings & Users",
+    items: [
+      {
+        href: "/admin/bookings",
+        label: "Bookings",
+        icon: <ShoppingCart className="h-4 w-4" />,
+        description: "Event registrations",
+        badge: "New",
+      },
+      {
+        href: "/admin/users",
+        label: "Users",
+        icon: <Users className="h-4 w-4" />,
+        description: "User management",
+      },
+      {
+        href: "/admin/attendance",
+        label: "Attendance",
+        icon: <UserCheck className="h-4 w-4" />,
+        description: "Event check-ins",
+      },
+    ],
   },
   {
-    href: "/admin/settings",
-    label: "Settings",
-    icon: <Settings className="h-5 w-5" />,
+    section: "Locations",
+    items: [
+      {
+        href: "/admin/cities",
+        label: "Cities",
+        icon: <MapPin className="h-4 w-4" />,
+        description: "Event cities",
+      },
+      {
+        href: "/admin/venues",
+        label: "Venues",
+        icon: <Building2 className="h-4 w-4" />,
+        description: "Event locations",
+      },
+    ],
+  },
+  {
+    section: "Commerce",
+    items: [
+      {
+        href: "/admin/payments",
+        label: "Payments",
+        icon: <CreditCard className="h-4 w-4" />,
+        description: "Payment tracking",
+      },
+      {
+        href: "/admin/promo-codes",
+        label: "Promo Codes",
+        icon: <Tag className="h-4 w-4" />,
+        description: "Discount codes",
+      },
+      {
+        href: "/admin/add-ons",
+        label: "Add-ons",
+        icon: <Package className="h-4 w-4" />,
+        description: "Extra services",
+      },
+    ],
+  },
+  {
+    section: "Content & Communication",
+    items: [
+      {
+        href: "/admin/home",
+        label: "Home Section",
+        icon: <Home className="h-4 w-4" />,
+        description: "Homepage content",
+      },
+      {
+        href: "/admin/email",
+        label: "Email Sending",
+        icon: <Mail className="h-4 w-4" />,
+        description: "Email campaigns",
+      },
+      {
+        href: "/admin/testimonials",
+        label: "Testimonials",
+        icon: <Star className="h-4 w-4" />,
+        description: "Customer reviews",
+      },
+      {
+        label: "Certificates",
+        icon: <Award className="h-4 w-4" />,
+        description: "Certificate management",
+        children: [
+          {
+            href: "/admin/certificate-templates",
+            label: "Templates",
+            description: "Certificate designs",
+          },
+          {
+            href: "/admin/certificates",
+            label: "Generated",
+            description: "Issued certificates",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    section: "System",
+    items: [
+      {
+        href: "/admin/settings",
+        label: "Settings",
+        icon: <Settings className="h-4 w-4" />,
+        description: "System configuration",
+      },
+    ],
   },
 ]
 
@@ -181,69 +245,126 @@ export default function AdminSidebar() {
                 </Button>
               </div>
             </div>
-            <nav className="flex-1 overflow-auto p-2">
-              <ul className="space-y-1">
-                {adminRoutes.map((route, index) => {
-                  // Check if this is a parent item with children
-                  if ('children' in route && route.children) {
-                    const isExpanded = expandedSections[route.label] || false;
-                    const hasActiveChild = route.children.some(child => child.href && pathname === child.href);
-                    
-                    return (
-                      <li key={`parent-${index}`}>
-                        <button
-                          className={cn(
-                            "w-full flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                            (isExpanded || hasActiveChild) ? "bg-muted" : "text-muted-foreground",
-                          )}
-                          onClick={() => toggleSection(route.label)}
-                        >
-                          <div className="flex items-center gap-3">
-                            {route.icon}
-                            {route.label}
-                          </div>
-                          {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                        </button>
-                        {isExpanded && (
-                          <ul className="mt-1 ml-6 space-y-1">
-                            {route.children.map((child, childIndex) => (
-                              <li key={`child-${index}-${childIndex}`}>
-                                <Link
-                                  href={child.href || '#'}
-                                  className={cn(
-                                    "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                                    pathname === child.href ? "bg-muted" : "text-muted-foreground",
+            <nav className="flex-1 overflow-auto p-3">
+              <div className="space-y-6">
+                {adminRoutes.map((section, sectionIndex) => (
+                  <div key={section.section}>
+                    <div className="mb-3">
+                      <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                        {section.section}
+                      </h3>
+                    </div>
+                    <ul className="space-y-1">
+                      {section.items.map((item, itemIndex) => {
+                        // Check if this is a parent item with children
+                        if ('children' in item && item.children) {
+                          const isExpanded = expandedSections[item.label] || false;
+                          const hasActiveChild = item.children.some(child => child.href && pathname === child.href);
+
+                          return (
+                            <li key={`parent-${sectionIndex}-${itemIndex}`}>
+                              <button
+                                className={cn(
+                                  "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors",
+                                  (isExpanded || hasActiveChild) ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                                )}
+                                onClick={() => toggleSection(item.label)}
+                              >
+                                <div className="flex items-center gap-3 min-w-0">
+                                  <div className="flex-shrink-0">
+                                    {item.icon}
+                                  </div>
+                                  <div className="flex-1 text-left min-w-0">
+                                    <div className="font-medium">{item.label}</div>
+                                    {item.description && (
+                                      <div className="text-xs text-muted-foreground truncate">
+                                        {item.description}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
+                                <div className="flex items-center gap-2 flex-shrink-0">
+                                  {item.badge && (
+                                    <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                      {item.badge}
+                                    </Badge>
                                   )}
-                                  onClick={() => setOpen(false)}
+                                  {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                                </div>
+                              </button>
+                              {isExpanded && (
+                                <ul className="mt-1 ml-7 space-y-1">
+                                  {item.children.map((child, childIndex) => (
+                                    <li key={`child-${sectionIndex}-${itemIndex}-${childIndex}`}>
+                                      <Link
+                                        href={child.href || '#'}
+                                        className={cn(
+                                          "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors",
+                                          pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+                                        )}
+                                        onClick={() => setOpen(false)}
+                                      >
+                                        <div className="flex-1">
+                                          <div>{child.label}</div>
+                                          {child.description && (
+                                            <div className="text-xs text-muted-foreground">
+                                              {child.description}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </Link>
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </li>
+                          );
+                        }
+
+                        // Regular menu item without children
+                        return (
+                          <li key={`item-${sectionIndex}-${itemIndex}`}>
+                            <Link
+                              href={item.href as string}
+                              className={cn(
+                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors group",
+                                pathname === item.href ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                              )}
+                              onClick={() => setOpen(false)}
+                            >
+                              <div className="flex-shrink-0">
+                                {item.icon}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium">{item.label}</div>
+                                {item.description && (
+                                  <div className={cn(
+                                    "text-xs truncate",
+                                    pathname === item.href ? "text-primary-foreground/70" : "text-muted-foreground"
+                                  )}>
+                                    {item.description}
+                                  </div>
+                                )}
+                              </div>
+                              {item.badge && (
+                                <Badge
+                                  variant={pathname === item.href ? "secondary" : "outline"}
+                                  className="text-xs px-1.5 py-0.5 flex-shrink-0"
                                 >
-                                  {child.label}
-                                </Link>
-                              </li>
-                            ))}
-                          </ul>
-                        )}
-                      </li>
-                    );
-                  }
-                  
-                  // Regular menu item without children
-                  return (
-                    <li key={route.href}>
-                      <Link
-                        href={route.href as string}
-                        className={cn(
-                          "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                          pathname === route.href ? "bg-muted" : "text-muted-foreground",
-                        )}
-                        onClick={() => setOpen(false)}
-                      >
-                        {route.icon}
-                        {route.label}
-                      </Link>
-                    </li>
-                  );
-                })}
-              </ul>
+                                  {item.badge}
+                                </Badge>
+                              )}
+                            </Link>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                    {sectionIndex < adminRoutes.length - 1 && (
+                      <Separator className="mt-4" />
+                    )}
+                  </div>
+                ))}
+              </div>
             </nav>
             <div className="border-t p-4">
               <Button
@@ -266,67 +387,124 @@ export default function AdminSidebar() {
               NIBOG Admin
             </Link>
           </div>
-          <nav className="flex-1 overflow-auto p-2">
-            <ul className="space-y-1">
-              {adminRoutes.map((route, index) => {
-                // Check if this is a parent item with children
-                if ('children' in route && route.children) {
-                  const isExpanded = expandedSections[route.label] || false;
-                  const hasActiveChild = route.children.some(child => child.href && pathname === child.href);
-                  
-                  return (
-                    <li key={`parent-${index}`}>
-                      <button
-                        className={cn(
-                          "w-full flex items-center justify-between gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                          (isExpanded || hasActiveChild) ? "bg-muted" : "text-muted-foreground",
-                        )}
-                        onClick={() => toggleSection(route.label)}
-                      >
-                        <div className="flex items-center gap-3">
-                          {route.icon}
-                          {route.label}
-                        </div>
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      </button>
-                      {isExpanded && (
-                        <ul className="mt-1 ml-6 space-y-1">
-                          {route.children.map((child, childIndex) => (
-                            <li key={`child-${index}-${childIndex}`}>
-                              <Link
-                                href={child.href || '#'}
-                                className={cn(
-                                  "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                                  pathname === child.href ? "bg-muted" : "text-muted-foreground",
+          <nav className="flex-1 overflow-auto p-3">
+            <div className="space-y-6">
+              {adminRoutes.map((section, sectionIndex) => (
+                <div key={section.section}>
+                  <div className="mb-3">
+                    <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                      {section.section}
+                    </h3>
+                  </div>
+                  <ul className="space-y-1">
+                    {section.items.map((item, itemIndex) => {
+                      // Check if this is a parent item with children
+                      if ('children' in item && item.children) {
+                        const isExpanded = expandedSections[item.label] || false;
+                        const hasActiveChild = item.children.some(child => child.href && pathname === child.href);
+
+                        return (
+                          <li key={`parent-${sectionIndex}-${itemIndex}`}>
+                            <button
+                              className={cn(
+                                "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors",
+                                (isExpanded || hasActiveChild) ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                              )}
+                              onClick={() => toggleSection(item.label)}
+                            >
+                              <div className="flex items-center gap-3 min-w-0">
+                                <div className="flex-shrink-0">
+                                  {item.icon}
+                                </div>
+                                <div className="flex-1 text-left min-w-0">
+                                  <div className="font-medium">{item.label}</div>
+                                  {item.description && (
+                                    <div className="text-xs text-muted-foreground truncate">
+                                      {item.description}
+                                    </div>
+                                  )}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-2 flex-shrink-0">
+                                {item.badge && (
+                                  <Badge variant="secondary" className="text-xs px-1.5 py-0.5">
+                                    {item.badge}
+                                  </Badge>
                                 )}
+                                {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                              </div>
+                            </button>
+                            {isExpanded && (
+                              <ul className="mt-1 ml-7 space-y-1">
+                                {item.children.map((child, childIndex) => (
+                                  <li key={`child-${sectionIndex}-${itemIndex}-${childIndex}`}>
+                                    <Link
+                                      href={child.href || '#'}
+                                      className={cn(
+                                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors",
+                                        pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+                                      )}
+                                    >
+                                      <div className="flex-1">
+                                        <div>{child.label}</div>
+                                        {child.description && (
+                                          <div className="text-xs text-muted-foreground">
+                                            {child.description}
+                                          </div>
+                                        )}
+                                      </div>
+                                    </Link>
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
+                          </li>
+                        );
+                      }
+
+                      // Regular menu item without children
+                      return (
+                        <li key={`item-${sectionIndex}-${itemIndex}`}>
+                          <Link
+                            href={item.href as string}
+                            className={cn(
+                              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors group",
+                              pathname === item.href ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                            )}
+                          >
+                            <div className="flex-shrink-0">
+                              {item.icon}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium">{item.label}</div>
+                              {item.description && (
+                                <div className={cn(
+                                  "text-xs truncate",
+                                  pathname === item.href ? "text-primary-foreground/70" : "text-muted-foreground"
+                                )}>
+                                  {item.description}
+                                </div>
+                              )}
+                            </div>
+                            {item.badge && (
+                              <Badge
+                                variant={pathname === item.href ? "secondary" : "outline"}
+                                className="text-xs px-1.5 py-0.5 flex-shrink-0"
                               >
-                                {child.label}
-                              </Link>
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </li>
-                  );
-                }
-                
-                // Regular menu item without children
-                return (
-                  <li key={route.href}>
-                    <Link
-                      href={route.href as string}
-                      className={cn(
-                        "flex items-center gap-3 rounded-md px-3 py-2 text-sm font-medium hover:bg-muted",
-                        pathname === route.href ? "bg-muted" : "text-muted-foreground",
-                      )}
-                    >
-                      {route.icon}
-                      {route.label}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
+                                {item.badge}
+                              </Badge>
+                            )}
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                  {sectionIndex < adminRoutes.length - 1 && (
+                    <Separator className="mt-4" />
+                  )}
+                </div>
+              ))}
+            </div>
           </nav>
           <div className="border-t p-4">
             <Button

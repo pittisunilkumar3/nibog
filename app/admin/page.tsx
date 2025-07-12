@@ -1,114 +1,329 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Activity, Calendar, DollarSign, Users, Package, Tag } from "lucide-react"
+import { Activity, Calendar, DollarSign, Users, Package, Tag, TrendingUp, MapPin, Star, Award, RefreshCw } from "lucide-react"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Button } from "@/components/ui/button"
 import AdminOverviewChart from "@/components/admin/admin-overview-chart"
 import AdminRecentBookings from "@/components/admin/admin-recent-bookings"
 import AdminUpcomingEvents from "@/components/admin/admin-upcoming-events"
 import AdminAddonAnalytics from "@/components/admin/admin-addon-analytics"
 import AdminPromoAnalytics from "@/components/admin/admin-promo-analytics"
+import EnhancedKPICard, { KPIData } from "@/components/admin/enhanced-kpi-card"
+import QuickActions from "@/components/admin/quick-actions"
+import { PageTransition, Stagger, StaggerItem, FadeIn } from "@/components/ui/animated-components"
+import { SkeletonKPI, SkeletonChart } from "@/components/ui/skeleton-loader"
+import { getDashboardMetrics, getRevenueData, DashboardMetrics } from "@/services/dashboardService"
+import { useToast } from "@/hooks/use-toast"
 
 export default function AdminDashboard() {
+  const { toast } = useToast()
+  const [metrics, setMetrics] = useState<DashboardMetrics | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  // Fetch dashboard data
+  const fetchDashboardData = async (showRefreshToast = false) => {
+    try {
+      if (showRefreshToast) {
+        setIsRefreshing(true)
+      } else {
+        setIsLoading(true)
+      }
+      setError(null)
+
+      const dashboardMetrics = await getDashboardMetrics()
+      setMetrics(dashboardMetrics)
+
+      if (showRefreshToast) {
+        toast({
+          title: "Dashboard Refreshed",
+          description: "Latest data has been loaded successfully.",
+        })
+      }
+    } catch (error: any) {
+      console.error('Error fetching dashboard data:', error)
+      setError(error.message || 'Failed to load dashboard data')
+      toast({
+        title: "Error",
+        description: "Failed to load dashboard data. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
+
+  // Initial data fetch
+  useEffect(() => {
+    fetchDashboardData()
+  }, [])
+
+  // Auto-refresh every 5 minutes
+  useEffect(() => {
+    const interval = setInterval(() => {
+      fetchDashboardData()
+    }, 5 * 60 * 1000) // 5 minutes
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Generate KPI data from real metrics
+  const generateKPIData = (metrics: DashboardMetrics): KPIData[] => [
+    {
+      title: "Total Revenue",
+      value: `₹${metrics.totalRevenue.toLocaleString()}`,
+      change: {
+        value: metrics.monthlyGrowth.revenue,
+        period: "last month",
+        type: metrics.monthlyGrowth.revenue >= 0 ? "increase" : "decrease"
+      },
+      icon: <DollarSign className="h-5 w-5" />,
+      description: "Total confirmed revenue",
+      color: "success",
+      href: "/admin/payments",
+    },
+    {
+      title: "Total Bookings",
+      value: metrics.totalBookings.toString(),
+      change: {
+        value: metrics.monthlyGrowth.bookings,
+        period: "last month",
+        type: metrics.monthlyGrowth.bookings >= 0 ? "increase" : "decrease"
+      },
+      icon: <Calendar className="h-5 w-5" />,
+      description: "All time bookings",
+      color: "info",
+      href: "/admin/bookings",
+      subtitle: `${metrics.confirmedBookings} confirmed`
+    },
+    {
+      title: "Active Users",
+      value: metrics.activeUsers.toString(),
+      change: {
+        value: metrics.monthlyGrowth.users,
+        period: "last month",
+        type: metrics.monthlyGrowth.users >= 0 ? "increase" : "decrease"
+      },
+      icon: <Users className="h-5 w-5" />,
+      description: "Registered active users",
+      color: "default",
+      href: "/admin/users",
+      subtitle: `${metrics.totalUsers} total users`
+    },
+    {
+      title: "Total Events",
+      value: metrics.totalEvents.toString(),
+      icon: <MapPin className="h-5 w-5" />,
+      description: "All events created",
+      color: "warning",
+      href: "/admin/events",
+      subtitle: `${metrics.upcomingEvents} upcoming`
+    },
+    {
+      title: "Avg Ticket Price",
+      value: `₹${Math.round(metrics.averageTicketPrice)}`,
+      icon: <Star className="h-5 w-5" />,
+      description: "Average booking value",
+      color: "success",
+      href: "/admin/analytics",
+    },
+    {
+      title: "Completion Rate",
+      value: `${Math.round((metrics.completedEvents / metrics.totalEvents) * 100)}%`,
+      icon: <Award className="h-5 w-5" />,
+      description: "Events completed successfully",
+      color: "info",
+      href: "/admin/completed-events",
+    },
+  ]
+
+  const kpiData = metrics ? generateKPIData(metrics) : []
+
+  if (error) {
+    return (
+      <PageTransition>
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+              <p className="text-muted-foreground">NIBOG Admin Overview</p>
+            </div>
+            <Button onClick={() => fetchDashboardData(true)} disabled={isRefreshing}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+              Retry
+            </Button>
+          </div>
+          <Card className="border-destructive">
+            <CardContent className="pt-6">
+              <div className="text-center">
+                <p className="text-destructive mb-4">{error}</p>
+                <Button onClick={() => fetchDashboardData(true)} variant="outline">
+                  Try Again
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      </PageTransition>
+    )
+  }
+
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">NIBOG Admin Dashboard</h1>
-        <p className="text-muted-foreground">Overview of your NIBOG Baby Games platform</p>
-      </div>
+    <PageTransition>
+      <div className="space-y-8">
+        {/* Header with Refresh Button */}
+        <div className="flex items-center justify-between">
+          <div>
+            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground">
+              Real-time overview of your NIBOG platform
+              {metrics && (
+                <span className="ml-2 text-xs text-muted-foreground">
+                  Last updated: {new Date().toLocaleTimeString()}
+                </span>
+              )}
+            </p>
+          </div>
+          <Button
+            onClick={() => fetchDashboardData(true)}
+            disabled={isRefreshing}
+            variant="outline"
+          >
+            <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh Data
+          </Button>
+        </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
-            <DollarSign className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">₹27,00,000</div>
-            <p className="text-xs text-muted-foreground">+35.5% from last month</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Bookings</CardTitle>
-            <Calendar className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">1500+</div>
-            <p className="text-xs text-muted-foreground">Registrations across 21 cities</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Baby Games</CardTitle>
-            <Users className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">16</div>
-            <p className="text-xs text-muted-foreground">Different baby games available</p>
-          </CardContent>
-        </Card>
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">NIBOG Cities</CardTitle>
-            <Activity className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">21</div>
-            <p className="text-xs text-muted-foreground">Cities hosting NIBOG events</p>
-          </CardContent>
-        </Card>
-      </div>
+        {/* Enhanced KPI Grid */}
+        {isLoading ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            {Array.from({ length: 6 }).map((_, index) => (
+              <div key={index} className={index >= 4 ? "xl:col-span-3" : ""}>
+                <SkeletonKPI />
+              </div>
+            ))}
+          </div>
+        ) : (
+          <Stagger>
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+              {kpiData.map((kpi, index) => (
+                <StaggerItem key={index} className={index >= 4 ? "xl:col-span-3" : ""}>
+                  <EnhancedKPICard data={kpi} loading={isRefreshing} />
+                </StaggerItem>
+              ))}
+            </div>
+          </Stagger>
+        )}
 
-      <Tabs defaultValue="overview" className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
-          <TabsTrigger value="overview">Overview</TabsTrigger>
-          <TabsTrigger value="bookings">Recent Bookings</TabsTrigger>
-          <TabsTrigger value="events">Upcoming Events</TabsTrigger>
-          <TabsTrigger value="addons">
-            <Package className="mr-2 h-4 w-4" />
-            Add-ons
-          </TabsTrigger>
-          <TabsTrigger value="promos">
-            <Tag className="mr-2 h-4 w-4" />
-            Promo Codes
-          </TabsTrigger>
-        </TabsList>
-        <TabsContent value="overview" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Revenue Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="pl-2">
-              <AdminOverviewChart />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="bookings" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Recent Bookings</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AdminRecentBookings />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="events" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Upcoming Events</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <AdminUpcomingEvents />
-            </CardContent>
-          </Card>
-        </TabsContent>
-        <TabsContent value="addons" className="space-y-4">
-          <AdminAddonAnalytics />
-        </TabsContent>
-        <TabsContent value="promos" className="space-y-4">
-          <AdminPromoAnalytics />
-        </TabsContent>
-      </Tabs>
-    </div>
+        {/* Quick Actions Section */}
+        <FadeIn delay={0.3}>
+          <QuickActions metrics={metrics} />
+        </FadeIn>
+
+        {/* Enhanced Analytics Dashboard */}
+        <FadeIn delay={0.5}>
+          <div className="space-y-6">
+            <Tabs defaultValue="overview" className="space-y-6">
+          <div className="flex items-center justify-between">
+            <TabsList className="grid w-full max-w-2xl grid-cols-5 h-11">
+              <TabsTrigger value="overview" className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4" />
+                <span className="hidden sm:inline">Overview</span>
+              </TabsTrigger>
+              <TabsTrigger value="bookings" className="flex items-center gap-2">
+                <Calendar className="h-4 w-4" />
+                <span className="hidden sm:inline">Bookings</span>
+              </TabsTrigger>
+              <TabsTrigger value="events" className="flex items-center gap-2">
+                <Activity className="h-4 w-4" />
+                <span className="hidden sm:inline">Events</span>
+              </TabsTrigger>
+              <TabsTrigger value="addons" className="flex items-center gap-2">
+                <Package className="h-4 w-4" />
+                <span className="hidden sm:inline">Add-ons</span>
+              </TabsTrigger>
+              <TabsTrigger value="promos" className="flex items-center gap-2">
+                <Tag className="h-4 w-4" />
+                <span className="hidden sm:inline">Promos</span>
+              </TabsTrigger>
+            </TabsList>
+          </div>
+
+          <TabsContent value="overview" className="space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card className="lg:col-span-2">
+                <CardHeader className="flex flex-row items-center justify-between">
+                  <div>
+                    <CardTitle className="text-xl">Revenue Overview</CardTitle>
+                    <p className="text-sm text-muted-foreground mt-1">
+                      Monthly revenue and booking trends
+                    </p>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 text-sm">
+                      <div className="w-3 h-3 rounded-full bg-primary"></div>
+                      <span>Revenue</span>
+                    </div>
+                  </div>
+                </CardHeader>
+                <CardContent className="pl-2">
+                  {isLoading ? (
+                    <SkeletonChart />
+                  ) : (
+                    <AdminOverviewChart metrics={metrics} />
+                  )}
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="bookings" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Recent Bookings</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Latest event registrations and their status
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <AdminRecentBookings />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="events" className="space-y-6">
+            <Card>
+              <CardHeader className="flex flex-row items-center justify-between">
+                <div>
+                  <CardTitle className="text-xl">Upcoming Events</CardTitle>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Scheduled events and their booking status
+                  </p>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <AdminUpcomingEvents />
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="addons" className="space-y-6">
+            <AdminAddonAnalytics />
+          </TabsContent>
+
+          <TabsContent value="promos" className="space-y-6">
+            <AdminPromoAnalytics />
+          </TabsContent>
+            </Tabs>
+          </div>
+        </FadeIn>
+      </div>
+    </PageTransition>
   )
 }

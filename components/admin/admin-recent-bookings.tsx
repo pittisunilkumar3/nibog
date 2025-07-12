@@ -1,8 +1,13 @@
+"use client"
+
+import { useState, useEffect } from "react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Eye } from "lucide-react"
 import Link from "next/link"
+import { getAllBookings, BookingWithDetails } from "@/services/bookingService"
+import { SkeletonTable } from "@/components/ui/skeleton-loader"
 
 // Mock data - in a real app, this would come from an API
 const recentBookings = [
@@ -78,6 +83,44 @@ const getStatusBadge = (status: string) => {
 }
 
 export default function AdminRecentBookings() {
+  const [bookings, setBookings] = useState<BookingWithDetails[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchRecentBookings = async () => {
+      try {
+        setIsLoading(true)
+        setError(null)
+        const allBookings = await getAllBookings()
+        // Get the 5 most recent bookings
+        const recentBookings = allBookings
+          .sort((a, b) => new Date(b.booking_created_at).getTime() - new Date(a.booking_created_at).getTime())
+          .slice(0, 5)
+        setBookings(recentBookings)
+      } catch (error: any) {
+        console.error('Error fetching recent bookings:', error)
+        setError(error.message || 'Failed to load recent bookings')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    fetchRecentBookings()
+  }, [])
+
+  if (isLoading) {
+    return <SkeletonTable />
+  }
+
+  if (error) {
+    return (
+      <div className="rounded-md border p-6 text-center">
+        <p className="text-destructive mb-2">Failed to load recent bookings</p>
+        <p className="text-sm text-muted-foreground">{error}</p>
+      </div>
+    )
+  }
   return (
     <div className="rounded-md border">
       <Table>
@@ -94,27 +137,36 @@ export default function AdminRecentBookings() {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {recentBookings.map((booking) => (
-            <TableRow key={booking.id}>
-              <TableCell className="font-medium">{booking.id}</TableCell>
-              <TableCell>{booking.user}</TableCell>
-              <TableCell>{booking.event}</TableCell>
-              <TableCell>
-                {booking.date} at {booking.time}
-              </TableCell>
-              <TableCell>{booking.children}</TableCell>
-              <TableCell>₹{booking.amount}</TableCell>
-              <TableCell>{getStatusBadge(booking.status)}</TableCell>
-              <TableCell className="text-right">
-                <Button variant="ghost" size="icon" asChild>
-                  <a href={`/admin/bookings/${booking.id}`}>
-                    <Eye className="h-4 w-4" />
-                    <span className="sr-only">View details</span>
-                  </a>
-                </Button>
+          {bookings.length > 0 ? (
+            bookings.map((booking) => (
+              <TableRow key={booking.booking_id}>
+                <TableCell className="font-medium">{booking.booking_id}</TableCell>
+                <TableCell>{booking.parent_name}</TableCell>
+                <TableCell>{booking.event_title}</TableCell>
+                <TableCell>
+                  {new Date(booking.booking_created_at).toLocaleDateString()} at{' '}
+                  {new Date(booking.booking_created_at).toLocaleTimeString()}
+                </TableCell>
+                <TableCell>{booking.child_full_name}</TableCell>
+                <TableCell>₹{parseFloat(booking.total_amount || '0').toLocaleString()}</TableCell>
+                <TableCell>{getStatusBadge(booking.booking_status || 'pending')}</TableCell>
+                <TableCell className="text-right">
+                  <Button variant="ghost" size="icon" asChild>
+                    <Link href={`/admin/bookings/${booking.booking_id}`}>
+                      <Eye className="h-4 w-4" />
+                      <span className="sr-only">View details</span>
+                    </Link>
+                  </Button>
+                </TableCell>
+              </TableRow>
+            ))
+          ) : (
+            <TableRow>
+              <TableCell colSpan={8} className="text-center py-6 text-muted-foreground">
+                No recent bookings found
               </TableCell>
             </TableRow>
-          ))}
+          )}
         </TableBody>
       </Table>
     </div>
