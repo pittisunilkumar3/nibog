@@ -398,12 +398,6 @@ export default function EventDetailPage({ params }: Props) {
               </Link>
             </Button>
             <Button className="w-full justify-start" variant="outline" asChild>
-              <Link href={`/admin/events/${event.event_id}/scan`}>
-                <QrCode className="mr-2 h-4 w-4" />
-                Scan QR Codes
-              </Link>
-            </Button>
-            <Button className="w-full justify-start" variant="outline" asChild>
               <Link href={`/admin/events/${event.event_id}/certificates`}>
                 <FileText className="mr-2 h-4 w-4" />
                 Manage Certificates
