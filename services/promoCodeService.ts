@@ -681,10 +681,10 @@ export async function validatePromoCodePreview(
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        promo_code: promoCode,
-        event_id: eventId,
-        game_ids: gameIds,
-        amount: amount
+        promocode: promoCode,
+        eventId: eventId,
+        gameIds: gameIds,
+        subtotal: amount
       }),
     });
 
@@ -702,8 +702,8 @@ export async function validatePromoCodePreview(
 
     return {
       isValid: result.is_valid || false,
-      discountAmount: parseFloat(result.discount_amount) || 0,
-      finalAmount: parseFloat(result.final_amount) || amount,
+      discountAmount: parseFloat((parseFloat(result.discount_amount) || 0).toFixed(2)),
+      finalAmount: parseFloat((parseFloat(result.final_amount) || amount).toFixed(2)),
       message: result.message || "Validation completed"
     };
   } catch (error) {

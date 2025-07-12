@@ -222,7 +222,7 @@ export default function RegisterEventClientPage() {
     return total;
   }, [selectedGames, eligibleGames]); // Recalculate only when these dependencies change
 
-  // Calculate total price including add-ons, GST, and promocode discount
+  // Calculate total price including add-ons and promocode discount (GST removed)
   const calculateTotalPrice = () => {
     const gamesTotal = calculateGamesTotal();
     const addOnsTotal = calculateAddOnsTotal();
@@ -234,30 +234,11 @@ export default function RegisterEventClientPage() {
       discountedSubtotal = subtotal - discountAmount;
     }
     
-    const gst = parseFloat((discountedSubtotal * 0.18).toFixed(2));
-    const total = discountedSubtotal + gst;
-    
     // Ensure final total is rounded to 2 decimal places
-    return parseFloat(total.toFixed(2));
+    return parseFloat(discountedSubtotal.toFixed(2));
   }
 
-  // Calculate GST amount
-  const calculateGST = () => {
-    const gamesTotal = calculateGamesTotal();
-    const addOnsTotal = calculateAddOnsTotal();
-    const subtotal = gamesTotal + addOnsTotal;
-    
-    // Apply promocode discount if available
-    let discountedSubtotal = subtotal;
-    if (appliedPromoCode) {
-      discountedSubtotal = subtotal - discountAmount;
-    }
-    
-    const gst = discountedSubtotal * 0.18;
-    
-    // Round to 2 decimal places
-    return parseFloat(gst.toFixed(2));
-  }
+  // GST calculation removed as per request
 
   // Calculate add-ons subtotal
   const calculateAddOnsTotal = () => {
@@ -814,12 +795,12 @@ export default function RegisterEventClientPage() {
       const addOnsTotal = calculateAddOnsTotal();
       const subtotal = gamesTotal + addOnsTotal;
       
-      // Validate the promocode - convert selectedGames to slot IDs array
-      const slotIds = selectedGames.map(selection => selection.slotId);
+      // Validate the promocode - use game IDs array (not slot IDs)
+      const gameIds = selectedGames.map(selection => selection.gameId);
       const result = await validatePromoCodePreview(
         promoCode,
         selectedApiEvent.event_id,
-        slotIds,
+        gameIds,
         subtotal
       );
       
@@ -2235,10 +2216,6 @@ export default function RegisterEventClientPage() {
                       <span>- ₹{discountAmount.toFixed(2)}</span>
                     </div>
                   )}
-                  <div className="flex justify-between font-medium">
-                    <span>GST (18%):</span>
-                    <span>₹{calculateGST()}</span>
-                  </div>
                   <Separator />
                   <div className="flex justify-between text-lg font-bold">
                     <span>Total Amount:</span>
