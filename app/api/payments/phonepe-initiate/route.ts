@@ -10,10 +10,30 @@ export async function POST(request: Request) {
     console.log(`PhonePe Salt Key: ${PHONEPE_CONFIG.SALT_KEY ? 'Set' : 'Missing'}`);
 
     // Parse the request body
-    const { request: base64Payload, xVerify, transactionId, bookingId } = await request.json();
+    const requestBody = await request.json();
+    console.log("Server API route: Full request body:", JSON.stringify(requestBody, null, 2));
+
+    const { request: base64Payload, xVerify, transactionId, bookingId } = requestBody;
     console.log(`Server API route: Received transaction ID: ${transactionId}, booking ID: ${bookingId}`);
     console.log(`Server API route: Base64 payload length: ${base64Payload?.length || 0}`);
     console.log(`Server API route: X-Verify: ${xVerify}`);
+
+    // Validate required fields
+    if (!base64Payload) {
+      console.error("Server API route: Missing base64Payload");
+      return NextResponse.json(
+        { success: false, error: "Missing base64Payload" },
+        { status: 400 }
+      );
+    }
+
+    if (!xVerify) {
+      console.error("Server API route: Missing xVerify");
+      return NextResponse.json(
+        { success: false, error: "Missing xVerify" },
+        { status: 400 }
+      );
+    }
 
     // Determine the API URL based on environment (production vs sandbox)
     const apiUrl = PHONEPE_CONFIG.IS_TEST_MODE

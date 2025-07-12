@@ -50,18 +50,25 @@ export const getAppUrl = (): string => {
     return envUrl;
   }
 
-  // For development, use localhost
+  // For development, try to detect the current port
   if (process.env.NODE_ENV === 'development') {
-    return 'http://localhost:3000';
+    // Check if we're on the client side and can get the current port
+    if (typeof window !== 'undefined') {
+      const protocol = window.location.protocol;
+      const hostname = window.location.host; // includes domain and port if any
+      return `${protocol}//${hostname}`;
+    }
+    // Server-side fallback - use production URL for consistency
+    return 'https://nibog-ten.vercel.app';
   }
-  
+
   // For deployment/production, try to get the current hostname
   if (typeof window !== 'undefined') {
     const protocol = window.location.protocol;
     const hostname = window.location.host; // includes domain and port if any
     return `${protocol}//${hostname}`;
   }
-  
+
   // Final fallback for server-side
   return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nibog-ten.vercel.app';
 };
@@ -81,15 +88,15 @@ const isProduction = phonepeEnv === 'production';
 export const PHONEPE_CONFIG = {
   MERCHANT_ID: isProduction
     ? getEnvVar('PHONEPE_PROD_MERCHANT_ID', 'M11BWXEAW0AJ')
-    : getEnvVar('PHONEPE_TEST_MERCHANT_ID', 'PGTESTPAYUAT86'),
+    : (getEnvVar('NEXT_PUBLIC_MERCHANT_ID', '') || getEnvVar('PHONEPE_TEST_MERCHANT_ID', 'PGTESTPAYUAT86')),
 
   SALT_KEY: isProduction
     ? getEnvVar('PHONEPE_PROD_SALT_KEY', '63542457-2eb4-4ed4-83f2-da9eaed9fcca')
-    : getEnvVar('PHONEPE_TEST_SALT_KEY', '96434309-7796-489d-8924-ab56988a6076'),
+    : (getEnvVar('NEXT_PUBLIC_SALT_KEY', '') || getEnvVar('PHONEPE_TEST_SALT_KEY', '96434309-7796-489d-8924-ab56988a6076')),
 
   SALT_INDEX: isProduction
     ? getEnvVar('PHONEPE_PROD_SALT_INDEX', '2')
-    : getEnvVar('PHONEPE_TEST_SALT_INDEX', '1'),
+    : (getEnvVar('NEXT_PUBLIC_SALT_INDEX', '') || getEnvVar('PHONEPE_TEST_SALT_INDEX', '1')),
 
   IS_TEST_MODE: !isProduction,
   ENVIRONMENT: isProduction ? 'production' : 'sandbox',

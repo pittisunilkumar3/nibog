@@ -143,10 +143,9 @@ export async function initiatePhonePePayment(
       merchantTransactionId: merchantTransactionId,
       merchantUserId: userId.toString(),
       amount: Math.round(amount * 100), // Convert rupees to paise (PhonePe requirement) and round to ensure integer
-      // Ensure APP_URL doesn't have trailing slash and parameters are properly encoded
+      // Use production URLs for callbacks
       redirectUrl: `${PHONEPE_CONFIG.APP_URL.replace(/\/+$/, '')}/payment-callback?bookingId=${encodeURIComponent(String(bookingId))}&transactionId=${encodeURIComponent(merchantTransactionId)}`,
       redirectMode: 'REDIRECT',
-      // Ensure callback URL is absolute and properly formatted (required by PhonePe)
       callbackUrl: `${PHONEPE_CONFIG.APP_URL.replace(/\/+$/, '')}/api/payments/phonepe-callback`,
       mobileNumber: mobileNumber.replace(/\D/g, ''), // Remove non-numeric characters
       paymentInstrument: {
@@ -163,6 +162,11 @@ export async function initiatePhonePePayment(
     const xVerify = await generateSHA256Hash(dataToHash) + '###' + PHONEPE_CONFIG.SALT_INDEX;
 
     // Use our internal API route to avoid CORS issues
+    // Only use this service from client-side to avoid server-to-server issues
+    if (typeof window === 'undefined') {
+      throw new Error('Payment service should only be called from client-side');
+    }
+
     const response = await fetch('/api/payments/phonepe-initiate', {
       method: 'POST',
       headers: {
