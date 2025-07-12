@@ -7,7 +7,9 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Eye, Edit, Trash, AlertTriangle, Loader2 } from "lucide-react"
+import { Plus, Search, Eye, Edit, Trash, AlertTriangle, Loader2, RefreshCw } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { createCityExportColumns } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -23,37 +25,138 @@ import { getAllCities, deleteCity, City } from "@/services/cityService"
 import { toast } from "@/components/ui/use-toast"
 
 export default function CitiesPage() {
-  const [searchQuery, setSearchQuery] = useState("")
   const [citiesList, setCitiesList] = useState<City[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
+  // Fetch cities data
+  const fetchCities = async () => {
+    try {
+      setError(null)
+      console.log("Fetching all cities...")
+      const cities = await getAllCities()
+      console.log("Cities data received:", cities)
+      setCitiesList(cities)
+    } catch (err: any) {
+      console.error("Failed to fetch cities:", err)
+      setError(`Failed to load cities: ${err.message || "Please try again later."}`)
+      toast({
+        title: "Error",
+        description: `Failed to load cities: ${err.message || "Please try again later."}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
+
   // Fetch cities on component mount
   useEffect(() => {
-    const fetchCities = async () => {
-      try {
-        setIsLoading(true)
-        console.log("Fetching all cities...")
-        const cities = await getAllCities()
-        console.log("Cities data received:", cities)
-        setCitiesList(cities)
-        setError(null)
-      } catch (err: any) {
-        console.error("Failed to fetch cities:", err)
-        setError(`Failed to load cities: ${err.message || "Please try again later."}`)
-        toast({
-          title: "Error",
-          description: `Failed to load cities: ${err.message || "Please try again later."}`,
-          variant: "destructive",
-        })
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
+    setIsLoading(true)
     fetchCities()
   }, [])
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchCities()
+    toast({
+      title: "Success",
+      description: "Cities data refreshed successfully.",
+    })
+  }
+
+  // Define table columns
+  const columns: Column<City>[] = [
+    {
+      key: 'city_id',
+      label: 'ID',
+      sortable: true,
+      width: '80px'
+    },
+    {
+      key: 'city_name',
+      label: 'City Name',
+      sortable: true
+    },
+    {
+      key: 'state',
+      label: 'State',
+      sortable: true,
+      render: (value) => value || 'N/A'
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge className={value ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}>
+          {value ? 'Active' : 'Inactive'}
+        </Badge>
+      )
+    },
+    {
+      key: 'total_venues',
+      label: 'Venues',
+      sortable: true,
+      align: 'right',
+      render: (value) => value || 0
+    },
+    {
+      key: 'total_events',
+      label: 'Events',
+      sortable: true,
+      align: 'right',
+      render: (value) => value || 0
+    },
+    {
+      key: 'created_at',
+      label: 'Created',
+      sortable: true,
+      render: (value) => new Date(value).toLocaleDateString()
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<City>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (city) => {
+        window.location.href = `/admin/cities/${city.city_id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (city) => {
+        window.location.href = `/admin/cities/${city.city_id}/edit`
+      }
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (city) => handleDeleteCity(city.city_id),
+      disabled: (city) => isDeleting === city.city_id,
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<City>[] = [
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedCities) => {
+        // Handle bulk delete - would need confirmation dialog
+        console.log("Bulk delete:", selectedCities)
+      },
+      variant: 'destructive'
+    }
+  ]
 
   // Handle city deletion
   const handleDeleteCity = async (id: number) => {
@@ -115,16 +218,7 @@ export default function CitiesPage() {
     }
   }
 
-  // Filter cities based on search
-  const filteredCities = citiesList.filter((city) => {
-    if (searchQuery) {
-      return (
-        city.city_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        city.state.toLowerCase().includes(searchQuery.toLowerCase())
-      )
-    }
-    return true
-  })
+
 
   return (
     <div className="space-y-6">
@@ -133,170 +227,55 @@ export default function CitiesPage() {
           <h1 className="text-3xl font-bold tracking-tight">NIBOG Cities</h1>
           <p className="text-muted-foreground">Manage cities where NIBOG events are held</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/cities/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add New City
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button asChild>
+            <Link href="/admin/cities/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New City
+            </Link>
+          </Button>
+        </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-center gap-2">
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              placeholder="Search cities..."
-              className="h-9 w-full md:w-[300px]"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-          </div>
-        </CardContent>
-      </Card>
+      {/* Enhanced Data Table */}
+      <EnhancedDataTable
+        data={citiesList}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={isLoading}
+        searchable={true}
+        filterable={true}
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={createCityExportColumns()}
+        exportTitle="NIBOG Cities Report"
+        exportFilename="nibog-cities"
+        emptyMessage="No cities found"
+        onRefresh={handleRefresh}
+        className="min-h-[400px]"
+      />
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>City</TableHead>
-              <TableHead>State</TableHead>
-              <TableHead>Venues</TableHead>
-              <TableHead>Events</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  <div className="flex justify-center items-center">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    Loading cities...
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center text-red-500">
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : filteredCities.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={6} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-3">
-                    <p>No cities found.</p>
-                    <Button asChild>
-                      <Link href="/admin/cities/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Your First City
-                      </Link>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              (() => {
-                // Display all cities without restrictive filtering
-                const displayCities = filteredCities;
-                if (displayCities.length === 0) {
-                  return (
-                    <TableRow>
-                      <TableCell colSpan={6} className="h-24 text-center">
-                        <div className="flex flex-col items-center justify-center space-y-3">
-                          <p>No cities found.</p>
-                          <Button asChild>
-                            <Link href="/admin/cities/new">
-                              <Plus className="mr-2 h-4 w-4" />
-                              Add Your First City
-                            </Link>
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  );
-                }
-                return displayCities.map((city) => (
-                  <TableRow key={city.id}>
-                    <TableCell className="font-medium">{city.city_name}</TableCell>
-                    <TableCell>{city.state}</TableCell>
-                    <TableCell>
-                      {city.venues && city.venues > 0
-                        ? city.venues
-                        : "No venues"}
-                    </TableCell>
-                    <TableCell>{city.events || 0}</TableCell>
-                    <TableCell>
-                      {city.is_active ? (
-                        <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                      ) : (
-                        <Badge variant="outline">Inactive</Badge>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/admin/cities/${city.id}`}>
-                            <Eye className="h-4 w-4" />
-                            <span className="sr-only">View</span>
-                          </Link>
-                        </Button>
-                        <Button variant="ghost" size="icon" asChild>
-                          <Link href={`/admin/cities/${city.id}/edit`}>
-                            <Edit className="h-4 w-4" />
-                            <span className="sr-only">Edit</span>
-                          </Link>
-                        </Button>
-                        <AlertDialog>
-                          <AlertDialogTrigger asChild>
-                            <Button variant="ghost" size="icon">
-                              <Trash className="h-4 w-4" />
-                              <span className="sr-only">Delete</span>
-                            </Button>
-                          </AlertDialogTrigger>
-                          <AlertDialogContent>
-                            <AlertDialogHeader>
-                              <AlertDialogTitle>Delete City</AlertDialogTitle>
-                              <AlertDialogDescription>
-                                <span>
-                                  <strong>This action cannot be undone.</strong>
-                                  <br />
-                                  This will permanently delete the city "{city.city_name}" and all associated data.
-                                  <br />
-                                  {(city.venues && city.venues > 0) || (city.events && city.events > 0) ? (
-                                    <>
-                                      This city has {city.venues || 0} venue{(city.venues || 0) !== 1 ? "s" : ""} and {city.events || 0} event{(city.events || 0) !== 1 ? "s" : ""}.
-                                      Deleting it may affect existing data.
-                                    </>
-                                  ) : (
-                                    <>This city has no venues or events.</>
-                                  )}
-                                </span>
-                              </AlertDialogDescription>
-                            </AlertDialogHeader>
-                            <AlertDialogFooter>
-                              <AlertDialogCancel>Cancel</AlertDialogCancel>
-                              <AlertDialogAction
-                                className="bg-red-500 hover:bg-red-600"
-                                onClick={() => handleDeleteCity(city.id!)}
-                                disabled={isDeleting === city.id}
-                              >
-                                {isDeleting === city.id ? "Deleting..." : "Delete City"}
-                              </AlertDialogAction>
-                            </AlertDialogFooter>
-                          </AlertDialogContent>
-                        </AlertDialog>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ));
-              })()
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

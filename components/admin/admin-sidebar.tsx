@@ -180,6 +180,23 @@ const adminRoutes = [
     ],
   },
   {
+    section: "Reports & Analytics",
+    items: [
+      {
+        href: "/admin/reports",
+        label: "Reports",
+        icon: <BarChart3 className="h-4 w-4" />,
+        description: "Data reports & exports",
+      },
+      {
+        href: "/admin/reports/payments",
+        label: "Payment Reports",
+        icon: <CreditCard className="h-4 w-4" />,
+        description: "Payment analytics",
+      },
+    ],
+  },
+  {
     section: "System",
     items: [
       {

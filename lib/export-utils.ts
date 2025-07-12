@@ -1,5 +1,6 @@
 import jsPDF from 'jspdf'
 import 'jspdf-autotable'
+import * as XLSX from 'xlsx'
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
@@ -54,49 +55,53 @@ export class ExportService {
   }
 
   static async exportToCSV<T>(options: ExportOptions<T>): Promise<void> {
-    const { data, columns, filename, includeTimestamp = true } = options
-    
-    // Create CSV headers
-    const headers = columns.map(col => col.label)
-    
-    // Create CSV rows
-    const rows = data.map(row => 
-      columns.map(col => {
-        const value = this.formatValue(row[col.key], col, row)
-        // Escape quotes and wrap in quotes if contains comma, quote, or newline
-        return value.includes(',') || value.includes('"') || value.includes('\n')
-          ? `"${value.replace(/"/g, '""')}"`
-          : value
-      })
-    )
-    
-    // Combine headers and rows
-    const csvContent = [headers, ...rows]
-      .map(row => row.join(','))
-      .join('\n')
-    
-    // Add BOM for proper UTF-8 encoding in Excel
-    const BOM = '\uFEFF'
-    const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
-    
-    // Generate filename with timestamp if requested
-    const finalFilename = includeTimestamp 
-      ? `${filename}_${new Date().toISOString().split('T')[0]}.csv`
-      : `${filename}.csv`
-    
-    this.downloadBlob(blob, finalFilename)
+    try {
+      const { data, columns, filename, includeTimestamp = true } = options
+
+      // Create CSV headers
+      const headers = columns.map(col => col.label)
+
+      // Create CSV rows
+      const rows = data.map(row =>
+        columns.map(col => {
+          const value = ExportService.formatValue(row[col.key], col, row)
+          // Escape quotes and wrap in quotes if contains comma, quote, or newline
+          return value.includes(',') || value.includes('"') || value.includes('\n')
+            ? `"${value.replace(/"/g, '""')}"`
+            : value
+        })
+      )
+
+      // Combine headers and rows
+      const csvContent = [headers, ...rows]
+        .map(row => row.join(','))
+        .join('\n')
+
+      // Add BOM for proper UTF-8 encoding in Excel
+      const BOM = '\uFEFF'
+      const blob = new Blob([BOM + csvContent], { type: 'text/csv;charset=utf-8;' })
+
+      // Generate filename with timestamp if requested
+      const finalFilename = ExportService.generateFilename(filename, 'csv', includeTimestamp)
+
+      ExportService.downloadBlob(blob, finalFilename)
+    } catch (error) {
+      console.error('CSV export failed:', error)
+      throw new Error('Failed to export CSV file. Please try again.')
+    }
   }
 
   static async exportToPDF<T>(options: ExportOptions<T>): Promise<void> {
-    const { 
-      data, 
-      columns, 
-      filename, 
-      title = 'Data Export',
-      subtitle,
-      includeTimestamp = true,
-      brandingInfo
-    } = options
+    try {
+      const {
+        data,
+        columns,
+        filename,
+        title = 'Data Export',
+        subtitle,
+        includeTimestamp = true,
+        brandingInfo
+      } = options
     
     const doc = new jsPDF()
     const pageWidth = doc.internal.pageSize.width
@@ -150,8 +155,8 @@ export class ExportService {
     
     // Prepare table data
     const tableHeaders = columns.map(col => col.label)
-    const tableRows = data.map(row => 
-      columns.map(col => this.formatValue(row[col.key], col, row))
+    const tableRows = data.map(row =>
+      columns.map(col => ExportService.formatValue(row[col.key], col, row))
     )
     
     // Add table
@@ -192,42 +197,89 @@ export class ExportService {
       },
     })
     
-    // Generate filename with timestamp if requested
-    const finalFilename = includeTimestamp 
-      ? `${filename}_${new Date().toISOString().split('T')[0]}.pdf`
-      : `${filename}.pdf`
-    
-    doc.save(finalFilename)
+      // Generate filename with timestamp if requested
+      const finalFilename = ExportService.generateFilename(filename, 'pdf', includeTimestamp)
+
+      doc.save(finalFilename)
+    } catch (error) {
+      console.error('PDF export failed:', error)
+      throw new Error('Failed to export PDF file. Please try again.')
+    }
   }
 
   static async exportToExcel<T>(options: ExportOptions<T>): Promise<void> {
-    // For Excel export, we'll use a library like xlsx
-    // For now, we'll fall back to CSV with .xlsx extension
-    // In a real implementation, you'd use libraries like xlsx or exceljs
-    
-    const { data, columns, filename, includeTimestamp = true } = options
-    
-    // Create worksheet data
-    const headers = columns.map(col => col.label)
-    const rows = data.map(row => 
-      columns.map(col => this.formatValue(row[col.key], col, row))
-    )
-    
-    // For now, create a CSV-like format
-    // In production, use proper Excel library
-    const csvContent = [headers, ...rows]
-      .map(row => row.join('\t')) // Use tabs for better Excel compatibility
-      .join('\n')
-    
-    const blob = new Blob([csvContent], { 
-      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' 
-    })
-    
-    const finalFilename = includeTimestamp 
-      ? `${filename}_${new Date().toISOString().split('T')[0]}.xlsx`
-      : `${filename}.xlsx`
-    
-    this.downloadBlob(blob, finalFilename)
+    try {
+      const { data, columns, filename, title, subtitle, includeTimestamp = true, brandingInfo } = options
+
+      // Create a new workbook
+      const workbook = XLSX.utils.book_new()
+
+      // Prepare worksheet data
+      const headers = columns.map(col => col.label)
+      const rows = data.map(row =>
+        columns.map(col => {
+          const value = ExportService.formatValue(row[col.key], col, row)
+          // Try to convert numeric strings back to numbers for Excel
+          const numValue = parseFloat(value)
+          return !isNaN(numValue) && isFinite(numValue) && value.trim() !== '' ? numValue : value
+        })
+      )
+
+      // Create worksheet data with headers
+      const worksheetData = [headers, ...rows]
+
+      // Add title and subtitle if provided
+      if (title || subtitle || brandingInfo) {
+        const titleRows: any[][] = []
+
+        if (brandingInfo?.companyName) {
+          titleRows.push([brandingInfo.companyName])
+          titleRows.push([]) // Empty row
+        }
+
+        if (title) {
+          titleRows.push([title])
+        }
+
+        if (subtitle) {
+          titleRows.push([subtitle])
+        }
+
+        if (includeTimestamp) {
+          titleRows.push([`Generated on: ${new Date().toLocaleString()}`])
+        }
+
+        if (titleRows.length > 0) {
+          titleRows.push([]) // Empty row before data
+          worksheetData.unshift(...titleRows)
+        }
+      }
+
+      // Create worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(worksheetData)
+
+      // Set column widths based on content
+      const columnWidths = columns.map(col => ({
+        wch: Math.max(col.width || 100, col.label.length * 1.2) / 8 // Convert pixels to character width
+      }))
+      worksheet['!cols'] = columnWidths
+
+      // Add the worksheet to workbook
+      XLSX.utils.book_append_sheet(workbook, worksheet, 'Data')
+
+      // Generate Excel file
+      const excelBuffer = XLSX.write(workbook, { bookType: 'xlsx', type: 'array' })
+
+      // Create blob and download
+      const finalFilename = ExportService.generateFilename(filename, 'xlsx', includeTimestamp)
+      const blob = new Blob([excelBuffer], {
+        type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+      })
+      ExportService.downloadBlob(blob, finalFilename)
+    } catch (error) {
+      console.error('Excel export failed:', error)
+      throw new Error('Failed to export Excel file. Please try again.')
+    }
   }
 
   private static downloadBlob(blob: Blob, filename: string): void {
@@ -252,8 +304,8 @@ export class ExportService {
   } {
     const headers = columns.map(col => col.label)
     const previewData = data.slice(0, maxRows)
-    const rows = previewData.map(row => 
-      columns.map(col => this.formatValue(row[col.key], col, row))
+    const rows = previewData.map(row =>
+      columns.map(col => ExportService.formatValue(row[col.key], col, row))
     )
     
     return {
@@ -279,16 +331,14 @@ export const createBookingExportColumns = () => [
 ]
 
 export const createEventExportColumns = () => [
-  { key: 'event_id' as const, label: 'Event ID', width: 80 },
-  { key: 'event_title' as const, label: 'Event Title', width: 200 },
-  { key: 'city_name' as const, label: 'City', width: 100 },
-  { key: 'venue_name' as const, label: 'Venue', width: 150 },
-  { key: 'event_date' as const, label: 'Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
-  { key: 'event_start_time' as const, label: 'Start Time', width: 80 },
-  { key: 'event_end_time' as const, label: 'End Time', width: 80 },
-  { key: 'capacity' as const, label: 'Capacity', width: 80, align: 'right' as const },
-  { key: 'price' as const, label: 'Price', width: 80, format: (value: any) => `₹${value}`, align: 'right' as const },
-  { key: 'event_status' as const, label: 'Status', width: 80 },
+  { key: 'id' as const, label: 'Event ID', width: 80 },
+  { key: 'title' as const, label: 'Event Title', width: 200 },
+  { key: 'gameTemplate' as const, label: 'Games', width: 150 },
+  { key: 'venue' as const, label: 'Venue', width: 150 },
+  { key: 'city' as const, label: 'City', width: 100 },
+  { key: 'date' as const, label: 'Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'status' as const, label: 'Status', width: 100 },
+  { key: 'slots' as const, label: 'Total Slots', width: 80, format: (value: any) => Array.isArray(value) ? value.length.toString() : '0', align: 'right' as const },
 ]
 
 export const createUserExportColumns = () => [
@@ -296,8 +346,97 @@ export const createUserExportColumns = () => [
   { key: 'full_name' as const, label: 'Full Name', width: 150 },
   { key: 'email' as const, label: 'Email', width: 200 },
   { key: 'phone' as const, label: 'Phone', width: 120 },
+  { key: 'city_name' as const, label: 'City', width: 100 },
+  { key: 'state' as const, label: 'State', width: 100 },
+  { key: 'is_active' as const, label: 'Active Status', width: 100, format: (value: any) => value ? 'Active' : 'Inactive' },
+  { key: 'is_locked' as const, label: 'Locked Status', width: 100, format: (value: any) => value ? 'Locked' : 'Unlocked' },
+  { key: 'email_verified' as const, label: 'Email Verified', width: 120, format: (value: any) => value ? 'Yes' : 'No' },
+  { key: 'phone_verified' as const, label: 'Phone Verified', width: 120, format: (value: any) => value ? 'Yes' : 'No' },
+  { key: 'created_at' as const, label: 'Registration Date', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'last_login_at' as const, label: 'Last Login', width: 120, format: (value: any) => value ? new Date(value).toLocaleDateString() : 'Never' },
+]
+
+export const createPaymentExportColumns = () => [
+  { key: 'payment_id' as const, label: 'Payment ID', width: 80 },
+  { key: 'transaction_id' as const, label: 'Transaction ID', width: 150 },
+  { key: 'booking_id' as const, label: 'Booking ID', width: 80 },
+  { key: 'user_name' as const, label: 'Customer Name', width: 150 },
+  { key: 'user_email' as const, label: 'Customer Email', width: 200 },
+  { key: 'user_phone' as const, label: 'Customer Phone', width: 120 },
+  { key: 'amount' as const, label: 'Amount', width: 100, format: (value: any) => `₹${parseFloat(value.toString()).toFixed(2)}`, align: 'right' as const },
+  { key: 'payment_method' as const, label: 'Payment Method', width: 120 },
+  { key: 'payment_status' as const, label: 'Status', width: 100 },
+  { key: 'payment_date' as const, label: 'Payment Date', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'event_title' as const, label: 'Event', width: 200 },
+  { key: 'event_date' as const, label: 'Event Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'city_name' as const, label: 'City', width: 100 },
+  { key: 'venue_name' as const, label: 'Venue', width: 150 },
+  { key: 'child_name' as const, label: 'Child Name', width: 120 },
+  { key: 'game_name' as const, label: 'Game', width: 120 },
+  { key: 'refund_amount' as const, label: 'Refund Amount', width: 100, format: (value: any) => value ? `₹${parseFloat(value.toString()).toFixed(2)}` : '₹0.00', align: 'right' as const },
+  { key: 'refund_reason' as const, label: 'Refund Reason', width: 200 },
+  { key: 'admin_notes' as const, label: 'Admin Notes', width: 200 },
+  { key: 'created_at' as const, label: 'Created At', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+]
+
+export const createVenueExportColumns = () => [
+  { key: 'venue_id' as const, label: 'Venue ID', width: 80 },
+  { key: 'venue_name' as const, label: 'Venue Name', width: 200 },
+  { key: 'address' as const, label: 'Address', width: 250 },
+  { key: 'city_name' as const, label: 'City', width: 100 },
+  { key: 'capacity' as const, label: 'Capacity', width: 80, align: 'right' as const },
+  { key: 'is_active' as const, label: 'Status', width: 80, format: (value: any) => value ? 'Active' : 'Inactive' },
+  { key: 'created_at' as const, label: 'Created At', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+]
+
+export const createCityExportColumns = () => [
+  { key: 'city_id' as const, label: 'City ID', width: 80 },
+  { key: 'city_name' as const, label: 'City Name', width: 150 },
+  { key: 'state' as const, label: 'State', width: 100 },
+  { key: 'is_active' as const, label: 'Status', width: 80, format: (value: any) => value ? 'Active' : 'Inactive' },
+  { key: 'total_venues' as const, label: 'Total Venues', width: 100, align: 'right' as const },
+  { key: 'total_events' as const, label: 'Total Events', width: 100, align: 'right' as const },
+  { key: 'created_at' as const, label: 'Created At', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+]
+
+export const createGameExportColumns = () => [
+  { key: 'game_id' as const, label: 'Game ID', width: 80 },
+  { key: 'game_name' as const, label: 'Game Name', width: 200 },
+  { key: 'description' as const, label: 'Description', width: 300 },
+  { key: 'min_age' as const, label: 'Min Age', width: 80, align: 'right' as const },
+  { key: 'max_age' as const, label: 'Max Age', width: 80, align: 'right' as const },
+  { key: 'duration_minutes' as const, label: 'Duration (min)', width: 100, align: 'right' as const },
+  { key: 'max_participants' as const, label: 'Max Participants', width: 120, align: 'right' as const },
+  { key: 'price' as const, label: 'Price', width: 80, format: (value: any) => `₹${value}`, align: 'right' as const },
+  { key: 'is_active' as const, label: 'Status', width: 80, format: (value: any) => value ? 'Active' : 'Inactive' },
+  { key: 'created_at' as const, label: 'Created At', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
+]
+
+export const createAttendanceExportColumns = () => [
+  { key: 'attendance_id' as const, label: 'Attendance ID', width: 100 },
+  { key: 'booking_ref' as const, label: 'Booking Ref', width: 120 },
+  { key: 'parent_name' as const, label: 'Parent Name', width: 150 },
+  { key: 'child_name' as const, label: 'Child Name', width: 150 },
+  { key: 'event_title' as const, label: 'Event', width: 200 },
+  { key: 'game_name' as const, label: 'Game', width: 150 },
+  { key: 'venue_name' as const, label: 'Venue', width: 150 },
+  { key: 'city_name' as const, label: 'City', width: 100 },
+  { key: 'event_date' as const, label: 'Event Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'check_in_time' as const, label: 'Check-in Time', width: 120, format: (value: any) => value ? new Date(value).toLocaleString() : 'Not checked in' },
+  { key: 'attendance_status' as const, label: 'Status', width: 100 },
+  { key: 'notes' as const, label: 'Notes', width: 200 },
+]
+
+export const createCompletedEventExportColumns = () => [
+  { key: 'event_id' as const, label: 'Event ID', width: 80 },
+  { key: 'title' as const, label: 'Event Title', width: 200 },
+  { key: 'gameTemplate' as const, label: 'Games', width: 150 },
+  { key: 'venue' as const, label: 'Venue', width: 150 },
   { key: 'city' as const, label: 'City', width: 100 },
-  { key: 'registration_date' as const, label: 'Registration Date', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
-  { key: 'status' as const, label: 'Status', width: 80 },
-  { key: 'total_bookings' as const, label: 'Total Bookings', width: 100, align: 'right' as const },
+  { key: 'date' as const, label: 'Event Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
+  { key: 'registrations' as const, label: 'Registrations', width: 100, align: 'right' as const },
+  { key: 'attendance' as const, label: 'Attendance', width: 100, align: 'right' as const },
+  { key: 'attendanceRate' as const, label: 'Attendance Rate', width: 120, format: (value: any) => `${value}%`, align: 'right' as const },
+  { key: 'revenue' as const, label: 'Revenue', width: 100, format: (value: any) => `₹${value}`, align: 'right' as const },
+  { key: 'completedAt' as const, label: 'Completed At', width: 120, format: (value: any) => new Date(value).toLocaleDateString() },
 ]

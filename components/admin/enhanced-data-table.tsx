@@ -126,6 +126,8 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
   const [currentPage, setCurrentPage] = useState(1)
   const [filters, setFilters] = useState<Record<string, string>>({})
   const [showExportDialog, setShowExportDialog] = useState(false)
+  const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1)
+  const [statusMessage, setStatusMessage] = useState<string>("")
 
   // Create export columns from table columns if not provided
   const finalExportColumns = exportColumns || columns.map(col => ({
@@ -199,19 +201,51 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
       setSelectedRows(new Set(paginatedData.map((_, index) => index)))
+      setStatusMessage(`Selected all ${paginatedData.length} rows`)
     } else {
       setSelectedRows(new Set())
+      setStatusMessage("Deselected all rows")
     }
+    // Clear status message after announcement
+    setTimeout(() => setStatusMessage(""), 1000)
   }
 
   const handleSelectRow = (index: number, checked: boolean) => {
     const newSelected = new Set(selectedRows)
     if (checked) {
       newSelected.add(index)
+      setStatusMessage(`Selected row ${index + 1}`)
     } else {
       newSelected.delete(index)
+      setStatusMessage(`Deselected row ${index + 1}`)
     }
     setSelectedRows(newSelected)
+    // Clear status message after announcement
+    setTimeout(() => setStatusMessage(""), 1000)
+  }
+
+  // Keyboard navigation handler
+  const handleKeyDown = (event: React.KeyboardEvent, rowIndex: number) => {
+    switch (event.key) {
+      case 'ArrowDown':
+        event.preventDefault()
+        setFocusedRowIndex(Math.min(rowIndex + 1, paginatedData.length - 1))
+        break
+      case 'ArrowUp':
+        event.preventDefault()
+        setFocusedRowIndex(Math.max(rowIndex - 1, 0))
+        break
+      case 'Enter':
+      case ' ':
+        if (selectable) {
+          event.preventDefault()
+          handleSelectRow(rowIndex, !selectedRows.has(rowIndex))
+        }
+        break
+      case 'Escape':
+        setFocusedRowIndex(-1)
+        break
+    }
   }
 
 
@@ -227,17 +261,29 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
 
   return (
     <div className={cn("space-y-4", className)}>
+      {/* Screen Reader Status */}
+      <div
+        aria-live="polite"
+        aria-atomic="true"
+        className="sr-only"
+        role="status"
+      >
+        {statusMessage}
+      </div>
+
       {/* Table Controls */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="flex flex-1 items-center gap-2">
           {searchable && (
             <div className="relative flex-1 max-w-sm">
-              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className="pl-9"
+                aria-label="Search table data"
+                role="searchbox"
               />
             </div>
           )}
@@ -247,8 +293,8 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm">
-                <EyeOff className="h-4 w-4 mr-2" />
+              <Button variant="outline" size="sm" aria-label="Toggle column visibility">
+                <EyeOff className="h-4 w-4 mr-2" aria-hidden="true" />
                 Columns
               </Button>
             </DropdownMenuTrigger>
@@ -281,8 +327,9 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
               size="sm"
               onClick={() => setShowExportDialog(true)}
               disabled={sortedData.length === 0}
+              aria-label="Export table data"
             >
-              <FileDown className="h-4 w-4 mr-2" />
+              <FileDown className="h-4 w-4 mr-2" aria-hidden="true" />
               Export
             </Button>
           )}
@@ -321,7 +368,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
 
       {/* Table */}
       <div className="rounded-md border">
-        <Table>
+        <Table role="table" aria-label="Data table">
           <TableHeader>
             <TableRow>
               {selectable && (
@@ -329,6 +376,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
                   <Checkbox
                     checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
                     onCheckedChange={handleSelectAll}
+                    aria-label="Select all rows"
                   />
                 </TableHead>
               )}
@@ -380,12 +428,22 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
               </TableRow>
             ) : (
               paginatedData.map((row, index) => (
-                <TableRow key={index}>
+                <TableRow
+                  key={index}
+                  tabIndex={0}
+                  onKeyDown={(e) => handleKeyDown(e, index)}
+                  className={cn(
+                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                    focusedRowIndex === index && "bg-muted/50"
+                  )}
+                  aria-rowindex={index + 1}
+                >
                   {selectable && (
                     <TableCell>
                       <Checkbox
                         checked={selectedRows.has(index)}
                         onCheckedChange={(checked) => handleSelectRow(index, checked as boolean)}
+                        aria-label={`Select row ${index + 1}`}
                       />
                     </TableCell>
                   )}
@@ -406,8 +464,8 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
                     <TableCell>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <MoreHorizontal className="h-4 w-4" />
+                          <Button variant="ghost" size="icon" aria-label={`Actions for row ${index + 1}`}>
+                            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end">

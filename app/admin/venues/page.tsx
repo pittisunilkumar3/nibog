@@ -8,7 +8,9 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Filter, Eye, Edit, Trash, AlertTriangle, Loader2 } from "lucide-react"
+import { Plus, Search, Filter, Eye, Edit, Trash, AlertTriangle, Loader2, RefreshCw } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { createVenueExportColumns } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,20 +46,17 @@ interface VenueWithCity {
 
 export default function VenuesPage() {
   const { toast } = useToast()
-  const [searchQuery, setSearchQuery] = useState("")
-  const [selectedCity, setSelectedCity] = useState("all")
   const [venuesList, setVenuesList] = useState<VenueWithCity[]>([])
   const [cities, setCities] = useState<Array<{ id: number, city_name: string }>>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
 
-  // Fetch venues and cities on component mount
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
+  // Fetch venues and cities data
+  const fetchData = async () => {
+    try {
+      setError(null)
 
         // Fetch venues with city details
         const venuesData = await getAllVenuesWithCity()
@@ -123,11 +122,118 @@ export default function VenuesPage() {
         })
       } finally {
         setIsLoading(false)
+        setIsRefreshing(false)
       }
     }
 
+  // Fetch data on component mount
+  useEffect(() => {
+    setIsLoading(true)
     fetchData()
-  }, []) // Removed toast from dependency array to prevent infinite loop
+  }, [])
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await fetchData()
+    toast({
+      title: "Success",
+      description: "Venues data refreshed successfully.",
+    })
+  }
+
+  // Define table columns
+  const columns: Column<VenueWithCity>[] = [
+    {
+      key: 'venue_id',
+      label: 'ID',
+      sortable: true,
+      width: '80px'
+    },
+    {
+      key: 'venue_name',
+      label: 'Venue Name',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-xs text-muted-foreground">{row.address}</div>
+        </div>
+      )
+    },
+    {
+      key: 'city_name',
+      label: 'City',
+      sortable: true,
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-xs text-muted-foreground">{row.state}</div>
+        </div>
+      )
+    },
+    {
+      key: 'capacity',
+      label: 'Capacity',
+      sortable: true,
+      align: 'right',
+      render: (value) => value || 'N/A'
+    },
+    {
+      key: 'venue_is_active',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge className={value ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}>
+          {value ? 'Active' : 'Inactive'}
+        </Badge>
+      )
+    },
+    {
+      key: 'venue_created_at',
+      label: 'Created',
+      sortable: true,
+      render: (value) => new Date(value).toLocaleDateString()
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<VenueWithCity>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (venue) => {
+        window.location.href = `/admin/venues/${venue.venue_id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (venue) => {
+        window.location.href = `/admin/venues/${venue.venue_id}/edit`
+      }
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (venue) => handleDeleteVenue(venue.venue_id),
+      disabled: (venue) => isDeleting === venue.venue_id,
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<VenueWithCity>[] = [
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedVenues) => {
+        // Handle bulk delete - would need confirmation dialog
+        console.log("Bulk delete:", selectedVenues)
+      },
+      variant: 'destructive'
+    }
+  ]
 
   // Handle venue deletion
   const handleDeleteVenue = async (id: number) => {
@@ -161,29 +267,7 @@ export default function VenuesPage() {
     }
   }
 
-  // Filter venues based on search and city filter
-  const filteredVenues = venuesList.filter((venue) => {
-    // Search query filter
-    if (searchQuery) {
-      const venueName = venue.venue_name || "Unknown Venue";
-      const venueAddress = venue.address || "No address";
 
-      if (!venueName.toLowerCase().includes(searchQuery.toLowerCase()) &&
-          !venueAddress.toLowerCase().includes(searchQuery.toLowerCase())) {
-        return false;
-      }
-    }
-
-    // City filter
-    if (selectedCity !== "all") {
-      const cityName = venue.city_name || "Unknown City";
-      if (cityName !== selectedCity) {
-        return false;
-      }
-    }
-
-    return true
-  })
 
   return (
     <div className="space-y-6">
@@ -192,12 +276,22 @@ export default function VenuesPage() {
           <h1 className="text-3xl font-bold tracking-tight">NIBOG Venues</h1>
           <p className="text-muted-foreground">Manage venues where NIBOG events are held</p>
         </div>
-        <Button asChild>
-          <Link href="/admin/venues/new">
-            <Plus className="mr-2 h-4 w-4" />
-            Add New Venue
-          </Link>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button asChild>
+            <Link href="/admin/venues/new">
+              <Plus className="mr-2 h-4 w-4" />
+              Add New Venue
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <Card>
@@ -232,135 +326,37 @@ export default function VenuesPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Venue</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>Address</TableHead>
-              <TableHead>Capacity</TableHead>
-              <TableHead>Events</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <div className="flex justify-center items-center">
-                    <Loader2 className="h-6 w-6 animate-spin mr-2" />
-                    <span>Loading venues...</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-red-500">
-                  <div className="flex justify-center items-center">
-                    <AlertTriangle className="h-6 w-6 mr-2" />
-                    <span>{error}</span>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : filteredVenues.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-3">
-                    <p>No venues found.</p>
-                    <Button asChild>
-                      <Link href="/admin/venues/new">
-                        <Plus className="mr-2 h-4 w-4" />
-                        Add Your First Venue
-                      </Link>
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredVenues.map((venue) => (
-                <TableRow key={venue.venue_id}>
-                  <TableCell className="font-medium">{venue.venue_name}</TableCell>
-                  <TableCell>{venue.city_name}</TableCell>
-                  <TableCell className="max-w-[200px] truncate">{venue.address}</TableCell>
-                  <TableCell>{venue.capacity}</TableCell>
-                  <TableCell>
-                    {venue.events && venue.events > 0
-                      ? venue.events
-                      : "No events"}
-                  </TableCell>
-                  <TableCell>
-                    {venue.venue_is_active ? (
-                      <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                    ) : (
-                      <Badge variant="outline">Inactive</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/venues/${venue.venue_id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/venues/${venue.venue_id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Venue</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
-                                <div className="space-y-2">
-                                  <div className="font-medium">This action cannot be undone.</div>
-                                  <div>
-                                    This will permanently delete the venue "{venue.venue_name}" in {venue.city_name} and all associated data.
-                                    {venue.events && venue.events > 0 ? (
-                                      <>
-                                        {" "}This venue has {venue.events} event{venue.events !== 1 ? "s" : ""}.
-                                        Deleting it may affect existing data.
-                                      </>
-                                    ) : (
-                                      " This venue has no events."
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 hover:bg-red-600"
-                              onClick={() => handleDeleteVenue(venue.venue_id)}
-                              disabled={isDeleting === venue.venue_id}
-                            >
-                              {isDeleting === venue.venue_id ? "Deleting..." : "Delete Venue"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      {/* Enhanced Data Table */}
+      <EnhancedDataTable
+        data={venuesList}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={isLoading}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={createVenueExportColumns()}
+        exportTitle="NIBOG Venues Report"
+        exportFilename="nibog-venues"
+        emptyMessage="No venues found"
+        onRefresh={handleRefresh}
+        className="min-h-[400px]"
+      />
+
+      {error && (
+        <Card className="border-destructive">
+          <CardContent className="pt-6">
+            <div className="flex items-center gap-2 text-destructive">
+              <AlertTriangle className="h-4 w-4" />
+              <span>{error}</span>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   )
 }

@@ -9,6 +9,8 @@ import { Label } from "@/components/ui/label"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
+import EnhancedDataTable, { Column, TableAction } from "@/components/admin/enhanced-data-table"
+import { createEventExportColumns } from "@/lib/export-utils"
 import { Badge } from "@/components/ui/badge"
 import { Calendar as CalendarIcon, Plus, Search, Filter, Eye, Edit, Copy, Pause, Play, X, MapPin, Building, Trash2, ChevronLeft, ChevronRight, Clock, Users } from "lucide-react"
 import { Calendar } from "@/components/ui/calendar"
@@ -283,6 +285,168 @@ export default function EventsPage() {
 
     return true
   })
+
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'title',
+      label: 'Event',
+      sortable: true,
+      render: (value) => (
+        <TruncatedText
+          text={value}
+          maxLength={50}
+          showTooltip={true}
+        />
+      )
+    },
+    {
+      key: 'gameTemplate',
+      label: 'Games',
+      sortable: true,
+      render: (value) => (
+        <div className="max-w-[200px]">
+          {value && typeof value === 'string' ?
+            value.split(", ").map((game, index) => (
+              <Badge key={index} variant="outline" className="mr-1 mb-1">
+                {game}
+              </Badge>
+            )) : (
+              <Badge variant="outline">Unknown</Badge>
+            )
+          }
+        </div>
+      )
+    },
+    {
+      key: 'venue',
+      label: 'Venue',
+      sortable: true,
+      render: (value, row) => (
+        <Link
+          href={`/admin/events/venues/${row.venueId}`}
+          className="flex items-center hover:underline"
+        >
+          <Building className="mr-1 h-3 w-3 text-muted-foreground" />
+          {value}
+        </Link>
+      )
+    },
+    {
+      key: 'city',
+      label: 'City',
+      sortable: true,
+      render: (value) => (
+        <Link
+          href={`/admin/events/cities/${encodeURIComponent(value)}`}
+          className="flex items-center hover:underline"
+        >
+          <MapPin className="mr-1 h-3 w-3 text-muted-foreground" />
+          {value}
+        </Link>
+      )
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      sortable: true
+    },
+    {
+      key: 'slots',
+      label: 'Slots',
+      render: (value) => (
+        <div className="flex flex-col gap-1">
+          {value && Array.isArray(value) && value.length > 0 ?
+            value.map((slot: any) => (
+              <div key={slot.id} className="flex items-center gap-2 text-xs">
+                <Badge
+                  variant="outline"
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full p-0",
+                    slot.status === "active" && "bg-green-500",
+                    slot.status === "paused" && "bg-amber-500",
+                    slot.status === "cancelled" && "bg-red-500"
+                  )}
+                />
+                <span>
+                  {slot.time} ({slot.booked}/{slot.capacity})
+                </span>
+              </div>
+            )) : (
+              <span className="text-xs text-muted-foreground">No slots</span>
+            )
+          }
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (value) => {
+        const statusColors = {
+          published: 'bg-green-500 hover:bg-green-600',
+          draft: 'outline',
+          paused: 'bg-amber-500 hover:bg-amber-600',
+          cancelled: 'bg-red-500 hover:bg-red-600',
+          completed: 'bg-blue-500 hover:bg-blue-600'
+        }
+        const variant = value === 'draft' ? 'outline' : undefined
+        const className = statusColors[value as keyof typeof statusColors] || ''
+
+        return (
+          <Badge variant={variant} className={variant ? undefined : className}>
+            {value.charAt(0).toUpperCase() + value.slice(1)}
+          </Badge>
+        )
+      }
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (event) => {
+        window.location.href = `/admin/events/${event.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (event) => {
+        window.location.href = `/admin/events/${event.id}/edit`
+      }
+    },
+    {
+      label: "Clone",
+      icon: <Copy className="h-4 w-4" />,
+      onClick: (event) => {
+        window.location.href = `/admin/events/clone/${event.id}`
+      }
+    },
+    {
+      label: event => event.status === "published" ? "Pause" : "Resume",
+      icon: event => event.status === "published" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />,
+      onClick: (event) => handleToggleEventStatus(event.id, event.status),
+      disabled: (event) => isUpdatingStatus && eventToUpdate === event.id
+    },
+    {
+      label: "Cancel",
+      icon: <X className="h-4 w-4" />,
+      onClick: (event) => handleCancelEvent(event.id),
+      disabled: (event) => isUpdatingStatus && eventToUpdate === event.id,
+      variant: 'destructive'
+    },
+    {
+      label: "Delete",
+      icon: <Trash2 className="h-4 w-4" />,
+      onClick: (event) => handleDeleteEvent(event.id),
+      disabled: (event) => isDeletingEvent && eventToDelete === event.id,
+      variant: 'destructive'
+    }
+  ]
 
   // Handle event deletion
   const handleDeleteEvent = async (eventId: string) => {
@@ -653,277 +817,23 @@ export default function EventsPage() {
         </div>
 
         <TabsContent value="list" className="space-y-4">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Event</TableHead>
-                  <TableHead>Game Template</TableHead>
-                  <TableHead>Venue</TableHead>
-                  <TableHead>City</TableHead>
-                  <TableHead>Date</TableHead>
-                  <TableHead>Slots</TableHead>
-                  <TableHead>Status</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {isLoading ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center">
-                      <div className="flex justify-center items-center">
-                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
-                        <span className="ml-2">Loading events...</span>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : error ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="h-24 text-center text-destructive">
-                      Error loading events: {error}
-                    </TableCell>
-                  </TableRow>
-                ) : filteredEvents.length === 0 ? (
-                  <TableRow>
-                    <TableCell colSpan={8} className="py-12 text-center">
-                      <div className="flex flex-col items-center justify-center space-y-4">
-                        <div className="rounded-full bg-muted p-4">
-                          <CalendarIcon className="h-8 w-8 text-muted-foreground" />
-                        </div>
-                        <div className="space-y-2">
-                          <h3 className="text-lg font-medium">
-                            {!hasValidEvents ? 'No events found' : 'No matching events'}
-                          </h3>
-                          <p className="text-sm text-muted-foreground max-w-md">
-                            {!hasValidEvents 
-                              ? 'Get started by creating your first event.'
-                              : 'Try adjusting your search or filter criteria.'}
-                          </p>
-                        </div>
-                        {!hasValidEvents && (
-                          <Button asChild className="mt-2">
-                            <Link href="/admin/events/new">
-                              <Plus className="mr-2 h-4 w-4" />
-                              Create Your First Event
-                            </Link>
-                          </Button>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ) : (
-                  filteredEvents.map((event) => (
-                    <TableRow key={event.id}>
-                      <TableCell className="font-medium">
-                        <TruncatedText
-                          text={event.title}
-                          maxLength={50}
-                          showTooltip={true}
-                        />
-                      </TableCell>
-                      <TableCell>
-                        <div className="max-w-[200px]">
-                          {event.gameTemplate && typeof event.gameTemplate === 'string' ?
-                            event.gameTemplate.split(", ").map((game, index) => (
-                              <Badge key={index} variant="outline" className="mr-1 mb-1">
-                                {game}
-                              </Badge>
-                            )) : (
-                              <Badge variant="outline">Unknown</Badge>
-                            )
-                          }
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/admin/events/venues/${event.venueId}`}
-                          className="flex items-center hover:underline"
-                        >
-                          <Building className="mr-1 h-3 w-3 text-muted-foreground" />
-                          {event.venue}
-                        </Link>
-                      </TableCell>
-                      <TableCell>
-                        <Link
-                          href={`/admin/events/cities/${encodeURIComponent(event.city)}`}
-                          className="flex items-center hover:underline"
-                        >
-                          <MapPin className="mr-1 h-3 w-3 text-muted-foreground" />
-                          {event.city}
-                        </Link>
-                      </TableCell>
-                      <TableCell>{event.date}</TableCell>
-                      <TableCell>
-                        <div className="flex flex-col gap-1">
-                          {event.slots && Array.isArray(event.slots) && event.slots.length > 0 ?
-                            event.slots.map((slot) => (
-                              <div key={slot.id} className="flex items-center gap-2 text-xs">
-                                <Badge
-                                  variant="outline"
-                                  className={cn(
-                                    "h-1.5 w-1.5 rounded-full p-0",
-                                    slot.status === "active" && "bg-green-500",
-                                    slot.status === "paused" && "bg-amber-500",
-                                    slot.status === "cancelled" && "bg-red-500"
-                                  )}
-                                />
-                                <span>
-                                  {slot.time} ({slot.booked}/{slot.capacity})
-                                </span>
-                              </div>
-                            )) : (
-                              <span className="text-xs text-muted-foreground">No slots</span>
-                            )
-                          }
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        {event.status === "published" && (
-                          <Badge className="bg-green-500 hover:bg-green-600">Published</Badge>
-                        )}
-                        {event.status === "draft" && (
-                          <Badge variant="outline">Draft</Badge>
-                        )}
-                        {event.status === "paused" && (
-                          <Badge className="bg-amber-500 hover:bg-amber-600">Paused</Badge>
-                        )}
-                        {event.status === "cancelled" && (
-                          <Badge className="bg-red-500 hover:bg-red-600">Cancelled</Badge>
-                        )}
-                        {event.status === "completed" && (
-                          <Badge className="bg-blue-500 hover:bg-blue-600">Completed</Badge>
-                        )}
-                        {!["published", "draft", "paused", "cancelled", "completed"].includes(event.status) && (
-                          <Badge>{event.status}</Badge>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        <div className="flex justify-end gap-2">
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/events/${event.id}`}>
-                              <Eye className="h-4 w-4" />
-                              <span className="sr-only">View details</span>
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/events/${event.id}/edit`}>
-                              <Edit className="h-4 w-4" />
-                              <span className="sr-only">Edit event</span>
-                            </Link>
-                          </Button>
-                          <Button variant="ghost" size="icon" asChild>
-                            <Link href={`/admin/events/clone/${event.id}`}>
-                              <Copy className="h-4 w-4" />
-                              <span className="sr-only">Clone event</span>
-                            </Link>
-                          </Button>
-                          {event.status === "published" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleToggleEventStatus(event.id, event.status)}
-                              disabled={isUpdatingStatus && eventToUpdate === event.id}
-                            >
-                              {isUpdatingStatus && eventToUpdate === event.id ? (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                              ) : (
-                                <Pause className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">Pause event</span>
-                            </Button>
-                          )}
-                          {event.status === "paused" && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              onClick={() => handleToggleEventStatus(event.id, event.status)}
-                              disabled={isUpdatingStatus && eventToUpdate === event.id}
-                            >
-                              {isUpdatingStatus && eventToUpdate === event.id ? (
-                                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent"></div>
-                              ) : (
-                                <Play className="h-4 w-4" />
-                              )}
-                              <span className="sr-only">Resume event</span>
-                            </Button>
-                          )}
-                          {(event.status === "published" || event.status === "paused" || event.status === "draft") && (
-                            <AlertDialog>
-                              <AlertDialogTrigger asChild>
-                                <Button variant="ghost" size="icon">
-                                  <X className="h-4 w-4" />
-                                  <span className="sr-only">Cancel event</span>
-                                </Button>
-                              </AlertDialogTrigger>
-                              <AlertDialogContent>
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle>Cancel Event</AlertDialogTitle>
-                                  <AlertDialogDescription>
-                                    Are you sure you want to cancel this event? This will prevent any new bookings, but existing bookings will be maintained. This action can be reversed by editing the event status.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleCancelEvent(event.id)}
-                                    disabled={isUpdatingStatus && eventToUpdate === event.id}
-                                    className="bg-orange-500 hover:bg-orange-600"
-                                  >
-                                    {isUpdatingStatus && eventToUpdate === event.id ? (
-                                      <>
-                                        <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                        Cancelling...
-                                      </>
-                                    ) : (
-                                      "Cancel Event"
-                                    )}
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          )}
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button variant="ghost" size="icon">
-                                <Trash2 className="h-4 w-4 text-red-500" />
-                                <span className="sr-only">Delete event</span>
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Delete Event</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  Are you sure you want to delete this event? This action cannot be undone.
-                                  All registrations and data associated with this event will be permanently removed.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteEvent(event.id)}
-                                  disabled={isDeletingEvent && eventToDelete === event.id}
-                                  className="bg-red-500 hover:bg-red-600"
-                                >
-                                  {isDeletingEvent && eventToDelete === event.id ? (
-                                    <>
-                                      <div className="mr-2 h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent"></div>
-                                      Deleting...
-                                    </>
-                                  ) : (
-                                    "Delete Event"
-                                  )}
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          </div>
+          <EnhancedDataTable
+            data={filteredEvents}
+            columns={columns}
+            actions={actions}
+            loading={isLoading}
+            searchable={false} // We have custom search above
+            filterable={false} // We have custom filters above
+            exportable={true}
+            selectable={false}
+            pagination={true}
+            pageSize={25}
+            exportColumns={createEventExportColumns()}
+            exportTitle="NIBOG Events Report"
+            exportFilename="nibog-events"
+            emptyMessage={!hasValidEvents ? "No events found. Get started by creating your first event." : "No matching events. Try adjusting your search or filter criteria."}
+            className="min-h-[400px]"
+          />
         </TabsContent>
 
         <TabsContent value="calendar" className="space-y-4">
