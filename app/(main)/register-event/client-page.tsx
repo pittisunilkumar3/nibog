@@ -36,7 +36,7 @@ import { getGamesByAge, Game } from "@/services/gameService"
 import { registerBooking, formatBookingDataForAPI } from "@/services/bookingRegistrationService"
 import { initiatePhonePePayment } from "@/services/paymentService"
 import { getPromoCodesByEventAndGames, validatePromoCodePreview } from "@/services/promoCodeService"
-import { storePendingBookingForPayment } from "@/services/pendingBookingServices"
+
 import { validateGameData } from "@/utils/gameIdValidation"
 
 // Helper function to format price.
@@ -851,6 +851,47 @@ export default function RegisterEventClientPage() {
       setIsProcessingPayment(true)
       setPaymentError(null)
 
+      console.log("=== PAYMENT INITIATION STARTED ===")
+      console.log("User authenticated:", isAuthenticated)
+      console.log("User object:", user)
+      console.log("Selected games:", selectedGames)
+      console.log("Selected event type:", selectedEventType)
+      console.log("Parent name:", parentName)
+      console.log("Email:", email)
+      console.log("Phone:", phone)
+      console.log("Child name:", childName)
+
+      // Pre-validation checks with user-friendly error messages
+      if (!isAuthenticated || !user?.user_id) {
+        throw new Error("Please log in to complete your payment. Your registration data will be saved.")
+      }
+
+      if (!parentName.trim()) {
+        throw new Error("Please enter your full name to continue.")
+      }
+
+      if (!email.trim()) {
+        throw new Error("Please enter your email address to continue.")
+      }
+
+      if (!phone.trim()) {
+        throw new Error("Please enter your mobile number to continue.")
+      }
+
+      if (!childName.trim()) {
+        throw new Error("Please enter your child's name to continue.")
+      }
+
+      if (!selectedGames || selectedGames.length === 0) {
+        throw new Error("Please select at least one game for your child to participate in.")
+      }
+
+      if (!selectedEventType) {
+        throw new Error("Please select an event to continue.")
+      }
+
+      console.log("✅ Pre-validation checks passed")
+
       // Get the selected game details with comprehensive logging
       console.log("=== GAME ID PROCESSING DEBUG ===")
       console.log("Selected slot IDs (for UI selection):", selectedGames)
@@ -1012,10 +1053,10 @@ export default function RegisterEventClientPage() {
       console.log("Phone:", phone)
       console.log("Total Amount (₹):", totalAmount)
 
-      // Initiate the payment with the stored transaction ID
+      // Initiate the payment with the generated transaction ID
       console.log("🚀 Calling initiatePhonePePayment...")
       const paymentUrl = await initiatePhonePePayment(
-        transactionId, // Use the transaction ID from pending booking
+        transactionId, // Use the generated transaction ID
         userId,
         totalAmount,
         phone
