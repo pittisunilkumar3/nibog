@@ -51,6 +51,7 @@ export async function GET() {
       
       try {
         const responseData = JSON.parse(responseText);
+
         // Cache the successful response
         cachedData = responseData;
         cacheTimestamp = Date.now();
@@ -72,6 +73,7 @@ export async function GET() {
     try {
       // Try to parse the response as JSON
       const responseData = JSON.parse(responseText);
+
 
       // Cache the successful response
       cachedData = responseData;

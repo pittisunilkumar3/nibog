@@ -316,8 +316,8 @@ export default function AdminSidebar() {
                                       <Link
                                         href={child.href || '#'}
                                         className={cn(
-                                          "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors",
-                                          pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+                                          "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                                          pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                                         )}
                                         onClick={() => setOpen(false)}
                                       >
@@ -344,8 +344,10 @@ export default function AdminSidebar() {
                             <Link
                               href={item.href as string}
                               className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors group",
-                                pathname === item.href ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors group",
+                                pathname === item.href
+                                  ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                  : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                               )}
                               onClick={() => setOpen(false)}
                             >
@@ -424,8 +426,8 @@ export default function AdminSidebar() {
                           <li key={`parent-${sectionIndex}-${itemIndex}`}>
                             <button
                               className={cn(
-                                "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors",
-                                (isExpanded || hasActiveChild) ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
+                                "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+                                (isExpanded || hasActiveChild) ? "bg-muted text-foreground hover:bg-muted/90" : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                               )}
                               onClick={() => toggleSection(item.label)}
                             >
@@ -458,8 +460,8 @@ export default function AdminSidebar() {
                                     <Link
                                       href={child.href || '#'}
                                       className={cn(
-                                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm hover:bg-muted/50 transition-colors",
-                                        pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground",
+                                        "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                                        pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                                       )}
                                     >
                                       <div className="flex-1">
@@ -485,8 +487,10 @@ export default function AdminSidebar() {
                           <Link
                             href={item.href as string}
                             className={cn(
-                              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors group",
-                              pathname === item.href ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-foreground",
+                              "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors group",
+                              pathname === item.href
+                                ? "bg-primary text-primary-foreground hover:bg-primary/90"
+                                : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                             )}
                           >
                             <div className="flex-shrink-0">

@@ -74,7 +74,7 @@ export async function GET() {
       }
       
       console.log(`Server API route: Raw response size: ${responseText.length} characters`);
-      
+
       let data;
       try {
         // Try to parse the response as JSON

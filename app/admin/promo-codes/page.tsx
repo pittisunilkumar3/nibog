@@ -245,7 +245,7 @@ export default function PromoCodesPage() {
       sortable: true,
     },
     {
-      key: 'discount_type',
+      key: 'discountType',
       label: 'Type',
       sortable: true,
       render: (value) => (
@@ -255,17 +255,17 @@ export default function PromoCodesPage() {
       )
     },
     {
-      key: 'discount_value',
+      key: 'discount',
       label: 'Value',
       sortable: true,
       render: (value, row) =>
-        row.discount_type === 'percentage' ? `${value}%` : `₹${value}`
+        row.discountType === 'percentage' ? `${value}%` : `₹${value}`
     },
     {
-      key: 'usage_count',
+      key: 'usageCount',
       label: 'Used',
       sortable: true,
-      render: (value, row) => `${value}/${row.usage_limit || '∞'}`
+      render: (value, row) => `${value}/${row.usageLimit || '∞'}`
     },
     {
       key: 'status',
@@ -333,12 +333,12 @@ export default function PromoCodesPage() {
   const exportColumns: ExportColumn[] = [
     { key: 'code', label: 'Code' },
     { key: 'description', label: 'Description' },
-    { key: 'discount_type', label: 'Type' },
-    { key: 'discount_value', label: 'Value' },
-    { key: 'usage_count', label: 'Usage Count' },
-    { key: 'usage_limit', label: 'Usage Limit' },
-    { key: 'valid_from', label: 'Valid From' },
-    { key: 'valid_to', label: 'Valid To' },
+    { key: 'discountType', label: 'Type' },
+    { key: 'discount', label: 'Value' },
+    { key: 'usageCount', label: 'Usage Count' },
+    { key: 'usageLimit', label: 'Usage Limit' },
+    { key: 'validFrom', label: 'Valid From' },
+    { key: 'validTo', label: 'Valid To' },
     { key: 'status', label: 'Status' }
   ]
 

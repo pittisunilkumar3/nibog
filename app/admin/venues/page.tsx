@@ -3,12 +3,12 @@
 import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Filter, Eye, Edit, Trash, AlertTriangle, Loader2, RefreshCw } from "lucide-react"
+import { Plus, Search, Filter, Eye, Edit, Trash, AlertTriangle, Loader2, RefreshCw, Building, Calendar, MapPin, Users } from "lucide-react"
 import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
 import { createVenueExportColumns } from "@/lib/export-utils"
 import {
@@ -182,6 +182,18 @@ export default function VenuesPage() {
       render: (value) => value || 'N/A'
     },
     {
+      key: 'events',
+      label: 'Events',
+      sortable: true,
+      align: 'right',
+      render: (value) => (
+        <div className="text-center">
+          <div className="font-semibold text-primary">{value || 0}</div>
+          <div className="text-xs text-muted-foreground">Total Events</div>
+        </div>
+      )
+    },
+    {
       key: 'venue_is_active',
       label: 'Status',
       sortable: true,
@@ -294,6 +306,64 @@ export default function VenuesPage() {
             </Link>
           </Button>
         </div>
+      </div>
+
+      {/* Statistics Cards */}
+      <div className="grid gap-4 md:grid-cols-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Venues</CardTitle>
+            <Building className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">{venuesList.length}</div>
+            <p className="text-xs text-muted-foreground">
+              {venuesList.filter(v => v.venue_is_active).length} active
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Total Events</CardTitle>
+            <Calendar className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {venuesList.reduce((sum, venue) => sum + (venue.events || 0), 0)}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Across all venues
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Cities Covered</CardTitle>
+            <MapPin className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {new Set(venuesList.map(v => v.city_name)).size}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Unique cities
+            </p>
+          </CardContent>
+        </Card>
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-sm font-medium">Avg Capacity</CardTitle>
+            <Users className="h-4 w-4 text-muted-foreground" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-2xl font-bold">
+              {Math.round(venuesList.reduce((sum, venue) => sum + (venue.capacity || 0), 0) / venuesList.length) || 0}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Per venue
+            </p>
+          </CardContent>
+        </Card>
       </div>
 
       <Card>

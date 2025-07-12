@@ -108,8 +108,11 @@ export default function CertificateTemplatesPage() {
     }
   }
 
-  const handleDuplicate = async (template: CertificateTemplate) => {
+  const handleDuplicate = async (templateId: number) => {
     try {
+      const template = templates.find(t => t.id === templateId)
+      if (!template) return
+
       const newName = `${template.name} (Copy)`
       const duplicatedTemplate = await duplicateCertificateTemplate(template.id, newName)
 
@@ -126,6 +129,36 @@ export default function CertificateTemplatesPage() {
         title: "Error",
         description: "Failed to duplicate certificate template",
         variant: "destructive"
+      })
+    }
+  }
+
+  const handleDownload = async (templateId: number) => {
+    try {
+      const template = templates.find(t => t.id === templateId)
+      if (!template) return
+
+      // Create a download link for the template
+      const dataStr = JSON.stringify(template, null, 2)
+      const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr)
+
+      const exportFileDefaultName = `${template.name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_template.json`
+
+      const linkElement = document.createElement('a')
+      linkElement.setAttribute('href', dataUri)
+      linkElement.setAttribute('download', exportFileDefaultName)
+      linkElement.click()
+
+      toast({
+        title: "Success",
+        description: "Template downloaded successfully",
+      })
+    } catch (error) {
+      console.error('Error downloading template:', error)
+      toast({
+        title: "Error",
+        description: "Failed to download template",
+        variant: "destructive",
       })
     }
   }

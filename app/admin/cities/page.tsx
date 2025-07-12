@@ -9,7 +9,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Eye, Edit, Trash, AlertTriangle, Loader2, RefreshCw } from "lucide-react"
 import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
-import { createCityExportColumns } from "@/lib/export-utils"
+import { ExportColumn } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -72,7 +72,7 @@ export default function CitiesPage() {
   // Define table columns
   const columns: Column<City>[] = [
     {
-      key: 'city_id',
+      key: 'id',
       label: 'ID',
       sortable: true,
       width: '80px'
@@ -99,15 +99,15 @@ export default function CitiesPage() {
       )
     },
     {
-      key: 'total_venues',
-      label: 'Venues',
+      key: 'venues',
+      label: 'Total Venues',
       sortable: true,
       align: 'right',
       render: (value) => value || 0
     },
     {
-      key: 'total_events',
-      label: 'Events',
+      key: 'events',
+      label: 'Total Events',
       sortable: true,
       align: 'right',
       render: (value) => value || 0
@@ -116,7 +116,7 @@ export default function CitiesPage() {
       key: 'created_at',
       label: 'Created',
       sortable: true,
-      render: (value) => new Date(value).toLocaleDateString()
+      render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
     }
   ]
 
@@ -126,21 +126,21 @@ export default function CitiesPage() {
       label: "View",
       icon: <Eye className="h-4 w-4" />,
       onClick: (city) => {
-        window.location.href = `/admin/cities/${city.city_id}`
+        window.location.href = `/admin/cities/${city.id}`
       }
     },
     {
       label: "Edit",
       icon: <Edit className="h-4 w-4" />,
       onClick: (city) => {
-        window.location.href = `/admin/cities/${city.city_id}/edit`
+        window.location.href = `/admin/cities/${city.id}/edit`
       }
     },
     {
       label: "Delete",
       icon: <Trash className="h-4 w-4" />,
-      onClick: (city) => handleDeleteCity(city.city_id),
-      disabled: (city) => isDeleting === city.city_id,
+      onClick: (city) => handleDeleteCity(city.id!),
+      disabled: (city) => isDeleting === city.id,
       variant: 'destructive'
     }
   ]
@@ -218,14 +218,30 @@ export default function CitiesPage() {
     }
   }
 
-
+  // Define export columns
+  const exportColumns: ExportColumn[] = [
+    { key: 'id', label: 'City ID', width: 80 },
+    { key: 'city_name', label: 'City Name', width: 150 },
+    { key: 'state', label: 'State', width: 100 },
+    { key: 'is_active', label: 'Status', width: 80, format: (value: any) => value ? 'Active' : 'Inactive' },
+    { key: 'venues', label: 'Total Venues', width: 100, align: 'right' },
+    { key: 'events', label: 'Total Events', width: 100, align: 'right' },
+    { key: 'created_at', label: 'Created At', width: 120, format: (value: any) => value ? new Date(value).toLocaleDateString() : 'N/A' },
+  ]
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">NIBOG Cities</h1>
-          <p className="text-muted-foreground">Manage cities where NIBOG events are held</p>
+          <p className="text-muted-foreground">
+            Manage cities where NIBOG events are held
+            {!isLoading && (
+              <span className="ml-2 text-sm font-medium">
+                • Total: {citiesList.length} cities
+              </span>
+            )}
+          </p>
         </div>
         <div className="flex gap-2">
           <Button
@@ -258,7 +274,7 @@ export default function CitiesPage() {
         selectable={true}
         pagination={true}
         pageSize={25}
-        exportColumns={createCityExportColumns()}
+        exportColumns={exportColumns}
         exportTitle="NIBOG Cities Report"
         exportFilename="nibog-cities"
         emptyMessage="No cities found"

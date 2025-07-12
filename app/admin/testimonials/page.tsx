@@ -362,19 +362,24 @@ export default function TestimonialsPage() {
   // Define table columns for EnhancedDataTable
   const columns: Column<any>[] = [
     {
-      key: 'parent_name',
+      key: 'name',
       label: 'Parent Name',
       sortable: true,
     },
     {
-      key: 'child_name',
-      label: 'Child Name',
+      key: 'city',
+      label: 'City',
       sortable: true,
     },
     {
-      key: 'event_title',
-      label: 'Event',
+      key: 'event_id',
+      label: 'Event ID',
       sortable: true,
+      render: (value, row) => {
+        // Try to find the event title from the events list
+        const event = events.find(e => (e.event_id || e.id) === value);
+        return event ? (event.event_title || event.title || event.name || `Event #${value}`) : `Event #${value}`;
+      }
     },
     {
       key: 'rating',
@@ -398,7 +403,7 @@ export default function TestimonialsPage() {
       render: (value) => getStatusBadge(value)
     },
     {
-      key: 'created_at',
+      key: 'submitted_at',
       label: 'Date',
       sortable: true,
       render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
@@ -467,13 +472,13 @@ export default function TestimonialsPage() {
 
   // Define export columns
   const exportColumns: ExportColumn[] = [
-    { key: 'parent_name', label: 'Parent Name' },
-    { key: 'child_name', label: 'Child Name' },
-    { key: 'event_title', label: 'Event' },
+    { key: 'name', label: 'Parent Name' },
+    { key: 'city', label: 'City' },
+    { key: 'event_id', label: 'Event ID' },
     { key: 'rating', label: 'Rating' },
     { key: 'testimonial', label: 'Testimonial' },
     { key: 'status', label: 'Status' },
-    { key: 'created_at', label: 'Date' }
+    { key: 'submitted_at', label: 'Date' }
   ]
 
   return (

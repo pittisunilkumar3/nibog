@@ -85,9 +85,37 @@ export default function GameTemplatesPage() {
       sortable: true,
     },
     {
-      key: 'age_range',
+      key: 'min_age',
       label: 'Age Range',
       sortable: true,
+      render: (value, row) => {
+        const minAge = row.min_age;
+        const maxAge = row.max_age;
+
+        if (minAge && maxAge) {
+          // Convert to years if age is in months and > 12
+          if (minAge >= 12 && maxAge >= 12) {
+            const minYears = Math.floor(minAge / 12);
+            const maxYears = Math.floor(maxAge / 12);
+            const minMonths = minAge % 12;
+            const maxMonths = maxAge % 12;
+
+            if (minMonths === 0 && maxMonths === 0) {
+              return `${minYears}-${maxYears} years`;
+            } else {
+              return `${minAge}-${maxAge} months`;
+            }
+          } else {
+            return `${minAge}-${maxAge} months`;
+          }
+        } else if (minAge) {
+          return `${minAge}+ months`;
+        } else if (maxAge) {
+          return `Up to ${maxAge} months`;
+        } else {
+          return 'Not specified';
+        }
+      }
     },
     {
       key: 'duration_minutes',
@@ -98,15 +126,28 @@ export default function GameTemplatesPage() {
     {
       key: 'categories',
       label: 'Categories',
-      render: (value) => (
-        <div className="flex flex-wrap gap-1">
-          {value?.split(',').map((category: string, index: number) => (
-            <Badge key={index} variant="outline" className="text-xs">
-              {category.trim()}
-            </Badge>
-          ))}
-        </div>
-      )
+      render: (value) => {
+        // Handle different data types for categories
+        let categories: string[] = [];
+
+        if (Array.isArray(value)) {
+          categories = value;
+        } else if (typeof value === 'string' && value) {
+          categories = value.split(',');
+        } else if (value) {
+          categories = [String(value)];
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {categories.map((category: string, index: number) => (
+              <Badge key={index} variant="outline" className="text-xs">
+                {String(category).trim()}
+              </Badge>
+            ))}
+          </div>
+        );
+      }
     },
     {
       key: 'is_active',
