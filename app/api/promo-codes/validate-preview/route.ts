@@ -1,13 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {
+  // Define subtotal at the function scope so it's available in the catch block
+  let subtotal: number | string = 0;
+  
   try {
     const body = await request.json()
-    const { promo_code, event_id, game_ids, amount } = body
+    const { promocode, eventId, gameIds } = body
+    subtotal = body.subtotal
 
-    if (!promo_code || !event_id || !game_ids || !Array.isArray(game_ids) || game_ids.length === 0 || !amount) {
+    if (!promocode || !eventId || !gameIds || !Array.isArray(gameIds) || gameIds.length === 0 || !subtotal) {
       return NextResponse.json(
-        { error: 'promo_code, event_id, game_ids array, and amount are required' },
+        { error: 'promocode, eventId, gameIds array, and subtotal are required' },
         { status: 400 }
       )
     }
@@ -20,36 +24,53 @@ export async function POST(request: NextRequest) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        promo_code: promo_code.trim(),
-        event_id: parseInt(event_id),
-        game_ids: game_ids.map((id: any) => parseInt(id)),
-        total_amount: parseFloat(amount)
+        promocode: promocode.trim(),
+        eventId: parseInt(eventId.toString()),
+        gameIds: gameIds.map((id: any) => parseInt(id.toString())),
+        subtotal: parseFloat(subtotal.toString())
       }),
     })
 
     if (!n8nResponse.ok) {
       return NextResponse.json(
-        {
-          is_valid: false,
-          discount_amount: 0,
-          final_amount: parseFloat(amount),
-          message: 'Failed to validate promo code'
-        },
+        [
+          {
+            is_valid: false,
+            discount_amount: 0,
+            final_amount: parseFloat(subtotal.toString()),
+            message: 'Invalid or inapplicable promo code.',
+            promo_details: {}
+          }
+        ],
         { status: 200 }
       )
     }
 
     const validationResult = await n8nResponse.json()
-    return NextResponse.json(validationResult)
+    // Ensure the response is an array
+    return NextResponse.json(Array.isArray(validationResult) ? validationResult : [validationResult])
 
   } catch (error) {
+    // In the catch block, use a default value of 0
+    let finalAmount = 0;
+    try {
+      if (typeof subtotal !== 'undefined' && subtotal !== null) {
+        finalAmount = parseFloat(subtotal.toString());
+      }
+    } catch {
+      // If parsing fails, keep finalAmount as 0
+    }
+
     return NextResponse.json(
-      {
-        is_valid: false,
-        discount_amount: 0,
-        final_amount: parseFloat(amount || 0),
-        message: 'Internal server error'
-      },
+      [
+        {
+          is_valid: false,
+          discount_amount: 0,
+          final_amount: finalAmount,
+          message: 'Invalid or inapplicable promo code.',
+          promo_details: {}
+        }
+      ],
       { status: 200 }
     )
   }
