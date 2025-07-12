@@ -36,7 +36,7 @@ import { getGamesByAge, Game } from "@/services/gameService"
 import { registerBooking, formatBookingDataForAPI } from "@/services/bookingRegistrationService"
 import { initiatePhonePePayment } from "@/services/paymentService"
 import { getPromoCodesByEventAndGames, validatePromoCodePreview } from "@/services/promoCodeService"
-import { storePendingBookingForPayment } from "@/services/pendingBookingServices"
+
 import { validateGameData } from "@/utils/gameIdValidation"
 
 // Helper function to format price.
@@ -1012,10 +1012,10 @@ export default function RegisterEventClientPage() {
       console.log("Phone:", phone)
       console.log("Total Amount (₹):", totalAmount)
 
-      // Initiate the payment with the stored transaction ID
+      // Initiate the payment with the generated transaction ID
       console.log("🚀 Calling initiatePhonePePayment...")
       const paymentUrl = await initiatePhonePePayment(
-        transactionId, // Use the transaction ID from pending booking
+        transactionId, // Use the generated transaction ID
         userId,
         totalAmount,
         phone

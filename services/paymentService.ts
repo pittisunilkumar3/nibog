@@ -134,8 +134,25 @@ export async function initiatePhonePePayment(
     console.log(`Merchant ID: ${PHONEPE_CONFIG.MERCHANT_ID}`);
     console.log(`Test Mode: ${PHONEPE_CONFIG.IS_TEST_MODE}`);
 
-    // Generate a unique transaction ID
-    const merchantTransactionId = generateTransactionId(bookingId);
+    // Generate a unique merchant transaction ID (required by PhonePe)
+    // If bookingId is already a transaction ID (starts with NIBOG_), use it directly
+    // Otherwise, generate a new one
+    let merchantTransactionId: string;
+    if (typeof bookingId === 'string' && bookingId.startsWith('NIBOG_')) {
+      // This is already a transaction ID from pending booking, use it directly
+      merchantTransactionId = bookingId;
+      console.log(`Using existing transaction ID: ${merchantTransactionId}`);
+    } else {
+      // This is a regular booking ID, generate a new transaction ID
+      merchantTransactionId = generateTransactionId(bookingId);
+      console.log(`Generated new merchant transaction ID: ${merchantTransactionId}`);
+    }
+
+    // Validate transaction ID length (PhonePe requires max 38 characters)
+    if (merchantTransactionId.length > 38) {
+      console.error(`Transaction ID too long (${merchantTransactionId.length} chars): ${merchantTransactionId}`);
+      throw new Error(`Transaction ID exceeds 38 character limit: ${merchantTransactionId}`);
+    }
 
     // Create the payment request payload
     const paymentRequest: PhonePePaymentRequest = {
