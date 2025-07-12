@@ -258,12 +258,7 @@ export default function EventDetailPage({ params }: Props) {
               Edit Event
             </Link>
           </Button>
-          <Button variant="outline" asChild>
-            <Link href={`/admin/events/clone/${event.event_id}`}>
-              <Copy className="mr-2 h-4 w-4" />
-              Clone Event
-            </Link>
-          </Button>
+
           {event.event_status.toLowerCase() === "published" && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
