@@ -10,6 +10,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Eye, Edit, Trash, Plus, Package, AlertTriangle, BarChart, Loader2, RefreshCw } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { ExportColumn } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -129,6 +131,89 @@ export default function AddOnsPage() {
     return sum + a.stock_quantity
   }, 0)
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'name',
+      label: 'Name',
+      sortable: true,
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      sortable: true,
+      render: (value) => (
+        <Badge variant="outline">
+          {value}
+        </Badge>
+      )
+    },
+    {
+      key: 'price',
+      label: 'Price',
+      sortable: true,
+      render: (value) => `₹${value}`
+    },
+    {
+      key: 'stock_quantity',
+      label: 'Stock',
+      sortable: true,
+      render: (value, row) => {
+        if (row.has_variants) {
+          const totalStock = row.variants?.reduce((sum: number, v: any) => sum + v.stock_quantity, 0) || 0
+          return `${totalStock} (variants)`
+        }
+        return value?.toString() || '0'
+      }
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Active" : "Inactive"}
+        </Badge>
+      )
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (addOn) => {
+        window.location.href = `/admin/add-ons/${addOn.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (addOn) => {
+        window.location.href = `/admin/add-ons/${addOn.id}/edit`
+      }
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (addOn) => handleDeleteAddOn(addOn.id),
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = []
+
+  // Define export columns
+  const exportColumns: ExportColumn[] = [
+    { key: 'name', label: 'Name' },
+    { key: 'category', label: 'Category' },
+    { key: 'price', label: 'Price' },
+    { key: 'stock_quantity', label: 'Stock Quantity' },
+    { key: 'is_active', label: 'Status', format: (value) => value ? 'Active' : 'Inactive' }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -214,152 +299,24 @@ export default function AddOnsPage() {
         </div>
       </div>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Image</TableHead>
-              <TableHead>Name</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead>Price</TableHead>
-              <TableHead>Stock</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto" />
-                  <div className="mt-2">Loading add-ons...</div>
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-destructive">
-                  <AlertTriangle className="h-8 w-8 mx-auto mb-2" />
-                  {error}
-                </TableCell>
-              </TableRow>
-            ) : filteredAddOns.map((addOn) => (
-              <TableRow key={addOn.id}>
-                <TableCell>
-                  <div className="relative h-10 w-10 overflow-hidden rounded-md">
-                    <Image
-                      src={addOn.images[0] || "/placeholder.svg"}
-                      alt={addOn.name}
-                      fill
-                      className="object-cover"
-                    />
-                  </div>
-                </TableCell>
-                <TableCell className="font-medium">
-                  <div className="flex flex-col">
-                    <span>{addOn.name}</span>
-                    <span className="text-xs text-muted-foreground">SKU: {addOn.has_variants ? "Multiple" : addOn.sku}</span>
-                  </div>
-                </TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="capitalize">
-                    {addOn.category}
-                  </Badge>
-                </TableCell>
-                <TableCell>₹{parseFloat(addOn.price).toLocaleString()}</TableCell>
-                <TableCell>
-                  {addOn.has_variants ? (
-                    <span>
-                      {addOn.variants?.reduce((total, variant) => total + variant.stock_quantity, 0)} units
-                      <span className="ml-1 text-xs text-muted-foreground">({addOn.variants?.length} variants)</span>
-                    </span>
-                  ) : (
-                    <span>{addOn.stock_quantity} units</span>
-                  )}
-                </TableCell>
-                <TableCell>
-                  {addOn.is_active ? (
-                    <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                  ) : (
-                    <Badge variant="outline">Inactive</Badge>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/admin/add-ons/${addOn.id}`}>
-                        <Eye className="h-4 w-4" />
-                        <span className="sr-only">View</span>
-                      </Link>
-                    </Button>
-                    <Button variant="ghost" size="icon" asChild>
-                      <Link href={`/admin/add-ons/${addOn.id}/edit`}>
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Edit</span>
-                      </Link>
-                    </Button>
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          disabled={isDeleting === addOn.id}
-                        >
-                          {isDeleting === addOn.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Trash className="h-4 w-4" />
-                          )}
-                          <span className="sr-only">Delete</span>
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent>
-                        <AlertDialogHeader>
-                          <AlertDialogTitle>Delete Add-on</AlertDialogTitle>
-                          <AlertDialogDescription>
-                            <div className="flex items-start gap-2">
-                              <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
-                              <div className="space-y-2">
-                                <div className="font-medium">This action cannot be undone.</div>
-                                <div>
-                                  This will permanently delete the "{addOn.name}" add-on.
-                                  Deleting it will not affect existing bookings, but it will no longer be available for new bookings.
-                                </div>
-                              </div>
-                            </div>
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                          <AlertDialogCancel>Cancel</AlertDialogCancel>
-                          <AlertDialogAction
-                            className="bg-red-500 hover:bg-red-600"
-                            onClick={() => handleDeleteAddOn(addOn.id)}
-                            disabled={isDeleting === addOn.id}
-                          >
-                            {isDeleting === addOn.id ? "Deleting..." : "Delete"}
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
-            {!isLoading && !error && filteredAddOns.length === 0 && (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <Package className="mx-auto h-12 w-12 text-muted-foreground/50" />
-                  <div className="mt-2 text-lg font-medium">No add-ons found</div>
-                  <div className="text-sm text-muted-foreground">
-                    {searchQuery || categoryFilter !== "all"
-                      ? "Try adjusting your search or filter"
-                      : "Get started by adding a new add-on"}
-                  </div>
-                </TableCell>
-              </TableRow>
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <EnhancedDataTable
+        data={filteredAddOns}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={isLoading}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={exportColumns}
+        exportTitle="NIBOG Add-ons Report"
+        exportFilename="nibog-add-ons"
+        emptyMessage="No add-ons found"
+        className="min-h-[400px]"
+      />
     </div>
   )
 }

@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Search, Filter, Eye, Download, RefreshCw, AlertCircle, Edit, Plus } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { createPaymentExportColumns } from "@/lib/export-utils"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Calendar } from "@/components/ui/calendar"
 import { format } from "date-fns"
@@ -252,6 +254,79 @@ export default function PaymentsPage() {
   const pendingCount = analytics?.summary?.pending_payments || filteredPayments.filter(p => p.payment_status === "pending").length
   const refundedCount = analytics?.summary?.refunded_payments || filteredPayments.filter(p => p.payment_status === "refunded").length
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'transaction_id',
+      label: 'Transaction ID',
+      sortable: true,
+    },
+    {
+      key: 'user_name',
+      label: 'Customer',
+      sortable: true,
+    },
+    {
+      key: 'event_title',
+      label: 'Event',
+      sortable: true,
+    },
+    {
+      key: 'amount',
+      label: 'Amount',
+      sortable: true,
+      render: (value) => `₹${value?.toLocaleString() || '0'}`
+    },
+    {
+      key: 'payment_method',
+      label: 'Method',
+      sortable: true,
+      render: (value) => (
+        <Badge variant="outline">
+          {value || 'Unknown'}
+        </Badge>
+      )
+    },
+    {
+      key: 'payment_status',
+      label: 'Status',
+      sortable: true,
+      render: (value) => {
+        const statusColors = {
+          successful: 'bg-green-500 hover:bg-green-600',
+          pending: 'bg-yellow-500 hover:bg-yellow-600',
+          failed: 'bg-red-500 hover:bg-red-600',
+          refunded: 'bg-blue-500 hover:bg-blue-600'
+        }
+        return (
+          <Badge className={statusColors[value as keyof typeof statusColors] || 'bg-gray-500'}>
+            {value || 'Unknown'}
+          </Badge>
+        )
+      }
+    },
+    {
+      key: 'created_at',
+      label: 'Date',
+      sortable: true,
+      render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View Details",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (payment) => {
+        window.location.href = `/admin/payments/${payment.id}`
+      }
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = []
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -422,91 +497,24 @@ export default function PaymentsPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Payment ID</TableHead>
-              <TableHead>Booking ID</TableHead>
-              <TableHead>User</TableHead>
-              <TableHead>Event</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Amount</TableHead>
-              <TableHead>Payment Method</TableHead>
-              <TableHead>Transaction ID</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
-                  <div className="flex items-center justify-center">
-                    <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
-                    Loading payments...
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : filteredPayments.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={10} className="h-24 text-center">
-                  <div className="flex flex-col items-center justify-center">
-                    <AlertCircle className="h-8 w-8 text-muted-foreground mb-2" />
-                    <p>No payments found.</p>
-                    <p className="text-sm text-muted-foreground">Try adjusting your filters or refresh the data.</p>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredPayments.map((payment) => (
-                <TableRow key={payment.payment_id}>
-                  <TableCell className="font-medium">{payment.payment_id}</TableCell>
-                  <TableCell>{payment.booking_id}</TableCell>
-                  <TableCell>{payment.user_name || '-'}</TableCell>
-                  <TableCell>
-                    <button
-                      onClick={() => payment.event_title && handleEventClick(payment.event_title)}
-                      className="text-blue-600 hover:text-blue-800 hover:underline cursor-pointer text-left"
-                      disabled={!payment.event_title}
-                    >
-                      {payment.event_title || 'No event'}
-                    </button>
-                  </TableCell>
-                  <TableCell>{payment.payment_date ? format(new Date(payment.payment_date), "yyyy-MM-dd") : '-'}</TableCell>
-                  <TableCell>₹{(typeof payment.amount === 'string' ? parseFloat(payment.amount) : payment.amount).toLocaleString()}</TableCell>
-                  <TableCell>{payment.payment_method}</TableCell>
-                  <TableCell className="font-mono text-xs">{payment.transaction_id}</TableCell>
-                  <TableCell>{getStatusBadge(payment.payment_status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex gap-1 justify-end">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/payments/${payment.payment_id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleEditStatus(payment)}
-                        disabled={isEditStatusDisabled(payment.payment_status)}
-                        title={isEditStatusDisabled(payment.payment_status)
-                          ? `Cannot edit ${payment.payment_status} payments`
-                          : "Edit payment status"
-                        }
-                      >
-                        <Edit className="h-4 w-4" />
-                        <span className="sr-only">Edit Status</span>
-                      </Button>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <EnhancedDataTable
+        data={filteredPayments}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={loading}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={createPaymentExportColumns()}
+        exportTitle="NIBOG Payments Report"
+        exportFilename="nibog-payments"
+        emptyMessage="No payments found"
+        className="min-h-[400px]"
+      />
 
       {/* Export Modal */}
       <ExportPaymentsModal

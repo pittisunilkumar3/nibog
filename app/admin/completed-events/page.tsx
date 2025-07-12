@@ -5,7 +5,7 @@ import { CompletedEvent, fetchCompletedEvents } from "@/services/completedEvents
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { format } from "date-fns"
-import { Calendar, Search, MapPin, ChevronRight, BarChart, Building } from "lucide-react"
+import { Calendar, Search, MapPin, ChevronRight, BarChart, Building, Eye, Edit } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -26,6 +26,8 @@ import {
   TableRow,
 } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { createCompletedEventExportColumns } from "@/lib/export-utils"
 // We'll implement animations without framer-motion
 
 interface NormalizedEvent {
@@ -168,6 +170,74 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
     }
   }).filter(cityData => cityData.events.length > 0)
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<CompletedEvent>[] = [
+    {
+      key: 'title',
+      label: 'Event',
+      sortable: true,
+    },
+    {
+      key: 'gameTemplate',
+      label: 'Game Template',
+      sortable: true,
+    },
+    {
+      key: 'venue',
+      label: 'Venue',
+      sortable: true,
+    },
+    {
+      key: 'city',
+      label: 'City',
+      sortable: true,
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      sortable: true,
+      render: (value) => format(new Date(value), "MMM d, yyyy")
+    },
+    {
+      key: 'registrations',
+      label: 'Registrations',
+      sortable: true,
+    },
+    {
+      key: 'attendance',
+      label: 'Attendance',
+      sortable: true,
+      render: (value, row) => (
+        <div className="flex items-center">
+          <span className="mr-2">{value}</span>
+          <Badge variant={row.attendanceRate >= 90 ? "default" : "outline"}>
+            {row.attendanceRate}%
+          </Badge>
+        </div>
+      )
+    },
+    {
+      key: 'revenue',
+      label: 'Revenue',
+      sortable: true,
+      render: (value) => formatCurrency(value)
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<CompletedEvent>[] = [
+    {
+      label: "View Details",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (event) => {
+        window.location.href = `/admin/completed-events/${event.id}`
+      }
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<CompletedEvent>[] = []
+
   return (
     <div className="space-y-6">
       {loading ? (
@@ -254,62 +324,25 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
       </Card>
 
       {viewMode === "list" && (
-          <div className="transition-all duration-300 ease-in-out">
-            <div className="rounded-md border">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Event</TableHead>
-                    <TableHead>Game Template</TableHead>
-                    <TableHead>Venue</TableHead>
-                    <TableHead>City</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Registrations</TableHead>
-                    <TableHead>Attendance</TableHead>
-                    <TableHead>Revenue</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredEvents.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={9} className="h-24 text-center">
-                        No completed events found.
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredEvents.map((event) => (
-                      <TableRow key={event.id}>
-                        <TableCell className="font-medium">{event.title}</TableCell>
-                        <TableCell>{event.gameTemplate}</TableCell>
-                        <TableCell>{event.venue}</TableCell>
-                        <TableCell>{event.city}</TableCell>
-                        <TableCell>{format(new Date(event.date), "MMM d, yyyy")}</TableCell>
-                        <TableCell>{event.registrations}</TableCell>
-                        <TableCell>
-                          <div className="flex items-center">
-                            <span className="mr-2">{event.attendance}</span>
-                            <Badge variant={event.attendanceRate >= 90 ? "default" : "outline"}>
-                              {event.attendanceRate}%
-                            </Badge>
-                          </div>
-                        </TableCell>
-                        <TableCell>{formatCurrency(event.revenue)}</TableCell>
-                        <TableCell className="text-right">
-                          <Button variant="ghost" size="sm" asChild>
-                            <Link href={`/admin/completed-events/${event.id}`}>
-                              View Details
-                            </Link>
-                          </Button>
-                        </TableCell>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </div>
-        )}
+        <EnhancedDataTable
+          data={filteredEvents}
+          columns={columns}
+          actions={actions}
+          bulkActions={bulkActions}
+          loading={loading}
+          searchable={false} // We have custom search above
+          filterable={false} // We have custom filters above
+          exportable={true}
+          selectable={true}
+          pagination={true}
+          pageSize={25}
+          exportColumns={createCompletedEventExportColumns()}
+          exportTitle="NIBOG Completed Events Report"
+          exportFilename="nibog-completed-events"
+          emptyMessage="No completed events found"
+          className="min-h-[400px]"
+        />
+      )}
 
         {viewMode === "cities" && (
           <div className="transition-all duration-300 ease-in-out space-y-6">

@@ -29,6 +29,8 @@ import {
 } from "@/components/ui/alert-dialog"
 import { useToast } from "@/hooks/use-toast"
 import { CertificateTemplate } from "@/types/certificate"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { ExportColumn } from "@/lib/export-utils"
 import {
   getAllCertificateTemplates,
   deleteCertificateTemplate,
@@ -222,6 +224,113 @@ export default function CertificateTemplatesPage() {
     )
   }
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'name',
+      label: 'Template Name',
+      sortable: true,
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      sortable: true,
+      render: (value) => (
+        <div className="max-w-xs truncate" title={value}>
+          {value || 'No description'}
+        </div>
+      )
+    },
+    {
+      key: 'category',
+      label: 'Category',
+      sortable: true,
+      render: (value) => (
+        <Badge variant="outline">
+          {value || 'General'}
+        </Badge>
+      )
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Active" : "Inactive"}
+        </Badge>
+      )
+    },
+    {
+      key: 'created_at',
+      label: 'Created',
+      sortable: true,
+      render: (value) => formatDate(value)
+    },
+    {
+      key: 'updated_at',
+      label: 'Updated',
+      sortable: true,
+      render: (value) => formatDate(value)
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (template) => {
+        window.location.href = `/admin/certificate-templates/${template.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (template) => {
+        window.location.href = `/admin/certificate-templates/${template.id}/edit`
+      }
+    },
+    {
+      label: "Duplicate",
+      icon: <Copy className="h-4 w-4" />,
+      onClick: (template) => handleDuplicate(template.id)
+    },
+    {
+      label: "Download",
+      icon: <Download className="h-4 w-4" />,
+      onClick: (template) => handleDownload(template.id)
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (template) => handleDelete(template.id),
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = [
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedTemplates) => {
+        selectedTemplates.forEach(template => handleDelete(template.id))
+      },
+      variant: 'destructive'
+    }
+  ]
+
+  // Define export columns
+  const exportColumns: ExportColumn[] = [
+    { key: 'name', label: 'Template Name' },
+    { key: 'description', label: 'Description' },
+    { key: 'category', label: 'Category' },
+    { key: 'is_active', label: 'Status', format: (value) => value ? 'Active' : 'Inactive' },
+    { key: 'created_at', label: 'Created Date' },
+    { key: 'updated_at', label: 'Updated Date' }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -280,191 +389,24 @@ export default function CertificateTemplatesPage() {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Preview</TableHead>
-                <TableHead>Name</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Created</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredTemplates.map((template) => (
-                <TableRow key={template.id}>
-                  <TableCell>
-                    <div className="relative h-16 w-24 overflow-hidden rounded-md border">
-                      {(() => {
-                        // Handle new background_style options
-                        if (template.background_style?.type === 'image') {
-                          const imageUrl = template.background_style.image_url || template.background_image;
-                          if (imageUrl) {
-                            return (
-                              <img
-                                src={imageUrl.startsWith('http') ? imageUrl : `${window.location.origin}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`}
-                                alt={template.name}
-                                className="h-full w-full object-cover"
-                                onError={(e) => {
-                                  const target = e.target as HTMLImageElement;
-                                  target.style.display = 'none';
-                                  target.nextElementSibling?.classList.remove('hidden');
-                                }}
-                              />
-                            );
-                          }
-                        } else if (template.background_style?.type === 'solid' && template.background_style.solid_color) {
-                          return (
-                            <div
-                              className="h-full w-full"
-                              style={{ backgroundColor: template.background_style.solid_color }}
-                            />
-                          );
-                        } else if (template.background_style?.type === 'gradient' && template.background_style.gradient_colors?.length === 2) {
-                          return (
-                            <div
-                              className="h-full w-full"
-                              style={{
-                                background: `linear-gradient(135deg, ${template.background_style.gradient_colors[0]}, ${template.background_style.gradient_colors[1]})`
-                              }}
-                            />
-                          );
-                        } else if (template.background_image) {
-                          // Legacy background image support
-                          return (
-                            <img
-                              src={template.background_image.startsWith('http') ? template.background_image : `${window.location.origin}${template.background_image.startsWith('/') ? '' : '/'}${template.background_image}`}
-                              alt={template.name}
-                              className="h-full w-full object-cover"
-                              onError={(e) => {
-                                const target = e.target as HTMLImageElement;
-                                target.style.display = 'none';
-                                target.nextElementSibling?.classList.remove('hidden');
-                              }}
-                            />
-                          );
-                        }
-                        return null;
-                      })()}
-                      <div className={`absolute inset-0 flex items-center justify-center bg-muted ${
-                        (template.background_style?.type === 'image' && (template.background_style.image_url || template.background_image)) ||
-                        template.background_style?.type === 'solid' ||
-                        template.background_style?.type === 'gradient' ||
-                        template.background_image ? 'hidden' : ''
-                      }`}>
-                        <FileText className="h-6 w-6 text-muted-foreground" />
-                      </div>
-                    </div>
-                  </TableCell>
-                  <TableCell className="font-medium">
-                    <Link href={`/admin/certificate-templates/${template.id}/edit`} className="hover:underline">
-                      {template.name}
-                    </Link>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getTypeColor(template.type)}>
-                      {template.type.replace('_', ' ')}
-                    </Badge>
-                  </TableCell>
-                  <TableCell className="max-w-xs truncate">
-                    {template.description}
-                  </TableCell>
-                  <TableCell>
-                    {formatDate(template.created_at)}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handlePreview(template)}
-                        disabled={previewLoading === template.id}
-                        title="Preview Certificate"
-                      >
-                        {previewLoading === template.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          <Eye className="h-4 w-4" />
-                        )}
-                        <span className="sr-only">Preview</span>
-                      </Button>
-                      <Button variant="outline" size="icon" asChild>
-                        <Link href={`/admin/certificate-templates/${template.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        onClick={() => handleDuplicate(template)}
-                      >
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Duplicate</span>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="outline" size="icon">
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Certificate Template</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              Are you sure you want to delete the "{template.name}" template? This action cannot be undone.
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              onClick={() => handleDelete(template.id)}
-                              disabled={deleteLoading === template.id}
-                              className="bg-red-500 hover:bg-red-600"
-                            >
-                              {deleteLoading === template.id ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Deleting...
-                                </>
-                              ) : (
-                                "Delete"
-                              )}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-
-              {filteredTemplates.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={6} className="h-24 text-center">
-                    <div className="flex flex-col items-center justify-center space-y-2">
-                      <FileText className="h-8 w-8 text-muted-foreground" />
-                      <p className="text-muted-foreground">
-                        {searchTerm || typeFilter !== "all"
-                          ? "No templates match your search criteria"
-                          : "No certificate templates found"
-                        }
-                      </p>
-                      {(!searchTerm && typeFilter === "all") && (
-                        <Button asChild variant="outline">
-                          <Link href="/admin/certificate-templates/new">
-                            Create your first template
-                          </Link>
-                        </Button>
-                      )}
-                    </div>
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
+          <EnhancedDataTable
+            data={filteredTemplates}
+            columns={columns}
+            actions={actions}
+            bulkActions={bulkActions}
+            loading={loading}
+            searchable={false} // We have custom search above
+            filterable={false} // We have custom filters above
+            exportable={true}
+            selectable={true}
+            pagination={true}
+            pageSize={25}
+            exportColumns={exportColumns}
+            exportTitle="NIBOG Certificate Templates Report"
+            exportFilename="nibog-certificate-templates"
+            emptyMessage="No certificate templates found"
+            className="min-h-[400px]"
+          />
         </CardContent>
       </Card>
     </div>

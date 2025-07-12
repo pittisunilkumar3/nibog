@@ -52,6 +52,8 @@ export default function VenuesPage() {
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [isDeleting, setIsDeleting] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedCity, setSelectedCity] = useState("all")
 
   // Fetch venues and cities data
   const fetchData = async () => {
