@@ -24,36 +24,32 @@ import { getVenueById, deleteVenue } from "@/services/venueService"
 import { getCityById } from "@/services/cityService"
 import { useToast } from "@/components/ui/use-toast"
 
-// Mock events data - in a real app, this would come from an API
-const mockEvents = [
-  {
-    id: "E001",
-    title: "Baby Sensory Play",
-    venue: "NIBOG Stadium",
-    city: "Hyderabad",
-    date: "2025-04-15",
-    registrations: 45,
-    status: "upcoming",
-  },
-  {
-    id: "E002",
-    title: "Baby Crawling",
-    venue: "NIBOG Stadium",
-    city: "Hyderabad",
-    date: "2025-05-20",
-    registrations: 38,
-    status: "upcoming",
-  },
-  {
-    id: "E003",
-    title: "Running Race",
-    venue: "NIBOG Stadium",
-    city: "Hyderabad",
-    date: "2025-06-10",
-    registrations: 52,
-    status: "upcoming",
-  },
-]
+// Function to fetch events data for a venue
+const fetchVenueEvents = async (venueId: number) => {
+  try {
+    console.log(`Making API request for venue ID: ${venueId}`)
+    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/get-upcoming-events/venues-id', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        venues_id: venueId
+      }),
+    })
+    
+    if (!response.ok) {
+      throw new Error(`Failed to fetch events data: ${response.status} ${response.statusText}`)
+    }
+    
+    const data = await response.json()
+    console.log('Raw API response:', JSON.stringify(data))
+    return data
+  } catch (error) {
+    console.error('Error fetching events data:', error)
+    throw error
+  }
+}
 
 type Props = {
   params: Promise<{ id: string }>
@@ -72,6 +68,8 @@ export default function VenueDetailPage({ params }: Props) {
   const [isLoading, setIsLoading] = useState(true)
   const [isDeleting, setIsDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [eventsData, setEventsData] = useState<any>(null)
+  const [isLoadingEvents, setIsLoadingEvents] = useState(true)
 
   // Fetch venue data on component mount
   useEffect(() => {
@@ -151,6 +149,47 @@ export default function VenueDetailPage({ params }: Props) {
 
     fetchVenueData()
   }, [venueId])
+  
+  // Fetch events data when venue is loaded
+  useEffect(() => {
+    const fetchEvents = async () => {
+      if (!venue) return
+      
+      try {
+        setIsLoadingEvents(true)
+        // Use the correct venue ID (could be venue_id or id)
+        const actualVenueId = venue.venue_id || venue.id
+        
+        console.log(`Fetching events for venue ID: ${actualVenueId}`)
+        const data = await fetchVenueEvents(actualVenueId)
+        
+        // Log the full structure to debug
+        console.log('Events data structure:', JSON.stringify(data, null, 2))
+        
+        if (Array.isArray(data) && data.length > 0) {
+          console.log(`Found ${data[0].upcoming_events?.length || 0} upcoming events`)
+          setEventsData(data[0]) // API returns an array with one object
+        } else {
+          console.error('Unexpected data format from API', data)
+          setEventsData({
+            summary: { total_events: 0, upcoming_events: 0, past_events: 0 },
+            upcoming_events: []
+          })
+        }
+      } catch (error) {
+        console.error('Failed to fetch events data:', error)
+        // Set default empty data structure
+        setEventsData({
+          summary: { total_events: 0, upcoming_events: 0, past_events: 0 },
+          upcoming_events: []
+        })
+      } finally {
+        setIsLoadingEvents(false)
+      }
+    }
+    
+    fetchEvents()
+  }, [venue])
 
   // Handle venue deletion
   const handleDeleteVenue = async () => {
@@ -218,11 +257,14 @@ export default function VenueDetailPage({ params }: Props) {
   // Get the venue name (could be venue_name or name depending on the API response)
   const venueName = venue.venue_name || venue.name
 
-  // Filter mock events for this venue - in a real app, you would fetch events for this venue from an API
-  const venueEvents = mockEvents.filter(e => e.venue === venueName)
-
-  // Calculate event stats - in a real app, this would come from the API
-  const eventCount = venueEvents.length
+  // Get events from the API data or use empty array as fallback
+  const upcomingEvents = eventsData?.upcoming_events || []
+  
+  // Get event statistics from the API data or use fallbacks
+  const eventStats = eventsData?.summary || { total_events: 0, upcoming_events: 0, past_events: 0 }
+  
+  console.log('Upcoming events count:', upcomingEvents.length)
+  console.log('Upcoming events data:', JSON.stringify(upcomingEvents, null, 2))
 
   return (
     <div className="space-y-6">
@@ -263,9 +305,9 @@ export default function VenueDetailPage({ params }: Props) {
                       <div className="font-medium">This action cannot be undone.</div>
                       <div>
                         This will permanently delete the venue "{venueName}" in {city ? city.city_name : `City ID: ${venue.city_id}`} and all associated data.
-                        {eventCount > 0 ? (
+                        {eventStats.total_events > 0 ? (
                           <>
-                            {" "}This venue has {eventCount} event{eventCount !== 1 ? "s" : ""}.
+                            {" "}This venue has {eventStats.total_events} event{eventStats.total_events !== 1 ? "s" : ""}.
                             Deleting it may affect existing data.
                           </>
                         ) : (
@@ -334,16 +376,22 @@ export default function VenueDetailPage({ params }: Props) {
           <CardContent className="space-y-4">
             <div className="rounded-lg border p-4">
               <h3 className="text-sm font-medium text-muted-foreground">Total Events</h3>
-              <p className="mt-2 text-2xl font-bold">{eventCount}</p>
+              <p className="mt-2 text-2xl font-bold">{eventStats.total_events}</p>
             </div>
             <div className="rounded-lg border p-4">
               <h3 className="text-sm font-medium text-muted-foreground">Upcoming Events</h3>
-              <p className="mt-2 text-2xl font-bold">{Math.floor(eventCount * 0.7)}</p>
+              <p className="mt-2 text-2xl font-bold">{eventStats.upcoming_events}</p>
             </div>
             <div className="rounded-lg border p-4">
               <h3 className="text-sm font-medium text-muted-foreground">Past Events</h3>
-              <p className="mt-2 text-2xl font-bold">{Math.floor(eventCount * 0.3)}</p>
+              <p className="mt-2 text-2xl font-bold">{eventStats.past_events}</p>
             </div>
+            {isLoadingEvents && (
+              <div className="flex items-center justify-center">
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                <span className="text-sm">Loading event data...</span>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -366,30 +414,40 @@ export default function VenueDetailPage({ params }: Props) {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {venueEvents.length === 0 ? (
+              {isLoadingEvents ? (
+                <TableRow>
+                  <TableCell colSpan={5} className="h-24 text-center">
+                    <Loader2 className="h-4 w-4 animate-spin mx-auto mb-2" />
+                    <span>Loading events...</span>
+                  </TableCell>
+                </TableRow>
+              ) : upcomingEvents.length === 0 ? (
                 <TableRow>
                   <TableCell colSpan={5} className="h-24 text-center">
                     No events found for this venue.
                   </TableCell>
                 </TableRow>
               ) : (
-                venueEvents.map((event) => (
-                  <TableRow key={event.id}>
-                    <TableCell className="font-medium">{event.title}</TableCell>
-                    <TableCell>{event.date}</TableCell>
-                    <TableCell>{event.registrations}</TableCell>
-                    <TableCell>
-                      <Badge className="bg-blue-500 hover:bg-blue-600">Upcoming</Badge>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <Button variant="ghost" size="sm" asChild>
-                        <Link href={`/admin/events/${event.id}`}>
-                          View
-                        </Link>
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))
+                upcomingEvents.map((event) => {
+                  console.log('Rendering event:', event)
+                  return (
+                    <TableRow key={event.event_id}>
+                      <TableCell className="font-medium">{event.title || 'Unnamed Event'}</TableCell>
+                      <TableCell>{event.event_date || 'No Date'}</TableCell>
+                      <TableCell>-</TableCell>
+                      <TableCell>
+                        <Badge className="bg-blue-500 hover:bg-blue-600">{event.status || 'Unknown'}</Badge>
+                      </TableCell>
+                      <TableCell className="text-right">
+                        <Button variant="ghost" size="sm" asChild>
+                          <Link href={`/admin/events/${event.event_id}`}>
+                            View
+                          </Link>
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )
+                })
               )}
             </TableBody>
           </Table>
