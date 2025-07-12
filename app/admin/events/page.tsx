@@ -419,13 +419,7 @@ export default function EventsPage() {
         window.location.href = `/admin/events/${event.id}/edit`
       }
     },
-    {
-      label: "Clone",
-      icon: <Copy className="h-4 w-4" />,
-      onClick: (event) => {
-        window.location.href = `/admin/events/clone/${event.id}`
-      }
-    },
+
     {
       label: event => event.status === "published" ? "Pause" : "Resume",
       icon: event => event.status === "published" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />,
