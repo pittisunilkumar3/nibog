@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { useToast } from "@/components/ui/use-toast"
+import { toast } from "@/components/ui/use-toast"
+import { Toaster } from "@/components/ui/toaster"
 import { AUTH_API } from "@/config/api"
 import { NibogLogo } from "@/components/nibog-logo"
 
@@ -15,12 +16,17 @@ export default function SuperAdminLoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [isLoading, setIsLoading] = useState(false)
+  const [errorMessage, setErrorMessage] = useState("") // State for error message
   const router = useRouter()
-  const { toast } = useToast()
   const [redirectTo, setRedirectTo] = useState('/admin')
 
-  // Get redirect parameter from URL
+  // Get redirect parameter from URL and clear any stored credentials
   useEffect(() => {
+    // Clear any stored credentials to prevent automatic login
+    localStorage.removeItem('superadmin')
+    sessionStorage.removeItem('superadmin')
+    document.cookie = 'superadmin-token=; path=/; expires=Thu, 01 Jan 1970 00:00:00 GMT;'
+    
     const params = new URLSearchParams(window.location.search)
     const redirect = params.get('redirect')
     if (redirect) {
@@ -28,43 +34,14 @@ export default function SuperAdminLoginPage() {
     }
   }, [])
 
+  // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
+    setErrorMessage("") // Clear any previous error messages
 
     try {
       console.log('Attempting login with:', { email })
-      
-      // For testing purposes: Create a mock admin user if email contains 'admin'
-      if (email.toLowerCase().includes('admin')) {
-        console.log('Creating mock admin user for testing')
-        
-        const mockAdminUser = {
-          id: '12345',
-          email: email,
-          is_superadmin: true,
-          name: 'Admin User',
-          role: 'superadmin'
-        }
-        
-        // Store in both localStorage and sessionStorage for reliability
-        localStorage.setItem('superadmin', JSON.stringify(mockAdminUser))
-        sessionStorage.setItem('superadmin', JSON.stringify(mockAdminUser))
-        
-        // Set a cookie as well
-        document.cookie = `superadmin-token=${encodeURIComponent(JSON.stringify(mockAdminUser))}; path=/; max-age=${60*60*24*7}`
-        
-        toast({
-          title: "Login Successful",
-          description: "You've been logged in as a superadmin for testing.",
-          variant: "default",
-        })
-        
-        console.log('Login successful, redirecting to', redirectTo)
-        // Force a full page reload
-        window.location.href = redirectTo
-        return
-      }
       
       // Regular API-based authentication flow
       const response = await fetch('/api/auth/proxy/login', {
@@ -82,7 +59,12 @@ export default function SuperAdminLoginPage() {
       
       // Check if login was successful
       if (!data[0]?.success) {
-        throw new Error(data[0]?.message || 'Invalid email or password')
+        throw new Error('Login failed: Invalid email or password. Please check your credentials and try again.')
+      }
+      
+      // Double check that we have valid user data with is_superadmin flag
+      if (!data[0]?.object?.is_superadmin) {
+        throw new Error('Access denied: This account does not have superadmin privileges.')
       }
 
       // Store user data in localStorage, sessionStorage and cookies
@@ -99,11 +81,28 @@ export default function SuperAdminLoginPage() {
       window.location.href = redirectTo
     } catch (error) {
       console.error('Login error:', error)
-      toast({
-        title: "Login Failed",
-        description: error instanceof Error ? error.message : 'An error occurred during login',
-        variant: "destructive",
-      })
+      
+      // Determine the appropriate error message
+      let errorTitle = "Login Failed"
+      let errorMessage = 'An error occurred during login. Please try again.'
+      
+      if (error instanceof Error) {
+        if (error.message.includes('Invalid email or password')) {
+          errorTitle = "Invalid Credentials"
+          errorMessage = 'The email or password you entered is incorrect. Please try again.'
+        } else if (error.message.includes('does not have superadmin privileges')) {
+          errorTitle = "Access Denied"
+          errorMessage = 'This account does not have superadmin access privileges.'
+        } else if (error.message.includes('Network Error') || error.message.includes('Failed to fetch')) {
+          errorTitle = "Connection Error"
+          errorMessage = 'Unable to connect to the authentication server. Please check your internet connection and try again.'
+        } else {
+          errorMessage = error.message
+        }
+      }
+      
+      // Set the error message to display on the card
+      setErrorMessage(`${errorTitle}: ${errorMessage}`)
     } finally {
       setIsLoading(false)
     }
@@ -111,6 +110,7 @@ export default function SuperAdminLoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-gray-100 p-4">
+      <Toaster />
       <Card className="w-full max-w-md">
         <CardHeader className="space-y-1">
           <div className="flex justify-center mb-4">
@@ -122,6 +122,11 @@ export default function SuperAdminLoginPage() {
           <CardDescription className="text-center">
             Enter your credentials to access the admin dashboard
           </CardDescription>
+          {errorMessage && (
+            <div className="mt-3 p-3 bg-red-50 border border-red-200 text-red-600 rounded-md text-sm">
+              {errorMessage}
+            </div>
+          )}
         </CardHeader>
         <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
