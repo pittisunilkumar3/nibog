@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react"
+import { Calendar as CalendarIcon } from "lucide-react"
 import { DayPicker, CaptionProps, useNavigation } from "react-day-picker"
 import { format, getYear, getMonth } from "date-fns"
 
@@ -15,6 +15,8 @@ function Calendar({
   className,
   classNames,
   showOutsideDays = true,
+  fromYear,
+  toYear,
   ...props
 }: CalendarProps) {
   // Custom caption component with month and year dropdowns
@@ -30,9 +32,15 @@ function Calendar({
     const currentYear = getYear(displayMonth)
     const currentMonth = getMonth(displayMonth)
 
-    // Generate years (10 years back and 10 years forward)
+    // Generate years from fromYear to toYear, or use a reasonable default range
     const currentYearNum = new Date().getFullYear()
-    const years = Array.from({ length: 21 }, (_, i) => currentYearNum - 10 + i)
+    const startYear = typeof fromYear === 'number' ? fromYear : 2000
+    const endYear = typeof toYear === 'number' ? toYear : currentYearNum
+    // Create array in reverse order (newest years first) for better UX
+    const years = Array.from(
+      { length: endYear - startYear + 1 }, 
+      (_, i) => endYear - i
+    )
 
     // Handle month change
     const handleMonthChange = (monthIndex: string) => {
@@ -58,7 +66,7 @@ function Calendar({
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Month" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-40 overflow-y-auto">
               {months.map((month, index) => (
                 <SelectItem key={month} value={index.toString()} className="text-sm">
                   {month}
@@ -75,7 +83,7 @@ function Calendar({
             <SelectTrigger className="h-8 text-xs">
               <SelectValue placeholder="Year" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="max-h-40 overflow-y-auto">
               {years.map((year) => (
                 <SelectItem key={year} value={year.toString()} className="text-sm">
                   {year}
@@ -128,11 +136,11 @@ function Calendar({
         ...classNames,
       }}
       components={{
-        IconLeft: ({ ...props }) => <ChevronLeft className="h-4 w-4" />,
-        IconRight: ({ ...props }) => <ChevronRight className="h-4 w-4" />,
+        IconLeft: () => <span className="h-4 w-4">←</span>,
+        IconRight: () => <span className="h-4 w-4">→</span>,
         Caption: CustomCaption
       }}
-      captionLayout="custom"
+      captionLayout="dropdown"
       {...props}
     />
   )

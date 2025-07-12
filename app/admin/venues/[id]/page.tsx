@@ -253,12 +253,21 @@ export default function VenueDetailPage({ params }: Props) {
       </div>
     )
   }
-
+  
   // Get the venue name (could be venue_name or name depending on the API response)
   const venueName = venue.venue_name || venue.name
 
+  // Define Event interface
+  interface Event {
+    event_id: number | string;
+    title?: string;
+    event_date?: string;
+    status?: string;
+    [key: string]: any; // For any additional properties
+  }
+
   // Get events from the API data or use empty array as fallback
-  const upcomingEvents = eventsData?.upcoming_events || []
+  const upcomingEvents = eventsData?.upcoming_events || [] as Event[]
   
   // Get event statistics from the API data or use fallbacks
   const eventStats = eventsData?.summary || { total_events: 0, upcoming_events: 0, past_events: 0 }
@@ -428,7 +437,7 @@ export default function VenueDetailPage({ params }: Props) {
                   </TableCell>
                 </TableRow>
               ) : (
-                upcomingEvents.map((event) => {
+                upcomingEvents.map((event: Event) => {
                   console.log('Rendering event:', event)
                   return (
                     <TableRow key={event.event_id}>

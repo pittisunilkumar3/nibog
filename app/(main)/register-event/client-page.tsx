@@ -16,7 +16,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addMonths, differenceInMonths, differenceInDays } from "date-fns"
 import { cn } from "@/lib/utils"
-import { CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, AlertCircle, Loader2, CheckCircle } from "lucide-react"
+import { Calendar as CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
@@ -28,6 +28,7 @@ const AddOnSelector = dynamic(() => import("@/components/add-on-selector"), {
 })
 
 import { fetchAllAddOnsFromExternalApi } from "@/services/addOnService"
+import type { AddOn } from "@/types"
 import type { AddOn as AddOnType } from "@/types"
 import { getAllCities } from "@/services/cityService"
 import { getEventsByCityId, getGamesByAgeAndEvent, EventListItem, EventGameListItem } from "@/services/eventService"
@@ -136,7 +137,42 @@ export default function RegisterEventClientPage() {
       try {
         const addOnData = await fetchAllAddOnsFromExternalApi();
         console.log('Fetched add-ons from external API:', addOnData);
-        setApiAddOns(addOnData as AddOnType[]);
+        
+        // Transform the API response to match the AddOn type
+        const transformedAddOns = addOnData.map(addon => ({
+          ...addon,
+          id: addon.id.toString(), // Convert ID to string to match AddOn type
+          name: addon.name || '',
+          description: addon.description || '',
+          price: parseFloat(String(addon.price)) || 0, // Ensure price is a number
+          images: Array.isArray(addon.images) ? addon.images : [],
+          category: addon.category as 'meal' | 'merchandise' | 'service' | 'other',
+          isActive: Boolean(addon.is_active),
+          availableForEvents: [],
+          hasVariants: Boolean(addon.has_variants),
+          variants: (addon.variants || []).map(variant => ({
+            id: String(variant.id || ''), // Ensure ID is a string
+            name: String(variant.name || 'Variant'),
+            price: (parseFloat(String(variant.price_modifier)) || 0) + (parseFloat(String(addon.price)) || 0),
+            price_modifier: parseFloat(String(variant.price_modifier)) || 0,
+            addon_id: addon.id,
+            attributes: {}, // Default empty attributes
+            stockQuantity: Number(variant.stock_quantity) || 0,
+            sku: String(variant.sku || `variant-${variant.id || 'default'}`)
+          })),
+          stockQuantity: Number(addon.stock_quantity) || 0,
+          sku: String(addon.sku || ''),
+          bundleDiscount: {
+            minQuantity: Number(addon.bundle_min_quantity) || 1,
+            discountPercentage: parseFloat(String(addon.bundle_discount_percentage)) || 0
+          },
+          minQuantity: Number(addon.bundle_min_quantity) || 1,
+          discountPercentage: parseFloat(String(addon.bundle_discount_percentage)) || 0,
+          createdAt: addon.created_at || new Date().toISOString(),
+          updatedAt: addon.updated_at || new Date().toISOString()
+        }));
+        
+        setApiAddOns(transformedAddOns as AddOnType[]);
       } catch (error) {
         console.error('Failed to load add-ons:', error);
         setAddOnError('Failed to load add-ons. Please try again.');
@@ -230,14 +266,22 @@ export default function RegisterEventClientPage() {
 
       // Check if this is a variant with a different price
       if (item.variantId && item.addOn.hasVariants && item.addOn.variants) {
-        const variant = item.addOn.variants.find(v => v.id === item.variantId);
+        const variant = item.addOn.variants.find((v: any) => v.id === item.variantId);
         if (variant) {
-          // Use the variant's price if available, otherwise add price modifier to base price
-          if (typeof variant.price === 'number' || !isNaN(parseFloat(variant.price?.toString() || ''))) {
-            price = parseFloat(String(variant.price));
-          } else if (typeof variant.price_modifier === 'number' || !isNaN(parseFloat((variant.price_modifier || 0).toString()))) {
-            const modifier = parseFloat(String(variant.price_modifier || 0));
-            price = parseFloat(String(item.addOn.price)) + modifier;
+          // First try to use the variant's direct price if available
+          if (typeof variant.price === 'number') {
+            price = variant.price;
+          } 
+          // Then try to parse the price as a number if it's a string
+          else if (typeof variant.price === 'string' && !isNaN(parseFloat(variant.price))) {
+            price = parseFloat(variant.price);
+          }
+          // Finally, try to use the price modifier if available
+          else if (typeof variant.price_modifier === 'number') {
+            price = parseFloat(String(item.addOn.price)) + variant.price_modifier;
+          }
+          else if (typeof variant.price_modifier === 'string' && !isNaN(parseFloat(variant.price_modifier))) {
+            price = parseFloat(String(item.addOn.price)) + parseFloat(variant.price_modifier);
           }
         }
       }
@@ -707,42 +751,41 @@ export default function RegisterEventClientPage() {
       setIsLoadingPromocodes(true);
       setPromocodeError(null);
       
-      console.log(`Fetching promocodes for event ID: ${eventId} and game IDs: ${gameIds.join(', ')}`);
-      const response = await getPromoCodesByEventAndGames(eventId, gameIds);
-      
-      console.log('API response for promocodes:', response);
-      
-      // Handle all possible response types
-      let normalizedPromocodes: any[] = [];
-      
-      if (Array.isArray(response)) {
-        // Check if it's the special case: [{success: true}]
-        if (response.length === 1 && response[0] && typeof response[0] === 'object' && response[0].success === true) {
-          // API returned [{success: true}] which means no promocodes available
-          console.log('API returned [{success: true}] (no promocodes available)');
-          // Keep normalizedPromocodes as empty array
-        } else {
-          // Normal array of promocode objects
-          const validPromocodes = response.filter(code => code.promo_code); // Only include items that have a promo_code property
-          normalizedPromocodes = validPromocodes;
-        }
-      } else if (response === true) {
-        // API returned boolean true (no promocodes available)
-        console.log('API returned true boolean (no promocodes available)');
-        // Keep normalizedPromocodes as empty array
-      } else if (response && typeof response === 'object') {
-        // API returned an object, likely {success: true} with no promocodes
-        // Keep normalizedPromocodes as an empty array
-        console.log('API returned success but no promocodes available');
-      }
-      
-      console.log('Normalized promocodes:', normalizedPromocodes);
-      setAvailablePromocodes(normalizedPromocodes);
-      
       // Reset any applied promocode when fetching new ones
       setPromoCode('');
       setAppliedPromoCode(null);
       setDiscountAmount(0);
+      
+      // Fetch promocodes from the API
+      const promocodes = await getPromoCodesByEventAndGames(eventId, gameIds);
+      console.log('Fetched promocodes:', promocodes);
+      
+      // Filter out any invalid promocodes and update state
+      const validPromocodes = promocodes.filter((code) => {
+        if (!code || typeof code !== 'object' || !('promo_code' in code) || !code.promo_code) {
+          return false;
+        }
+        
+        // Check if promocode is active
+        if (code.is_active === false) {
+          return false;
+        }
+        
+        // Check if promocode is not expired
+        try {
+          const validTo = new Date(code.valid_to);
+          return validTo >= new Date();
+        } catch (e) {
+          console.error('Invalid date format for promocode:', code.promo_code, e);
+          return false;
+        }
+      });
+      
+      setAvailablePromocodes(validPromocodes);
+      
+      if (validPromocodes.length === 0) {
+        console.log('No valid promocodes available for the selected games');
+      }
     } catch (error) {
       console.error('Error fetching promocodes:', error);
       setPromocodeError('Failed to load promocodes');
@@ -1593,15 +1636,25 @@ export default function RegisterEventClientPage() {
                         <div className="p-2 bg-gradient-to-r from-primary/5 to-purple-500/5 border-b border-primary/10">
                           <h3 className="text-sm font-medium text-primary">Select Child's Birthday</h3>
                         </div>
-                        <Calendar
-                          mode="single"
-                          selected={dob}
-                          onSelect={handleDobChange}
-                          disabled={(date) => date > new Date() || date < new Date("2020-01-01")}
-                          initialFocus
-                          fromYear={2020}
-                          toYear={new Date().getFullYear()}
-                        />
+                        <div className="max-h-[300px] overflow-y-auto">
+                          <Calendar
+                            mode="single"
+                            selected={dob}
+                            onSelect={handleDobChange}
+                            disabled={(date) => {
+                              const today = new Date();
+                              today.setHours(0, 0, 0, 0);
+                              const minDate = new Date(2000, 0, 1);
+                              return date > today || date < minDate;
+                            }}
+                            initialFocus
+                            fromYear={2000}
+                            toYear={new Date().getFullYear()}
+                            captionLayout="dropdown"
+                            defaultMonth={dob || new Date()}
+                            className="p-3"
+                          />
+                        </div>
                       </PopoverContent>
                     </Popover>
                   </div>
@@ -1980,8 +2033,38 @@ export default function RegisterEventClientPage() {
                           setIsLoadingAddOns(true);
                           setAddOnError(null);
                           fetchAllAddOnsFromExternalApi()
-                            .then(data => {
-                              setApiAddOns(data);
+                            .then(apiAddOns => {
+                              // Transform the API add-ons to match the expected AddOn type
+                              const transformedAddOns = apiAddOns.map(addOn => ({
+                                id: addOn.id.toString(),
+                                name: addOn.name,
+                                description: addOn.description,
+                                price: parseFloat(addOn.price) || 0,
+                                images: addOn.images || [],
+                                category: addOn.category,
+                                isActive: addOn.is_active,
+                                availableForEvents: [],
+                                hasVariants: addOn.has_variants,
+                                variants: addOn.variants?.map(v => ({
+                                  id: v.id?.toString() || '',
+                                  name: v.name,
+                                  price: parseFloat(addOn.price) + (v.price_modifier || 0),
+                                  price_modifier: v.price_modifier,
+                                  sku: v.sku,
+                                  stockQuantity: v.stock_quantity || 0,
+                                  attributes: {}
+                                })) || [],
+                                stockQuantity: addOn.stock_quantity,
+                                sku: addOn.sku,
+                                bundleDiscount: addOn.bundle_min_quantity ? {
+                                  minQuantity: addOn.bundle_min_quantity,
+                                  discountPercentage: parseFloat(addOn.bundle_discount_percentage) || 0
+                                } : undefined,
+                                createdAt: addOn.created_at,
+                                updatedAt: addOn.updated_at
+                              }));
+                              
+                              setApiAddOns(transformedAddOns);
                               setIsLoadingAddOns(false);
                             })
                             .catch(error => {
@@ -2065,7 +2148,7 @@ export default function RegisterEventClientPage() {
                     <Separator />
                     <div className="flex justify-between font-medium">
                       <span>Games Subtotal:</span>
-                      <span>₹{calculateGamesTotal()}</span>
+                      <span>{formatPrice(calculateGamesTotal())}</span>
                     </div>
                     {selectedAddOns.length > 0 ? (
                     <>
@@ -2074,7 +2157,7 @@ export default function RegisterEventClientPage() {
                         console.log(`Add-on: ${item.addOn.name}`, item);
                         
                         // Start with the base add-on price
-                        let price = parseFloat(item.addOn.price || '0')
+                        let price = parseFloat(String(item.addOn.price || '0'))
                         let variantName = ""
 
                         // Check if this is a variant with a different price
