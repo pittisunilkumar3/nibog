@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Filter, Eye, Edit, Trash, Copy, AlertTriangle, BarChart, Loader2 } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { ExportColumn } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -230,6 +232,116 @@ export default function PromoCodesPage() {
     return true
   })
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'code',
+      label: 'Code',
+      sortable: true,
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      sortable: true,
+    },
+    {
+      key: 'discount_type',
+      label: 'Type',
+      sortable: true,
+      render: (value) => (
+        <Badge variant="outline">
+          {value === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+        </Badge>
+      )
+    },
+    {
+      key: 'discount_value',
+      label: 'Value',
+      sortable: true,
+      render: (value, row) =>
+        row.discount_type === 'percentage' ? `${value}%` : `₹${value}`
+    },
+    {
+      key: 'usage_count',
+      label: 'Used',
+      sortable: true,
+      render: (value, row) => `${value}/${row.usage_limit || '∞'}`
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (value) => {
+        const statusColors = {
+          active: 'bg-green-500 hover:bg-green-600',
+          expired: 'bg-red-500 hover:bg-red-600',
+          inactive: 'bg-gray-500 hover:bg-gray-600'
+        }
+        return (
+          <Badge className={statusColors[value as keyof typeof statusColors] || 'bg-gray-500'}>
+            {value}
+          </Badge>
+        )
+      }
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (promoCode) => {
+        window.location.href = `/admin/promo-codes/${promoCode.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (promoCode) => {
+        window.location.href = `/admin/promo-codes/${promoCode.id}/edit`
+      }
+    },
+    {
+      label: "Copy Code",
+      icon: <Copy className="h-4 w-4" />,
+      onClick: (promoCode) => {
+        navigator.clipboard.writeText(promoCode.code)
+      }
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (promoCode) => handleDeletePromoCode(promoCode.id),
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = [
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedPromoCodes) => {
+        console.log("Bulk delete:", selectedPromoCodes)
+      },
+      variant: 'destructive'
+    }
+  ]
+
+  // Define export columns
+  const exportColumns: ExportColumn[] = [
+    { key: 'code', label: 'Code' },
+    { key: 'description', label: 'Description' },
+    { key: 'discount_type', label: 'Type' },
+    { key: 'discount_value', label: 'Value' },
+    { key: 'usage_count', label: 'Usage Count' },
+    { key: 'usage_limit', label: 'Usage Limit' },
+    { key: 'valid_from', label: 'Valid From' },
+    { key: 'valid_to', label: 'Valid To' },
+    { key: 'status', label: 'Status' }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -298,142 +410,24 @@ export default function PromoCodesPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Code</TableHead>
-              <TableHead>Discount</TableHead>
-              <TableHead>Min Purchase</TableHead>
-              <TableHead>Valid Period</TableHead>
-              <TableHead>Usage</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {isLoading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <div className="flex items-center justify-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Loading promo codes...
-                  </div>
-                </TableCell>
-              </TableRow>
-            ) : error ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <div className="text-red-500">{error}</div>
-                </TableCell>
-              </TableRow>
-            ) : filteredPromoCodes.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  No promo codes found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredPromoCodes.map((promoCode: PromoCode) => (
-                <TableRow key={promoCode.id}>
-                  <TableCell className="font-medium">{promoCode.code}</TableCell>
-                  <TableCell>
-                    {promoCode.discountType === "percentage"
-                      ? `${promoCode.discount}%`
-                      : `₹${promoCode.discount}`}
-                    {promoCode.maxDiscount && (
-                      <div className="text-xs text-muted-foreground">
-                        Max: ₹{promoCode.maxDiscount}
-                      </div>
-                    )}
-                  </TableCell>
-                  <TableCell>₹{promoCode.minPurchase}</TableCell>
-                  <TableCell>
-                    {promoCode.validFrom} to {promoCode.validTo}
-                  </TableCell>
-                  <TableCell>
-                    {promoCode.usageCount}/{promoCode.usageLimit}
-                    <div className="mt-1 h-2 w-full rounded-full bg-muted">
-                      <div
-                        className="h-full rounded-full bg-primary"
-                        style={{
-                          width: `${(promoCode.usageCount / promoCode.usageLimit) * 100}%`,
-                        }}
-                      />
-                    </div>
-                  </TableCell>
-                  <TableCell>{getStatusBadge(promoCode.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/promo-codes/${promoCode.id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/promo-codes/${promoCode.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleCopyPromoCode(promoCode.code)}
-                      >
-                        <Copy className="h-4 w-4" />
-                        <span className="sr-only">Copy</span>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Promo Code</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
-                                <div className="space-y-2">
-                                  <div className="font-medium">This action cannot be undone.</div>
-                                  <div>
-                                    This will permanently delete the promo code "{promoCode.code}".
-                                    {promoCode.usageCount > 0 ? (
-                                      <>
-                                        <br />
-                                        This code has been used {promoCode.usageCount} time{promoCode.usageCount !== 1 ? "s" : ""}.
-                                        Deleting it may affect reporting and analytics.
-                                      </>
-                                    ) : null}
-                                  </div>
-                                </div>
-                              </div>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 hover:bg-red-600"
-                              onClick={() => handleDeletePromoCode(promoCode.id)}
-                              disabled={isProcessing === promoCode.id}
-                            >
-                              {isProcessing === promoCode.id ? "Deleting..." : "Delete Promo Code"}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <EnhancedDataTable
+        data={filteredPromoCodes}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={isLoading}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={exportColumns}
+        exportTitle="NIBOG Promo Codes Report"
+        exportFilename="nibog-promo-codes"
+        emptyMessage="No promo codes found"
+        className="min-h-[400px]"
+      />
     </div>
   )
 }

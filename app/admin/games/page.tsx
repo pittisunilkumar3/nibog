@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Edit, Eye, Plus, Trash, AlertTriangle, Loader2 } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { createGameExportColumns } from "@/lib/export-utils"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,6 +71,92 @@ export default function GameTemplatesPage() {
       })
     }
   }
+
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'game_name',
+      label: 'Name',
+      sortable: true,
+    },
+    {
+      key: 'description',
+      label: 'Description',
+      sortable: true,
+    },
+    {
+      key: 'age_range',
+      label: 'Age Range',
+      sortable: true,
+    },
+    {
+      key: 'duration_minutes',
+      label: 'Duration',
+      sortable: true,
+      render: (value) => `${value} min`
+    },
+    {
+      key: 'categories',
+      label: 'Categories',
+      render: (value) => (
+        <div className="flex flex-wrap gap-1">
+          {value?.split(',').map((category: string, index: number) => (
+            <Badge key={index} variant="outline" className="text-xs">
+              {category.trim()}
+            </Badge>
+          ))}
+        </div>
+      )
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      sortable: true,
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Active" : "Inactive"}
+        </Badge>
+      )
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (game) => {
+        window.location.href = `/admin/games/${game.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (game) => {
+        window.location.href = `/admin/games/${game.id}/edit`
+      }
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (game) => handleDeleteGame(game.id),
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = [
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedGames) => {
+        // Handle bulk delete - would need confirmation dialog
+        console.log("Bulk delete:", selectedGames)
+      },
+      variant: 'destructive'
+    }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -100,112 +188,25 @@ export default function GameTemplatesPage() {
             Try Again
           </Button>
         </div>
-      ) : games.length === 0 ? (
-        <div className="rounded-md border p-8 text-center">
-          <p className="text-muted-foreground mb-4">No games found</p>
-          <Button asChild>
-            <Link href="/admin/games/new">
-              <Plus className="mr-2 h-4 w-4" />
-              Add Your First Game
-            </Link>
-          </Button>
-        </div>
       ) : (
-        <div className="rounded-md border">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Name</TableHead>
-                <TableHead>Description</TableHead>
-                <TableHead>Age Range</TableHead>
-                <TableHead>Duration</TableHead>
-                <TableHead>Categories</TableHead>
-                <TableHead>Status</TableHead>
-                <TableHead className="text-right">Actions</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {games.map((game) => (
-                <TableRow key={game.id}>
-                  <TableCell className="font-medium">{game.game_name}</TableCell>
-                  <TableCell className="max-w-xs">
-                    <div className="truncate" title={game.description || "No description"}>
-                      {game.description || "No description"}
-                    </div>
-                  </TableCell>
-                  <TableCell>{game.min_age} - {game.max_age} months</TableCell>
-                  <TableCell>{game.duration_minutes} minutes</TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {game.categories && game.categories.map((category) => (
-                        <Badge key={category} variant="outline">
-                          {category}
-                        </Badge>
-                      ))}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    {game.is_active ? (
-                      <Badge className="bg-green-500 hover:bg-green-600">Active</Badge>
-                    ) : (
-                      <Badge variant="outline">Inactive</Badge>
-                    )}
-                  </TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/games/${game.id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/games/${game.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Game Template</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
-                                <div className="space-y-2">
-                                  <div className="font-medium">This action cannot be undone.</div>
-                                  <div>
-                                    This will permanently delete the "{game.game_name}" game template.
-                                    Deleting it will not affect existing events, but you won't be able to create new events with this template.
-                                  </div>
-                                </div>
-                              </div>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 hover:bg-red-600"
-                              onClick={() => handleDeleteGame(game.id!)}
-                            >
-                              Delete
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </div>
+        <EnhancedDataTable
+          data={games}
+          columns={columns}
+          actions={actions}
+          bulkActions={bulkActions}
+          loading={isLoading}
+          searchable={true}
+          filterable={true}
+          exportable={true}
+          selectable={true}
+          pagination={true}
+          pageSize={25}
+          exportColumns={createGameExportColumns()}
+          exportTitle="NIBOG Baby Games Report"
+          exportFilename="nibog-baby-games"
+          emptyMessage="No games found"
+          className="min-h-[400px]"
+        />
       )}
     </div>
   )

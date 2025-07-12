@@ -9,6 +9,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
 import { Plus, Search, Filter, Eye, Edit, Trash, Star, AlertTriangle, Check, X, Loader2, RefreshCw } from "lucide-react"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { ExportColumn } from "@/lib/export-utils"
 import { useToast } from "@/components/ui/use-toast"
 import { getAllTestimonials, deleteTestimonial, updateTestimonialStatus, type Testimonial } from "@/services/testimonialService"
 import { getAllEvents } from "@/services/eventService"
@@ -357,6 +359,123 @@ export default function TestimonialsPage() {
     )
   }
 
+  // Define table columns for EnhancedDataTable
+  const columns: Column<any>[] = [
+    {
+      key: 'parent_name',
+      label: 'Parent Name',
+      sortable: true,
+    },
+    {
+      key: 'child_name',
+      label: 'Child Name',
+      sortable: true,
+    },
+    {
+      key: 'event_title',
+      label: 'Event',
+      sortable: true,
+    },
+    {
+      key: 'rating',
+      label: 'Rating',
+      sortable: true,
+      render: (value) => getRatingStars(value)
+    },
+    {
+      key: 'testimonial',
+      label: 'Testimonial',
+      render: (value) => (
+        <div className="max-w-xs truncate" title={value}>
+          {value}
+        </div>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      render: (value) => getStatusBadge(value)
+    },
+    {
+      key: 'created_at',
+      label: 'Date',
+      sortable: true,
+      render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<any>[] = [
+    {
+      label: "View",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (testimonial) => {
+        window.location.href = `/admin/testimonials/${testimonial.id}`
+      }
+    },
+    {
+      label: "Edit",
+      icon: <Edit className="h-4 w-4" />,
+      onClick: (testimonial) => {
+        window.location.href = `/admin/testimonials/${testimonial.id}/edit`
+      }
+    },
+    {
+      label: "Approve",
+      icon: <Check className="h-4 w-4" />,
+      onClick: (testimonial) => handleApprove(testimonial.id),
+      show: (testimonial) => testimonial.status === 'pending'
+    },
+    {
+      label: "Reject",
+      icon: <X className="h-4 w-4" />,
+      onClick: (testimonial) => handleReject(testimonial.id),
+      variant: 'destructive',
+      show: (testimonial) => testimonial.status === 'pending'
+    },
+    {
+      label: "Delete",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (testimonial) => handleDelete(testimonial.id),
+      variant: 'destructive'
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<any>[] = [
+    {
+      label: "Approve Selected",
+      icon: <Check className="h-4 w-4" />,
+      onClick: (selectedTestimonials) => {
+        selectedTestimonials.forEach(testimonial => {
+          if (testimonial.status === 'pending') {
+            handleApprove(testimonial.id)
+          }
+        })
+      }
+    },
+    {
+      label: "Delete Selected",
+      icon: <Trash className="h-4 w-4" />,
+      onClick: (selectedTestimonials) => {
+        selectedTestimonials.forEach(testimonial => handleDelete(testimonial.id))
+      },
+      variant: 'destructive'
+    }
+  ]
+
+  // Define export columns
+  const exportColumns: ExportColumn[] = [
+    { key: 'parent_name', label: 'Parent Name' },
+    { key: 'child_name', label: 'Child Name' },
+    { key: 'event_title', label: 'Event' },
+    { key: 'rating', label: 'Rating' },
+    { key: 'testimonial', label: 'Testimonial' },
+    { key: 'status', label: 'Status' },
+    { key: 'created_at', label: 'Date' }
+  ]
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -437,133 +556,24 @@ export default function TestimonialsPage() {
         </CardContent>
       </Card>
 
-      <div className="rounded-md border">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>Name</TableHead>
-              <TableHead>City</TableHead>
-              <TableHead>Event</TableHead>
-              <TableHead>Rating</TableHead>
-              <TableHead>Testimonial</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead className="text-right">Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {filteredTestimonials.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
-                  No testimonials found.
-                </TableCell>
-              </TableRow>
-            ) : (
-              filteredTestimonials.map((testimonial) => (
-                <TableRow key={testimonial.id}>
-                  <TableCell className="font-medium">{testimonial.name}</TableCell>
-                  <TableCell>{testimonial.city}</TableCell>
-                  <TableCell>{getEventName(testimonial.event_id)}</TableCell>
-                  <TableCell>{getRatingStars(testimonial.rating)}</TableCell>
-                  <TableCell className="max-w-[300px] truncate">{testimonial.testimonial}</TableCell>
-                  <TableCell>{new Date(testimonial.submitted_at).toLocaleDateString()}</TableCell>
-                  <TableCell>{getStatusBadge(testimonial.status)}</TableCell>
-                  <TableCell className="text-right">
-                    <div className="flex justify-end gap-2">
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/testimonials/${testimonial.id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View</span>
-                        </Link>
-                      </Button>
-                      <Button variant="ghost" size="icon" asChild>
-                        <Link href={`/admin/testimonials/${testimonial.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit</span>
-                        </Link>
-                      </Button>
-                      {testimonial.status.toLowerCase() === "pending" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleApproveTestimonial(testimonial.id)}
-                          disabled={isProcessing === String(testimonial.id)}
-                          title="Approve"
-                        >
-                          {isProcessing === String(testimonial.id) ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <Check className="h-4 w-4 text-green-500" />
-                          )}
-                          <span className="sr-only">Approve</span>
-                        </Button>
-                      )}
-                      {testimonial.status.toLowerCase() === "pending" && (
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleRejectTestimonial(testimonial.id)}
-                          disabled={isProcessing === String(testimonial.id)}
-                          title="Reject"
-                        >
-                          {isProcessing === String(testimonial.id) ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            <X className="h-4 w-4 text-red-500" />
-                          )}
-                          <span className="sr-only">Reject</span>
-                        </Button>
-                      )}
-                      <AlertDialog>
-                        <AlertDialogTrigger asChild>
-                          <Button variant="ghost" size="icon">
-                            <Trash className="h-4 w-4" />
-                            <span className="sr-only">Delete</span>
-                          </Button>
-                        </AlertDialogTrigger>
-                        <AlertDialogContent>
-                          <AlertDialogHeader>
-                            <AlertDialogTitle>Delete Testimonial</AlertDialogTitle>
-                            <AlertDialogDescription>
-                              <div className="flex items-start gap-2">
-                                <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
-                                <div className="space-y-2">
-                                  <div className="font-medium">This action cannot be undone.</div>
-                                  <div>
-                                    This will permanently delete the testimonial from {testimonial.name}.
-                                    Are you sure you want to continue?
-                                  </div>
-                                </div>
-                              </div>
-                            </AlertDialogDescription>
-                          </AlertDialogHeader>
-                          <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                              className="bg-red-500 hover:bg-red-600"
-                              onClick={() => handleDeleteTestimonial(testimonial.id)}
-                              disabled={isProcessing === String(testimonial.id)}
-                            >
-                              {isProcessing === String(testimonial.id) ? (
-                                <>
-                                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                  Deleting...
-                                </>
-                              ) : (
-                                "Delete Testimonial"
-                              )}
-                            </AlertDialogAction>
-                          </AlertDialogFooter>
-                        </AlertDialogContent>
-                      </AlertDialog>
-                    </div>
-                  </TableCell>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
-      </div>
+      <EnhancedDataTable
+        data={filteredTestimonials}
+        columns={columns}
+        actions={actions}
+        bulkActions={bulkActions}
+        loading={false}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
+        exportable={true}
+        selectable={true}
+        pagination={true}
+        pageSize={25}
+        exportColumns={exportColumns}
+        exportTitle="NIBOG Testimonials Report"
+        exportFilename="nibog-testimonials"
+        emptyMessage="No testimonials found"
+        className="min-h-[400px]"
+      />
     </div>
   )
 }

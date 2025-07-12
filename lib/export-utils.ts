@@ -1,5 +1,5 @@
 import jsPDF from 'jspdf'
-import 'jspdf-autotable'
+import autoTable from 'jspdf-autotable'
 import * as XLSX from 'xlsx'
 
 // Extend jsPDF type to include autoTable
@@ -159,42 +159,97 @@ export class ExportService {
       columns.map(col => ExportService.formatValue(row[col.key], col, row))
     )
     
-    // Add table
-    doc.autoTable({
+    // Add table using autoTable with enhanced styling
+    autoTable(doc, {
       head: [tableHeaders],
       body: tableRows,
       startY: yPosition,
+      theme: 'striped',
       styles: {
-        fontSize: 8,
-        cellPadding: 3,
+        fontSize: 9,
+        cellPadding: { top: 4, right: 3, bottom: 4, left: 3 },
+        textColor: [51, 51, 51],
+        lineColor: [200, 200, 200],
+        lineWidth: 0.1,
+        overflow: 'linebreak',
+        cellWidth: 'wrap'
       },
       headStyles: {
-        fillColor: [41, 128, 185], // Blue header
-        textColor: 255,
+        fillColor: [41, 128, 185], // Professional blue header
+        textColor: [255, 255, 255],
         fontStyle: 'bold',
+        fontSize: 10,
+        halign: 'center',
+        valign: 'middle',
       },
       alternateRowStyles: {
-        fillColor: [245, 245, 245], // Light gray for alternate rows
+        fillColor: [248, 249, 250], // Very light gray for better readability
       },
       columnStyles: columns.reduce((acc, col, index) => {
         acc[index] = {
-          cellWidth: col.width || 'auto',
-          halign: col.align || 'left',
+          cellWidth: col.width ? Math.max(col.width / 4, 20) : 'auto',
+          halign: col.align || (
+            col.key.includes('amount') ||
+            col.key.includes('price') ||
+            col.key.includes('count') ||
+            col.key.includes('revenue') ||
+            col.key.includes('total')
+              ? 'right' : 'left'
+          ),
+          valign: 'middle'
         }
         return acc
       }, {} as any),
-      margin: { top: 20, right: 20, bottom: 20, left: 20 },
+      margin: { top: 20, right: 15, bottom: 25, left: 15 },
+      tableWidth: 'auto',
+      showHead: 'everyPage',
       didDrawPage: (data: any) => {
-        // Add page numbers
+        // Add professional footer with branding
+        const pageHeight = doc.internal.pageSize.height
+        const pageWidth = doc.internal.pageSize.width
+
+        // Footer separator line
+        doc.setDrawColor(41, 128, 185)
+        doc.setLineWidth(0.5)
+        doc.line(15, pageHeight - 20, pageWidth - 15, pageHeight - 20)
+
+        // Page numbers (centered)
+        doc.setTextColor(51, 51, 51)
+        doc.setFontSize(8)
+        doc.setFont('helvetica', 'normal')
         const pageNumber = doc.internal.getCurrentPageInfo().pageNumber
         const totalPages = doc.internal.pages.length - 1
-        doc.setFontSize(8)
         doc.text(
           `Page ${pageNumber} of ${totalPages}`,
-          pageWidth - 40,
-          pageHeight - 10
+          pageWidth / 2,
+          pageHeight - 10,
+          { align: 'center' }
         )
+
+        // Company branding in footer
+        doc.text('NIBOG - Baby Games Platform', 15, pageHeight - 10)
+        doc.text('www.nibog.com', pageWidth - 15, pageHeight - 10, { align: 'right' })
       },
+      didParseCell: (data: any) => {
+        // Enhance cell styling based on content
+        if (data.section === 'head') {
+          data.cell.styles.fillColor = [41, 128, 185]
+          data.cell.styles.textColor = [255, 255, 255]
+        } else {
+          // Add subtle zebra striping
+          if (data.row.index % 2 === 0) {
+            data.cell.styles.fillColor = [255, 255, 255]
+          } else {
+            data.cell.styles.fillColor = [248, 249, 250]
+          }
+
+          // Right-align numeric columns
+          const cellText = data.cell.text[0]
+          if (cellText && /^[\d,.$₹%\s-]+$/.test(cellText)) {
+            data.cell.styles.halign = 'right'
+          }
+        }
+      }
     })
     
       // Generate filename with timestamp if requested
@@ -288,13 +343,20 @@ export class ExportService {
     link.href = url
     link.download = filename
     link.style.display = 'none'
-    
+
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
-    
+
     // Clean up the URL object
     setTimeout(() => URL.revokeObjectURL(url), 100)
+  }
+
+  private static generateFilename(filename: string, extension: string, includeTimestamp: boolean = true): string {
+    const timestamp = includeTimestamp
+      ? `_${new Date().toISOString().split('T')[0]}`
+      : ''
+    return `${filename}${timestamp}.${extension}`
   }
 
   static getExportPreview<T>(data: T[], columns: ExportColumn<T>[], maxRows: number = 5): {
