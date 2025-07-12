@@ -814,12 +814,12 @@ export default function RegisterEventClientPage() {
       const addOnsTotal = calculateAddOnsTotal();
       const subtotal = gamesTotal + addOnsTotal;
       
-      // Validate the promocode - convert selectedGames to slot IDs array
-      const slotIds = selectedGames.map(selection => selection.slotId);
+      // Validate the promocode - use game IDs array (not slot IDs)
+      const gameIds = selectedGames.map(selection => selection.gameId);
       const result = await validatePromoCodePreview(
         promoCode,
         selectedApiEvent.event_id,
-        slotIds,
+        gameIds,
         subtotal
       );
       
