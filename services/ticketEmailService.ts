@@ -114,8 +114,7 @@ export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ su
     
     // 4. Add common fallbacks
     if (process.env.NODE_ENV === 'production') {
-      apiUrls.push('https://nibog.in');
-      apiUrls.push('https://nibog-ten.vercel.app');
+      apiUrls.push('https://www.nibog.in');
     } else {
       // Local development fallbacks
       apiUrls.push('http://localhost:3000');
