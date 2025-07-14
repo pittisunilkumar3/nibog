@@ -638,7 +638,7 @@ async function createBookingAndPayment(
       });
 
       // Send email using existing send-receipt-email API
-      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-receipt-email`, {
+      const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nibog.in'}/api/send-receipt-email`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -785,7 +785,7 @@ export async function POST(request: Request) {
           });
 
           // Send email using existing send-receipt-email API
-          const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/send-receipt-email`, {
+          const emailResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nibog.in'}/api/send-receipt-email`, {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

@@ -72,7 +72,7 @@ export const getAppUrl = (): string => {
   }
 
   // Final fallback for server-side - use the correct production URL
-  return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://nibog-latest.vercel.app';
+  return process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'https://www.nibog.in';
 };
 
 // Determine if we're in production mode
