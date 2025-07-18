@@ -137,7 +137,7 @@ export default function PrivacyPolicyPage() {
             </p>
             <p>
               Email: privacy@nibog.in<br />
-              Phone: +91 98765 43210<br />
+              Phone: +91 9000125959<br />
               Address: Gachibowli Indoor Stadium, Hyderabad, Telangana 500032
             </p>
           </section>

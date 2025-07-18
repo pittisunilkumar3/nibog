@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Edit, X, Check, AlertTriangle, User, Mail, Phone, Calendar, Clock, MapPin, Users, CreditCard, Loader2, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { getBookingById, updateBookingStatus, getAllBookings, getBookingPaymentDetails, getEventGameSlotDetails, getEventGameSlotDetailsBySlotId, findMostLikelySlotForBooking, type Booking } from "@/services/bookingService"
+import { getBookingById, updateBookingStatus, getAllBookings, getBookingPaymentDetails, getEventGameSlotDetails, getEventGameSlotDetailsBySlotId, findMostLikelySlotForBooking, getBookingAddons, type Booking } from "@/services/bookingService"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +21,37 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
+// Interface for booking add-ons
+interface BookingAddon {
+  booking_addon_id: number;
+  addon_id: number;
+  variant_id: number | null;
+  quantity: number;
+  addon_name: string | null;
+  addon_description: string | null;
+  base_price: string | null;
+  category: string | null;
+  addon_sku: string | null;
+  has_variants: boolean | null;
+  variant_name: string | null;
+  price_modifier: string | null;
+  variant_sku: string | null;
+  addon_image: string | null;
+  final_price_per_unit: string | null;
+  total_price: string | null;
+}
+
+// Interface for booking add-ons response
+interface BookingAddonsResponse {
+  booking_id: number;
+  booking_ref: string;
+  user_id: number;
+  event_id: number;
+  booking_status: string;
+  total_amount: string;
+  booking_addons: BookingAddon[];
+}
 
 // Interface for enhanced booking with slot details and payment info
 interface EnhancedBooking extends Booking {
@@ -49,6 +80,7 @@ interface EnhancedBooking extends Booking {
     payment_date?: string;
     payment_method?: string;
   };
+  booking_addons?: BookingAddonsResponse[];
 }
 
 
@@ -223,6 +255,12 @@ export default function BookingDetailPage({ params }: Props) {
         const paymentDetails = await getBookingPaymentDetails(data.booking_id);
         if (paymentDetails) {
           enhancedBooking.payment_details = paymentDetails;
+        }
+
+        // Fetch booking add-ons
+        const bookingAddons = await getBookingAddons(data.booking_id);
+        if (bookingAddons && Array.isArray(bookingAddons)) {
+          enhancedBooking.booking_addons = bookingAddons;
         }
 
         // Update booking with enhanced details
@@ -562,7 +600,76 @@ export default function BookingDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
-            
+
+            {/* Booking Add-ons Section */}
+            {booking.booking_addons &&
+             booking.booking_addons.length > 0 &&
+             booking.booking_addons.some(data =>
+               data.booking_addons &&
+               Array.isArray(data.booking_addons) &&
+               data.booking_addons.length > 0
+             ) && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="mb-2 font-medium">Booking Add-ons</h3>
+                  <div className="space-y-2">
+                    {booking.booking_addons.map((bookingAddonData, index) => (
+                      bookingAddonData.booking_addons &&
+                      Array.isArray(bookingAddonData.booking_addons) &&
+                      bookingAddonData.booking_addons.length > 0 ? (
+                        <div key={index} className="rounded-lg border p-3">
+                          <div className="space-y-3">
+                            {bookingAddonData.booking_addons.map((addon) => (
+                              addon && addon.booking_addon_id ? (
+                                <div key={addon.booking_addon_id} className="flex items-start gap-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <p className="font-medium">
+                                        {addon.addon_name || `Add-on #${addon.addon_id}`}
+                                      </p>
+                                      <div className="text-right">
+                                        <p className="text-sm font-medium">Qty: {addon.quantity}</p>
+                                        {addon.final_price_per_unit && (
+                                          <p className="text-sm text-muted-foreground">
+                                            ₹{addon.final_price_per_unit} each
+                                          </p>
+                                        )}
+                                        {addon.total_price && (
+                                          <p className="text-sm font-semibold text-green-600">
+                                            Total: ₹{addon.total_price}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {addon.addon_description && (
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        {addon.addon_description}
+                                      </p>
+                                    )}
+                                    {addon.variant_name && (
+                                      <p className="text-sm text-blue-600 mt-1">
+                                        Variant: {addon.variant_name}
+                                      </p>
+                                    )}
+                                    {addon.addon_sku && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        SKU: {addon.addon_sku}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : null
+                            ))}
+                          </div>
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             <Separator />
             
             <div className="grid gap-4 sm:grid-cols-2">

@@ -64,7 +64,7 @@ export default function FAQPage() {
               <AccordionItem value="item-5">
                 <AccordionTrigger>Who can I contact for more information?</AccordionTrigger>
                 <AccordionContent>
-                  You can contact our customer support team at info@nibog.in or call us at +91 98765 43210. Our office hours are Monday to Friday, 9:00 AM to 6:00 PM, and Saturday, 10:00 AM to 2:00 PM. You can also visit our Contact page for more information.
+                  You can contact our customer support team at info@nibog.in or call us at +91 9000125959. Our office hours are Monday to Friday, 9:00 AM to 6:00 PM, and Saturday, 10:00 AM to 2:00 PM. You can also visit our Contact page for more information.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
