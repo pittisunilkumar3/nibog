@@ -73,8 +73,7 @@ export default function ContactPage() {
                   </div>
                   <div>
                     <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Email</h3>
-                    <p className="text-slate-700 dark:text-white font-medium mt-1">info@nibog.in</p>
-                    <p className="text-slate-700 dark:text-white font-medium">support@nibog.in</p>
+                    <p className="text-slate-700 dark:text-white font-medium mt-1">newindababyolympics@gmail.com </p>
                   </div>
                 </div>
 

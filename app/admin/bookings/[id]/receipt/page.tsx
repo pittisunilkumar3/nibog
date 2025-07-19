@@ -302,7 +302,7 @@ export default function BookingReceiptPage({ params }: Props) {
         <div className="text-center text-sm text-muted-foreground">
           <p>Thank you for booking with NIBOG!</p>
           <p>Please bring this receipt to the event for check-in.</p>
-          <p>For any queries, please contact us at support@nibog.in or call +91 9000125959.</p>
+          <p>For any queries, please contact us at newindababyolympics@gmail.com or call +91 9000125959.</p>
         </div>
       </div>
     </div>

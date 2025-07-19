@@ -2500,8 +2500,8 @@ export default function RegisterEventClientPage() {
             </div>
             <div className="text-muted-foreground">
               Need help? Contact us at{" "}
-              <Link href="mailto:support@nibog.in" className="text-primary font-medium underline-offset-4 hover:underline transition-colors">
-                support@nibog.in
+              <Link href="mailto:newindababyolympics@gmail.com" className="text-primary font-medium underline-offset-4 hover:underline transition-colors">
+                newindababyolympics@gmail.com
               </Link>
             </div>
           </div>

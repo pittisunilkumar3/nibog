@@ -136,7 +136,7 @@ export default function PrivacyPolicyPage() {
               If you have any questions about this Privacy Policy, please contact us:
             </p>
             <p>
-              Email: privacy@nibog.in<br />
+              Email: newindababyolympics@gmail.com<br />
               Phone: +91 9000125959<br />
               Address: Gachibowli Indoor Stadium, Hyderabad, Telangana 500032
             </p>

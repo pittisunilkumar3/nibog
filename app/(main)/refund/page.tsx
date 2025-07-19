@@ -64,7 +64,7 @@ export default function RefundPolicyPage() {
           <section className="space-y-3">
             <h2 className="text-2xl font-semibold">5. Registration Transfers</h2>
             <p>
-              If you are unable to attend an event, you may transfer your registration to another child in the same age category at no additional cost. Transfer requests must be submitted at least 3 days before the event by emailing transfers@nibog.in with details of both the original registrant and the new participant.
+              If you are unable to attend an event, you may transfer your registration to another child in the same age category at no additional cost. Transfer requests must be submitted at least 3 days before the event by emailing newindababyolympics@gmail.com with details of both the original registrant and the new participant.
             </p>
           </section>
 
@@ -88,7 +88,7 @@ export default function RefundPolicyPage() {
               For questions or concerns regarding our refund policy, please contact us at:
             </p>
             <p>
-              Email: refunds@nibog.in<br />
+              Email: newindababyolympics@gmail.com<br />
               Phone: +91 9000125959<br />
               Address: Gachibowli Indoor Stadium, Hyderabad, Telangana 500032
             </p>
