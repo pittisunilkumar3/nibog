@@ -184,10 +184,9 @@ export default function RegisterEventClientPage() {
     loadAddOns();
   }, [])
 
-  // Calculate child's age based on current date
+  // Calculate child's age based on event date
   const calculateAge = (birthDate: Date) => {
-    const currentDate = new Date()
-    const ageInMonths = differenceInMonths(currentDate, birthDate)
+    const ageInMonths = differenceInMonths(eventDate, birthDate)
     return ageInMonths
   }
 
@@ -287,7 +286,7 @@ export default function RegisterEventClientPage() {
     setDob(date)
     
     if (date) {
-      // Calculate child's age in months based on the current date
+      // Calculate child's age in months based on the event date
       const ageInMonths = calculateAge(date)
       setChildAgeMonths(ageInMonths)
       
@@ -309,8 +308,12 @@ export default function RegisterEventClientPage() {
   // Handle event date change when selecting from available dates
   const handleEventDateChange = (date: Date) => {
     setEventDate(date)
-    // Note: Child age is now based on current date, not event date
-    // We're not updating the child age when event date changes
+
+    // Recalculate child's age based on the new event date
+    if (dob) {
+      const ageInMonths = differenceInMonths(date, dob)
+      setChildAgeMonths(ageInMonths)
+    }
   }
 
   // Handle city change and fetch events for the selected city
