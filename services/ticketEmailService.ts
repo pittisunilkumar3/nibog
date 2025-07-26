@@ -117,7 +117,7 @@ export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ su
       apiUrls.push('https://www.nibog.in');
     } else {
       // Local development fallbacks
-      apiUrls.push('http://localhost:3000');
+      apiUrls.push('http://localhost:3111');
     }
     
     // Remove duplicates from the URL list

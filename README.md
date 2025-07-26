@@ -81,7 +81,7 @@ nibog-platform/
    NEXT_PUBLIC_API_URL=your_api_url
    
    # Authentication
-   NEXTAUTH_URL=http://localhost:3000
+   NEXTAUTH_URL=http://localhost:3111
    NEXTAUTH_SECRET=your_secret_key
    
    # Database
@@ -96,7 +96,7 @@ nibog-platform/
    pnpm dev
    ```
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+5. Open [http://localhost:3111](http://localhost:3111) in your browser to see the application.
 
 ## 📖 Usage
 
