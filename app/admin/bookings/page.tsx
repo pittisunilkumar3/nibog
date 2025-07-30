@@ -140,6 +140,16 @@ export default function BookingsPage() {
       )
     },
     {
+      key: 'game_name',
+      label: 'Game Name',
+      sortable: true,
+      render: (value) => (
+        <div>
+          <div className="font-medium">{value}</div>
+        </div>
+      )
+    },
+    {
       key: 'event_title',
       label: 'Event',
       sortable: true,
