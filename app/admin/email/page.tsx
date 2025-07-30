@@ -282,6 +282,44 @@ export default function EmailSendingPage() {
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Show subject/content fields if "custom" is selected */}
+                  {emailData.template === "custom" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-subject">Subject</Label>
+                        <Input
+                          id="custom-subject"
+                          value={emailData.subject}
+                          onChange={e => setEmailData({ ...emailData, subject: e.target.value })}
+                          placeholder="Enter email subject"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-content">Content</Label>
+                        <Textarea
+                          id="custom-content"
+                          value={emailData.content}
+                          onChange={e => setEmailData({ ...emailData, content: e.target.value })}
+                          placeholder="Enter email content"
+                          rows={8}
+                          required
+                        />
+                      </div>
+                      <div className="pt-2">
+                        <p className="text-sm text-muted-foreground mb-2">Available placeholders:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{name}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{email}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{event_name}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{event_date}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{venue}}"}</span>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   <Button type="submit" disabled={isLoading} className="w-full md:w-auto mt-4">
                     {isLoading ? (
                       <span className="flex items-center gap-2">
