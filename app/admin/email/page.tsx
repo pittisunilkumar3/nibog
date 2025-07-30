@@ -19,10 +19,11 @@ export default function EmailSendingPage() {
   const [emailData, setEmailData] = useState({
     subject: "",
     content: "",
-    recipients: "all-users", // all-users, all-parents, event-parents, event-users, event-all-users
+    recipients: "all-users", // all-users, all-parents, event-parents, event-users, event-all-users, single-user
     attachments: [],
     template: "default",
     eventId: "",
+    singleUserEmail: "",
   })
   
   // Template state
@@ -37,6 +38,24 @@ export default function EmailSendingPage() {
   const [templates, setTemplates] = useState<any[]>([])
   const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
+
+  // Events state
+  const [events, setEvents] = useState<any[]>([])
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
+
+  // Fetch all events
+  const fetchEvents = async () => {
+    setIsLoadingEvents(true)
+    try {
+      const res = await fetch("/api/events/get-all")
+      const data = await res.json()
+      setEvents(Array.isArray(data) ? data : [])
+    } catch (e) {
+      setEvents([])
+    } finally {
+      setIsLoadingEvents(false)
+    }
+  }
 
   // Fetch all templates
   const fetchTemplates = async () => {
@@ -84,6 +103,7 @@ export default function EmailSendingPage() {
   // On mount, fetch templates
   React.useEffect(() => {
     fetchTemplates()
+    fetchEvents()
   }, [])
 
   // NOTE: Replace this with your real send email API endpoint if available
@@ -116,6 +136,7 @@ export default function EmailSendingPage() {
         attachments: [],
         template: "",
         eventId: "",
+        singleUserEmail: "",
       })
     } catch (error) {
       toast({
@@ -240,7 +261,30 @@ export default function EmailSendingPage() {
                         />
                         <Label htmlFor="recipients-event-all-users">Event All Users</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="recipients-single-user"
+                          checked={emailData.recipients === "single-user"}
+                          onCheckedChange={() => setEmailData({...emailData, recipients: "single-user"})}
+                        />
+                        <Label htmlFor="recipients-single-user">Single User</Label>
+                      </div>
                     </div>
+
+                    {/* Show single user email input if selected */}
+                    {emailData.recipients === "single-user" && (
+                      <div className="mt-4">
+                        <Label htmlFor="single-user-email">User Email</Label>
+                        <Input
+                          id="single-user-email"
+                          type="email"
+                          value={emailData.singleUserEmail || ""}
+                          onChange={e => setEmailData({ ...emailData, singleUserEmail: e.target.value })}
+                          placeholder="Enter user email address"
+                          required
+                        />
+                      </div>
+                    )}
                     {(emailData.recipients === "event-parents" ||
                       emailData.recipients === "event-users" ||
                       emailData.recipients === "event-all-users") && (
@@ -254,10 +298,17 @@ export default function EmailSendingPage() {
                             <SelectValue placeholder="Select an event" />
                           </SelectTrigger>
                           <SelectContent>
-                            {/* TODO: Replace with dynamic event list */}
-                            <SelectItem value="1">Event 1</SelectItem>
-                            <SelectItem value="2">Event 2</SelectItem>
-                            <SelectItem value="3">Event 3</SelectItem>
+                            {isLoadingEvents ? (
+                              <SelectItem value="" disabled>Loading events...</SelectItem>
+                            ) : events.length === 0 ? (
+                              <SelectItem value="" disabled>No events found</SelectItem>
+                            ) : (
+                              events.map((event: any) => (
+                                <SelectItem key={event.event_id || event.id} value={String(event.event_id || event.id)}>
+                                  {event.event_title || event.title || `Event #${event.event_id || event.id}`}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
