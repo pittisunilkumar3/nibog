@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -27,31 +27,94 @@ export default function EmailSendingPage() {
   
   // Template state
   const [templateData, setTemplateData] = useState({
+    id: null as number | null,
     name: "",
     subject: "",
     content: "",
+    created_at: "",
+    updated_at: ""
   })
+  const [templates, setTemplates] = useState<any[]>([])
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
+  // Fetch all templates
+  const fetchTemplates = async () => {
+    setIsLoadingTemplates(true)
+    try {
+      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get-all")
+      const data = await res.json()
+      setTemplates(Array.isArray(data) ? data : [])
+    } catch (e) {
+      setTemplates([])
+    } finally {
+      setIsLoadingTemplates(false)
+    }
+  }
+
+  // Get template by id (for edit/view)
+  const fetchTemplateById = async (id: number) => {
+    setIsLoadingTemplates(true)
+    try {
+      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      const data = await res.json();
+      if (Array.isArray(data) && data.length > 0) {
+        const tpl = data[0];
+        setTemplateData({
+          id: tpl.id,
+          name: tpl.template_name,
+          subject: tpl.default_subject,
+          content: tpl.template_content,
+          created_at: tpl.created_at,
+          updated_at: tpl.updated_at
+        });
+        setIsEditing(true);
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to fetch template.", variant: "destructive" });
+    } finally {
+      setIsLoadingTemplates(false)
+    }
+  }
+
+  // On mount, fetch templates
+  React.useEffect(() => {
+    fetchTemplates()
+  }, [])
+
+  // NOTE: Replace this with your real send email API endpoint if available
   const handleSendEmail = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
     try {
-      // Simulate API call
+      // If a template is selected, fetch its content and subject
+      let subject = emailData.subject;
+      let content = emailData.content;
+      if (emailData.template && emailData.template !== "custom") {
+        const tpl = templates.find(t => t.id.toString() === emailData.template);
+        if (tpl) {
+          subject = tpl.default_subject;
+          content = tpl.template_content;
+        }
+      }
+      // TODO: Replace this with your real send email API endpoint
+      // Example:
+      // await fetch("/api/send-email", { method: "POST", body: JSON.stringify({ subject, content, ... }) })
       await new Promise(resolve => setTimeout(resolve, 1500))
-      
       toast({
         title: "Success!",
         description: "Email sent successfully.",
       })
-      
-      // Reset form after successful send
       setEmailData({
         subject: "",
         content: "",
         recipients: "all-users",
         attachments: [],
-        template: "default",
+        template: "",
         eventId: "",
       })
     } catch (error) {
@@ -68,22 +131,39 @@ export default function EmailSendingPage() {
   const handleSaveTemplate = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast({
-        title: "Success!",
-        description: "Email template saved successfully.",
-      })
-      
-      // Reset form after successful save
-      setTemplateData({
-        name: "",
-        subject: "",
-        content: "",
-      })
+      let res, data;
+      if (isEditing && templateData.id) {
+        // Update template
+        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: templateData.id,
+            template_name: templateData.name,
+            default_subject: templateData.subject,
+            template_content: templateData.content,
+          }),
+        });
+        data = await res.json();
+        toast({ title: "Success!", description: "Template updated." });
+      } else {
+        // Create template
+        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            template_name: templateData.name,
+            default_subject: templateData.subject,
+            template_content: templateData.content,
+          }),
+        });
+        data = await res.json();
+        toast({ title: "Success!", description: "Template created." });
+      }
+      setTemplateData({ id: null, name: "", subject: "", content: "", created_at: "", updated_at: "" });
+      setIsEditing(false)
+      fetchTemplates();
     } catch (error) {
       toast({
         title: "Error",
@@ -193,9 +273,11 @@ export default function EmailSendingPage() {
                         <SelectValue placeholder="Select a template" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Default Template</SelectItem>
-                        <SelectItem value="newsletter">Newsletter Template</SelectItem>
-                        <SelectItem value="event-reminder">Event Reminder</SelectItem>
+                        {templates.map((tpl) => (
+                          <SelectItem key={tpl.id} value={tpl.id.toString()}>
+                            {tpl.template_name}
+                          </SelectItem>
+                        ))}
                         <SelectItem value="custom">Custom (No Template)</SelectItem>
                       </SelectContent>
                     </Select>
@@ -298,37 +380,56 @@ export default function EmailSendingPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {/* Example static templates, replace with dynamic data as needed */}
-                            <tr>
-                              <td className="px-4 py-2">Default Template</td>
-                              <td className="px-4 py-2">Welcome to NIBOG</td>
-                              <td className="px-4 py-2">Hello {'{{name}}'}, welcome to NIBOG!</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="px-4 py-2">Newsletter</td>
-                              <td className="px-4 py-2">Monthly Updates</td>
-                              <td className="px-4 py-2">Dear {'{{name}}'}, here are our latest updates...</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="px-4 py-2">Event Reminder</td>
-                              <td className="px-4 py-2">Don't Miss Your Event!</td>
-                              <td className="px-4 py-2">Hi {'{{name}}'}, your event {'{{event_name}}'} is coming up soon.</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
+                            {isLoadingTemplates ? (
+                              <tr>
+                                <td colSpan={4} className="text-center py-6">Loading...</td>
+                              </tr>
+                            ) : templates.length === 0 ? (
+                              <tr>
+                                <td colSpan={4} className="text-center py-6 text-muted-foreground">No templates found.</td>
+                              </tr>
+                            ) : (
+                              templates.map((tpl) => (
+                                <tr key={tpl.id}>
+                                  <td className="px-4 py-2">{tpl.template_name}</td>
+                                  <td className="px-4 py-2">{tpl.default_subject}</td>
+                                  <td className="px-4 py-2 truncate max-w-xs">{tpl.template_content}</td>
+                                  <td className="px-4 py-2 text-center">
+                                    <button
+                                      className="text-blue-600 hover:underline"
+                                      onClick={() => {
+                                        fetchTemplateById(tpl.id);
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                    <span className="mx-2 text-gray-300">|</span>
+                                    <button
+                                      className="text-red-600 hover:underline"
+                                      onClick={async () => {
+                                        if (!window.confirm("Delete this template?")) return;
+                                        setIsLoadingTemplates(true);
+                                        try {
+                                          await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/delete", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ id: tpl.id }),
+                                          });
+                                          toast({ title: "Deleted", description: "Template deleted." });
+                                          fetchTemplates();
+                                        } catch (e) {
+                                          toast({ title: "Error", description: "Failed to delete template.", variant: "destructive" });
+                                        } finally {
+                                          setIsLoadingTemplates(false);
+                                        }
+                                      }}
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                           </tbody>
                         </table>
                       </div>
