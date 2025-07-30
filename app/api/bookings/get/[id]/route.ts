@@ -2,9 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { params } = await Promise.resolve(context);
     const bookingId = params.id;
 
     if (!bookingId) {
@@ -76,8 +77,24 @@ export async function GET(
       );
     }
 
+    // Flatten child info if present
+    let result = booking;
+    if (Array.isArray(booking.children) && booking.children.length > 0) {
+      const child = booking.children[0];
+      result = {
+        ...booking,
+        child_full_name: child.child_full_name,
+        child_date_of_birth: child.child_date_of_birth,
+        child_school_name: child.child_school_name,
+        child_gender: child.child_gender,
+        child_is_active: child.child_is_active,
+        child_created_at: child.child_created_at,
+        child_updated_at: child.child_updated_at,
+        child_id: child.child_id
+      };
+    }
     // Return the specific booking
-    return NextResponse.json(booking, { status: 200 });
+    return NextResponse.json(result, { status: 200 });
   } catch (error: any) {
     // Handle specific error types
     if (error.name === 'AbortError') {
