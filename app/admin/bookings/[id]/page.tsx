@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -841,10 +842,10 @@ export default function BookingDetailPage({ params }: Props) {
   )
 }
 
-// --- ExploreModal Component ---
-import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
-import { useState } from "react"
-
+/*
+  --- ExploreModal Component ---
+  (Moved to top-level import to avoid duplicate useState import error)
+*/
 function ExploreModal({ booking }: { booking: any }) {
   const [open, setOpen] = useState(false)
   const [selectedCol, setSelectedCol] = useState<string | null>(null)
