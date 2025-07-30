@@ -81,6 +81,11 @@ export async function GET(
     let result = booking;
     if (Array.isArray(booking.children) && booking.children.length > 0) {
       const child = booking.children[0];
+      // Extract game name from the first game if available
+      let game_name = undefined;
+      if (Array.isArray(child.games) && child.games.length > 0) {
+        game_name = child.games[0].game_name;
+      }
       result = {
         ...booking,
         child_full_name: child.child_full_name,
@@ -90,7 +95,8 @@ export async function GET(
         child_is_active: child.child_is_active,
         child_created_at: child.child_created_at,
         child_updated_at: child.child_updated_at,
-        child_id: child.child_id
+        child_id: child.child_id,
+        game_name
       };
     }
     // Return the specific booking

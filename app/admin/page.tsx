@@ -209,9 +209,9 @@ export default function AdminDashboard() {
           </div>
         ) : (
           <Stagger>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6">
+            <div className="grid gap-6 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4">
               {kpiData.map((kpi, index) => (
-                <StaggerItem key={index} className={index >= 4 ? "xl:col-span-3" : ""}>
+                <StaggerItem key={index}>
                   <EnhancedKPICard data={kpi} loading={isRefreshing} />
                 </StaggerItem>
               ))}

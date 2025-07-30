@@ -420,6 +420,8 @@ export default function BookingDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold tracking-tight">Booking #{booking.booking_id}</h1>
             <p className="text-muted-foreground">{booking.event_title} - {new Date(booking.event_event_date).toLocaleDateString()}</p>
           </div>
+          {/* Explore Modal Trigger */}
+          <ExploreModal booking={booking} />
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
@@ -837,4 +839,116 @@ export default function BookingDetailPage({ params }: Props) {
       </div>
     </div>
   )
+}
+
+// --- ExploreModal Component ---
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { useState } from "react"
+
+function ExploreModal({ booking }: { booking: any }) {
+  const [open, setOpen] = useState(false)
+  const [selectedCol, setSelectedCol] = useState<string | null>(null)
+
+  // List all columns you want to show (add more as needed)
+  const columns = [
+    { key: "booking_id", label: "Booking ID" },
+    { key: "game_name", label: "Game Name" },
+    { key: "parent_name", label: "Parent Name" },
+    { key: "parent_email", label: "Parent Email" },
+    { key: "parent_additional_phone", label: "Parent Phone" },
+    { key: "child_full_name", label: "Child Name" },
+    { key: "child_gender", label: "Child Gender" },
+    { key: "child_date_of_birth", label: "Child DOB" },
+    { key: "child_school_name", label: "Child School" },
+    { key: "event_title", label: "Event" },
+    { key: "city_name", label: "City" },
+    { key: "venue_name", label: "Venue" },
+    { key: "total_amount", label: "Amount" },
+    { key: "booking_status", label: "Status" },
+    { key: "booking_created_at", label: "Booking Date" },
+    // Add more fields as needed
+  ];
+
+  function renderDetail(colKey: string) {
+    switch (colKey) {
+      case "game_name":
+        return <div><strong>Game Name:</strong> {booking.game_name || "N/A"}</div>;
+      case "parent_name":
+        return (
+          <div>
+            <strong>Parent:</strong> {booking.parent_name}
+            <br />
+            <span className="text-muted-foreground">{booking.parent_email}</span>
+          </div>
+        );
+      case "parent_email":
+        return <div><strong>Email:</strong> {booking.parent_email}</div>;
+      case "parent_additional_phone":
+        return <div><strong>Phone:</strong> {booking.parent_additional_phone}</div>;
+      case "child_full_name":
+        return (
+          <div>
+            <strong>Child:</strong> {booking.child_full_name}
+            <br />
+            <span className="text-muted-foreground">{booking.child_gender}, {booking.child_date_of_birth}</span>
+          </div>
+        );
+      case "child_gender":
+        return <div><strong>Gender:</strong> {booking.child_gender}</div>;
+      case "child_date_of_birth":
+        return <div><strong>DOB:</strong> {booking.child_date_of_birth}</div>;
+      case "child_school_name":
+        return <div><strong>School:</strong> {booking.child_school_name}</div>;
+      case "event_title":
+        return <div><strong>Event:</strong> {booking.event_title}</div>;
+      case "venue_name":
+        return <div><strong>Venue:</strong> {booking.venue_name}</div>;
+      case "city_name":
+        return <div><strong>City:</strong> {booking.city_name}</div>;
+      case "total_amount":
+        return <div><strong>Total Amount:</strong> ₹{booking.total_amount}</div>;
+      case "booking_status":
+        return <div><strong>Status:</strong> {booking.booking_status}</div>;
+      case "booking_created_at":
+        return <div><strong>Booking Date:</strong> {new Date(booking.booking_created_at).toLocaleDateString()}</div>;
+      default:
+        return <div>{booking[colKey]}</div>;
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="ml-2">Explore</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Explore Booking Columns</DialogTitle>
+        </DialogHeader>
+        <div className="flex gap-4">
+          <div className="w-1/3 border-r pr-4">
+            <ul>
+              {columns.map(col => (
+                <li key={col.key}>
+                  <button
+                    className={`w-full text-left py-1 px-2 rounded ${selectedCol === col.key ? "bg-primary text-white" : "hover:bg-muted"}`}
+                    onClick={() => setSelectedCol(col.key)}
+                  >
+                    {col.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="w-2/3 pl-4">
+            {selectedCol ? (
+              <div>{renderDetail(selectedCol)}</div>
+            ) : (
+              <div className="text-muted-foreground">Select a column to view details.</div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
