@@ -123,6 +123,16 @@ export default function BookingsPage() {
       render: (value) => <span className="font-mono text-sm">#{value}</span>
     },
     {
+      key: 'parent_additional_phone',
+      label: 'Phone Number',
+      sortable: false,
+      render: (value, row) => (
+        <div>
+          {row.parent_additional_phone || "-"}
+        </div>
+      )
+    },
+    {
       key: 'parent_name',
       label: 'Parent',
       sortable: true,
