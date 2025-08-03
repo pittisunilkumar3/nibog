@@ -10,6 +10,7 @@ import { convertBookingRefFormat } from "@/services/bookingService"
 import { checkPhonePePaymentStatus } from "@/services/paymentService"
 import { sendBookingConfirmationFromClient } from "@/services/emailNotificationService"
 import { generateConsistentBookingRef } from "@/utils/bookingReference"
+import { WhatsAppBookingData } from "@/services/whatsappService"
 
 function PaymentCallbackContent() {
   const router = useRouter()
@@ -184,7 +185,50 @@ function PaymentCallbackContent() {
                         console.error('📧 Failed to send backup confirmation email:', emailError)
                         // Don't fail the process if backup email fails
                       }
-                      
+
+                      // Send WhatsApp notification as backup
+                      try {
+                        console.log('📱 Sending backup WhatsApp notification from client...');
+
+                        // Check if we have booking data with phone number
+                        if (bookingDataFromStorage && bookingDataFromStorage.phone) {
+                          const whatsappData = {
+                            bookingId: parseInt(emailBookingRef.replace('B', '')),
+                            bookingRef: emailBookingRef,
+                            parentName: bookingDataFromStorage.parentName || 'Valued Customer',
+                            parentPhone: bookingDataFromStorage.phone,
+                            childName: bookingDataFromStorage.childName || 'Child',
+                            eventTitle: bookingDataFromStorage.eventTitle || 'NIBOG Event',
+                            eventDate: bookingDataFromStorage.eventDate || new Date().toLocaleDateString(),
+                            eventVenue: bookingDataFromStorage.eventVenue || 'Main Stadium',
+                            totalAmount: bookingDataFromStorage.totalAmount || 0,
+                            paymentMethod: 'PhonePe',
+                            transactionId: txnId,
+                            gameDetails: bookingDataFromStorage.gameDetails || []
+                          };
+
+                          const whatsappResponse = await fetch('/api/whatsapp/send-booking-confirmation', {
+                            method: 'POST',
+                            headers: {
+                              'Content-Type': 'application/json',
+                            },
+                            body: JSON.stringify(whatsappData),
+                          });
+
+                          if (whatsappResponse.ok) {
+                            console.log('📱 Backup WhatsApp notification sent successfully from client');
+                          } else {
+                            const whatsappError = await whatsappResponse.json();
+                            console.error('📱 Failed to send backup WhatsApp notification:', whatsappError);
+                          }
+                        } else {
+                          console.log('📱 No phone number available for WhatsApp notification');
+                        }
+                      } catch (whatsappError) {
+                        console.error('📱 Failed to send backup WhatsApp notification:', whatsappError);
+                        // Don't fail the process if WhatsApp notification fails
+                      }
+
                       // Update the booking reference in state
                       setBookingRef(emailBookingRef)
                       

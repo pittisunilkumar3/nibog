@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { BOOKING_API } from '@/config/api';
 import { PHONEPE_CONFIG, generateSHA256Hash } from '@/config/phonepe';
+import { WhatsAppBookingData } from '@/services/whatsappService';
 
 // Cache successful transaction IDs to prevent duplicate processing
 let processedTransactions: Set<string> = new Set();
@@ -125,6 +126,10 @@ interface PendingBookingData {
     variantId?: string;
   }>;
   promoCode?: string;
+  eventTitle?: string;
+  eventDate?: string;
+  eventVenue?: string;
+  gameDetails?: any[];
 }
 
 /**
@@ -378,7 +383,15 @@ async function createBookingAndPaymentDirect(
         console.log(`⚠️ Cannot get response text but status OK. Using user ID as fallback booking ID: ${userId}`);
         bookingResultJson = { booking_id: userId };
       } else {
-        return { success: false, bookingData: finalBookingData, error: `Failed to get response text: ${textError.message}` };
+        return {
+          success: false,
+          bookingData: finalBookingData,
+          error: `Failed to get response text: ${
+            typeof textError === 'object' && textError !== null && 'message' in textError
+              ? (textError as any).message
+              : String(textError)
+          }`
+        };
       }
     }
 
@@ -809,6 +822,74 @@ export async function POST(request: Request) {
           // Don't fail the entire process if email fails - booking and payment were successful
         }
 
+        // Send notifications via N8N webhook (handles both WhatsApp and Email)
+        let notificationsSent = false;
+        try {
+          console.log(`🔔 Sending notifications for booking ID: ${bookingResult.bookingId} via N8N webhook`);
+
+          // Extract phone number from transaction ID or use a fallback
+          const phoneMatch = merchantTransactionId.match(/NIBOG_(\d+)_/);
+          const userId = phoneMatch ? parseInt(phoneMatch[1]) : null;
+
+          // Prepare notification data
+          const bookingRef = `B${String(bookingResult.bookingId).padStart(7, '0')}`;
+          const notificationData = {
+            bookingId: bookingResult.bookingId,
+            bookingRef: bookingRef,
+            parentName: 'Valued Customer',
+            parentPhone: `+91${userId || '9999999999'}`, // Fallback phone number
+            parentEmail: `customer-${bookingResult.bookingId}@example.com`,
+            childName: 'Child',
+            eventTitle: 'NIBOG Event',
+            eventDate: new Date().toLocaleDateString(),
+            eventVenue: 'Main Stadium',
+            totalAmount: amount / 100,
+            paymentMethod: 'PhonePe',
+            transactionId: transactionId,
+            gameDetails: [] // Add empty gameDetails array for fallback case
+          };
+
+          // Replace this URL with your actual N8N webhook URL
+          const n8nWebhookUrl = process.env.N8N_BOOKING_WEBHOOK_URL || 'https://your-n8n-instance.com/webhook/nibog-booking-confirmation';
+
+          // Send notification data to N8N webhook
+          const n8nResponse = await fetch(n8nWebhookUrl, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(notificationData),
+          });
+
+          if (n8nResponse.ok) {
+            const n8nResult = await n8nResponse.json();
+            console.log(`🔔 Notifications sent successfully via N8N:`, n8nResult);
+            notificationsSent = true;
+          } else {
+            const errorData = await n8nResponse.json();
+            console.error(`🔔 N8N webhook notification failed:`, errorData);
+
+            // Fallback to direct WhatsApp API if N8N fails
+            if (process.env.WHATSAPP_NOTIFICATIONS_ENABLED === 'true') {
+              console.log(`📱 Falling back to direct WhatsApp API`);
+              const whatsappResponse = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'https://www.nibog.in'}/api/whatsapp/send-booking-confirmation`, {
+                method: 'POST',
+                headers: {
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(notificationData),
+              });
+
+              if (whatsappResponse.ok) {
+                console.log(`📱 WhatsApp fallback notification sent successfully`);
+              }
+            }
+          }
+        } catch (notificationError) {
+          console.error(`🔔 Failed to send notifications:`, notificationError);
+          // Don't fail the entire process if notifications fail
+        }
+
         // Mark this transaction as processed
         processedTransactions.add(transactionId);
 
@@ -816,7 +897,8 @@ export async function POST(request: Request) {
           status: "SUCCESS",
           message: "Payment processed successfully",
           booking_id: bookingResult.bookingId,
-          emailSent: true // Indicate that email was attempted
+          emailSent: true, // Indicate that email was attempted
+          notificationsSent: notificationsSent // Indicate if notifications were sent
         });
       } else {
         console.error(`❌ Failed to create booking and payment: ${bookingResult.error}`);
