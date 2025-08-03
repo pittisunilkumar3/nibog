@@ -126,6 +126,10 @@ interface PendingBookingData {
     variantId?: string;
   }>;
   promoCode?: string;
+  eventTitle?: string;
+  eventDate?: string;
+  eventVenue?: string;
+  gameDetails?: any[];
 }
 
 /**
@@ -379,7 +383,15 @@ async function createBookingAndPaymentDirect(
         console.log(`⚠️ Cannot get response text but status OK. Using user ID as fallback booking ID: ${userId}`);
         bookingResultJson = { booking_id: userId };
       } else {
-        return { success: false, bookingData: finalBookingData, error: `Failed to get response text: ${textError.message}` };
+        return {
+          success: false,
+          bookingData: finalBookingData,
+          error: `Failed to get response text: ${
+            typeof textError === 'object' && textError !== null && 'message' in textError
+              ? (textError as any).message
+              : String(textError)
+          }`
+        };
       }
     }
 
