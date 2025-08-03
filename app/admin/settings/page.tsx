@@ -22,8 +22,8 @@ export default function SettingsPage() {
   // General settings
   const [siteName, setSiteName] = useState("NIBOG - New India Baby Olympics Games")
   const [siteTagline, setSiteTagline] = useState("India's Biggest Baby Games")
-  const [contactEmail, setContactEmail] = useState("info@nibog.in")
-  const [contactPhone, setContactPhone] = useState("+91 9876543210")
+  const [contactEmail, setContactEmail] = useState("newindababyolympics@gmail.com")
+  const [contactPhone, setContactPhone] = useState("+91 9000125959")
   const [address, setAddress] = useState("Gachibowli Indoor Stadium, Hyderabad, Telangana 500032")
   const [logo, setLogo] = useState<string | null>(null)
   const [favicon, setFavicon] = useState<string | null>(null)
@@ -147,8 +147,8 @@ export default function SettingsPage() {
       // Reset to default values if no settings exist
       setSiteName("NIBOG - New India Baby Olympics Games")
       setSiteTagline("India's Biggest Baby Games")
-      setContactEmail("info@nibog.in")
-      setContactPhone("+91 9876543210")
+      setContactEmail("newindababyolympics@gmail.com")
+      setContactPhone("+91 9000125959")
       setAddress("Gachibowli Indoor Stadium, Hyderabad, Telangana 500032")
       setLogo(null)
       setFavicon(null)
@@ -948,7 +948,7 @@ export default function SettingsPage() {
                         type="email"
                         value={senderEmail}
                         onChange={(e) => setSenderEmail(e.target.value)}
-                        placeholder="notifications@nibog.in"
+                        placeholder="newindababyolympics@gmail.com"
                       />
                     </div>
                   </div>

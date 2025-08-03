@@ -135,7 +135,7 @@ function generateBookingConfirmationHTML(confirmationData: BookingConfirmationDa
 
           <div class="footer">
             <p>Thank you for choosing NIBOG!</p>
-            <p>For any queries, please contact us at support@nibog.in</p>
+            <p>For any queries, please contact us at newindababyolympics@gmail.com</p>
             <p><small>This is an automated email. Please do not reply to this email.</small></p>
           </div>
         </div>
@@ -323,7 +323,7 @@ function generatePaymentFailureHTML(parentName: string, transactionId: string, r
           <p>If the amount was deducted from your account, please contact our support team immediately with the transaction ID above.</p>
 
           <div class="footer">
-            <p>Need help? Contact us at support@nibog.in</p>
+            <p>Need help? Contact us at newindababyolympics@gmail.com</p>
             <p><small>This is an automated email. Please do not reply to this email.</small></p>
           </div>
         </div>
@@ -519,7 +519,7 @@ function generateEventReminderHTML(confirmationData: BookingConfirmationData): s
           <div class="footer">
             <p>See you soon!</p>
             <p>NIBOG Team</p>
-            <p>For any queries, contact us at support@nibog.in</p>
+            <p>For any queries, contact us at newindababyolympics@gmail.com</p>
           </div>
         </div>
       </div>
@@ -570,7 +570,7 @@ function generatePaymentPendingHTML(confirmationData: BookingConfirmationData): 
           <p>If you've already made the payment, please ignore this email. If you're facing any issues, please contact our support team.</p>
 
           <div class="footer">
-            <p>Need help? Contact us at support@nibog.in</p>
+            <p>Need help? Contact us at newindababyolympics@gmail.com</p>
             <p>NIBOG Team</p>
           </div>
         </div>

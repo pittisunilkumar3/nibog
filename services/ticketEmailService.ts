@@ -117,7 +117,7 @@ export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ su
       apiUrls.push('https://www.nibog.in');
     } else {
       // Local development fallbacks
-      apiUrls.push('http://localhost:3000');
+      apiUrls.push('http://localhost:3111');
     }
     
     // Remove duplicates from the URL list
@@ -330,7 +330,7 @@ async function generateTicketHTML(ticketData: TicketEmailData): Promise<string> 
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
       <p style="margin: 0; color: #666; font-size: 14px;">
-        If you have any questions, please contact us at support@nibog.com
+        If you have any questions, please contact us at newindababyolympics@gmail.com
       </p>
       <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
         Have an amazing time at NIBOG! 🎮🎉

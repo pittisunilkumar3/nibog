@@ -55,7 +55,7 @@ export default function SettingsPanel({ className }: SettingsPanelProps) {
     // Profile settings
     adminName: "Admin User",
     adminEmail: "admin@nibog.com",
-    adminPhone: "+91 9876543210",
+    adminPhone: "+91 9000125959",
     
     // Notification settings
     emailNotifications: true,
@@ -82,7 +82,7 @@ export default function SettingsPanel({ className }: SettingsPanelProps) {
     smtpPort: "587",
     smtpUsername: "",
     smtpPassword: "",
-    fromEmail: "noreply@nibog.com",
+    fromEmail: "newindababyolympics@gmail.com ",
     fromName: "NIBOG Team",
     
     // Backup settings

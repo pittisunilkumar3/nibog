@@ -601,3 +601,16 @@ CREATE TABLE homepage_sections (
 
 
 
+
+
+CREATE TABLE email_templates (
+    id SERIAL PRIMARY KEY,
+    template_name VARCHAR(255) NOT NULL UNIQUE,
+    default_subject VARCHAR(255),
+    template_content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+
+

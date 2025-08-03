@@ -72,10 +72,43 @@ export async function GET(request: Request) {
         // Try to parse the response as JSON
         const responseData = JSON.parse(responseText);
         const totalBookings = Array.isArray(responseData) ? responseData.length : 0;
+        // Flatten child info for each booking
+        let flattenedData = [];
+        if (Array.isArray(responseData)) {
+          flattenedData = responseData.map(booking => {
+            if (Array.isArray(booking.children) && booking.children.length > 0) {
+              const child = booking.children[0];
+              // Extract game name from the first game if available
+              let game_name = undefined;
+              if (Array.isArray(child.games) && child.games.length > 0) {
+                game_name = child.games[0].game_name;
+              }
+              return {
+                ...booking,
+                child_full_name: child.child_full_name,
+                child_date_of_birth: child.child_date_of_birth,
+                child_school_name: child.child_school_name,
+                child_gender: child.child_gender,
+                child_is_active: child.child_is_active,
+                child_created_at: child.child_created_at,
+                child_updated_at: child.child_updated_at,
+                child_id: child.child_id,
+                game_name
+              };
+            }
+            return booking;
+          });
+        } else {
+          flattenedData = responseData;
+        }
+        if (Array.isArray(flattenedData) && flattenedData.length > 0) {
+          console.log("Sample flattened booking object keys:", Object.keys(flattenedData[0]));
+          console.log("Sample flattened booking object:", JSON.stringify(flattenedData[0], null, 2));
+        }
         console.log(`Server API route: Retrieved ${totalBookings} total bookings from API`);
 
         // Apply pagination to the data
-        const paginatedData = Array.isArray(responseData) ? responseData.slice(offset, offset + limit) : [];
+        const paginatedData = Array.isArray(flattenedData) ? flattenedData.slice(offset, offset + limit) : [];
         const totalPages = Math.ceil(totalBookings / limit);
 
         console.log(`Server API route: Returning ${paginatedData.length} bookings for page ${page} of ${totalPages}`);

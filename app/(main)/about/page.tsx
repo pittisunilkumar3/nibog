@@ -210,58 +210,7 @@ export default function AboutPage() {
         </div>
       </section>
 
-      {/* Our Team */}
-      <section className="bg-slate-50 py-16 dark:bg-slate-900/30 md:py-24">
-        <div className="container">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-block rounded-lg bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/30 dark:text-green-300">
-              Our Team
-            </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">The People Behind NIBOG</h2>
-            <p className="mt-4 text-muted-foreground">
-              Meet our dedicated team of professionals who work tirelessly to create magical experiences for children
-            </p>
-          </div>
 
-          <div className="mt-12 grid gap-8 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {[
-              {
-                name: "Rajesh Kumar",
-                role: "Founder & CEO",
-                image: "/images/about/team-1.jpg",
-              },
-              {
-                name: "Priya Sharma",
-                role: "Event Director",
-                image: "/images/about/team-2.jpg",
-              },
-              {
-                name: "Vikram Singh",
-                role: "Operations Manager",
-                image: "/images/about/team-3.jpg",
-              },
-              {
-                name: "Ananya Patel",
-                role: "Child Development Specialist",
-                image: "/images/about/team-4.jpg",
-              },
-            ].map((member, i) => (
-              <div key={i} className="group">
-                <div className="relative aspect-square overflow-hidden rounded-xl">
-                  <Image
-                    src={member.image}
-                    alt={member.name}
-                    fill
-                    className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  />
-                </div>
-                <h3 className="mt-4 text-xl font-bold">{member.name}</h3>
-                <p className="text-muted-foreground">{member.role}</p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
 
       {/* Testimonials */}
       <section className="py-16 md:py-24">

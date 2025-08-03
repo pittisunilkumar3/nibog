@@ -82,11 +82,11 @@ export default function Footer() {
                   Privacy Policy
                 </Link>
               </li>
-              <li>
+              {/* <li>
                 <Link href="/refund" className="text-muted-foreground hover:text-foreground">
                   Refund Policy
                 </Link>
-              </li>
+              </li> */}
               <li>
                 <Link href="/faq" className="text-muted-foreground hover:text-foreground">
                   FAQ
@@ -100,18 +100,20 @@ export default function Footer() {
               <li className="flex items-start gap-2">
                 <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
                 <span className="text-muted-foreground">
-                  Gachibowli Indoor Stadium
+                  ΗΝΟ.33-30/4, PN018,SATGURU OFF COLONY
                   <br />
-                  Hyderabad, Telangana 500032
+                  SECUNDERABAD, MEDCHAL
+                  <br/>
+                  PIN:500056, TELANGANA, INDIA
                 </span>
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">+91 98765 43210</span>
+                <span className="text-muted-foreground">+91 9000125959</span>
               </li>
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-muted-foreground">info@nibog.com</span>
+                <span className="text-muted-foreground">newindababyolympics@gmail.com</span>
               </li>
             </ul>
             <div className="pt-2">
