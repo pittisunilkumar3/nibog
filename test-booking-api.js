@@ -61,7 +61,7 @@ async function testBookingAPI() {
     bookingId: 12345,
     bookingRef: 'B0012345',
     parentName: 'Test Parent',
-    parentPhone: '6303727148', // Your test number
+    parentPhone: '7780288416', // Your test number
     childName: 'Test Child',
     eventTitle: 'Birthday Party Celebration',
     eventDate: '2024-01-15',
