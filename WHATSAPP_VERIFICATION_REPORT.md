@@ -66,7 +66,7 @@
 ## 📋 **WhatsApp Message Content**
 
 ### **Template Message (if enabled):**
-- Uses `booking_confirmation` template
+- Uses `booking_confirmation_latest` template
 - Includes: Customer name, event title, date, venue, child name, booking ref, amount, payment method
 
 ### **Text Message (fallback):**

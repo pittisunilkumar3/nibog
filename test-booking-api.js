@@ -61,7 +61,7 @@ async function testBookingAPI() {
     bookingId: 12345,
     bookingRef: 'B0012345',
     parentName: 'Rajesh Kumar',
-    parentPhone: '6281102112', // Your test number
+    parentPhone: '9346015886', // Your test number
     childName: 'Aarav Kumar',
     eventTitle: 'NIBOG Baby Olympics 2024',
     eventDate: '2024-12-15',

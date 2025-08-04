@@ -55,7 +55,7 @@ export const getAppUrl = (): string => {
       return `${protocol}//${hostname}`;
     }
     // Server-side fallback for development - use localhost
-    return 'http://localhost:3111';
+    return 'http://localhost:3000';
   }
 
   // For production, first try to get from environment variable

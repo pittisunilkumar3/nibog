@@ -5,8 +5,8 @@
 async function checkAvailableTemplates() {
   console.log('🔍 Checking available WhatsApp templates in Zaptra...');
   
-  const ZAPTRA_API_URL = 'https://demo.zaptra.in/api/wpbox';
-  const ZAPTRA_API_TOKEN = 'QqfIcXJtovwgUSGMtX1a3PY0XbXQCETeqFMlfjYi5c0aa036';
+  const ZAPTRA_API_URL = 'https://zaptra.in/api/wpbox';
+  const ZAPTRA_API_TOKEN = 'ub94jy7OiCmCiggguxLZ2ETkbYkh5OtpNX3ZYISD737595b9';
   
   try {
     // Get all available templates - try with token as query parameter
@@ -39,9 +39,9 @@ async function checkAvailableTemplates() {
             console.log(`   Components:`, JSON.stringify(template.components, null, 4));
           }
           
-          // Check if this is our booking_confirmation template
-          if (template.name === 'booking_confirmation') {
-            console.log('🎯 Found booking_confirmation template!');
+          // Check if this is our booking_confirmation_latest template
+          if (template.name === 'booking_confirmation_latest') {
+            console.log('🎯 Found booking_confirmation_latest template!');
             console.log('📝 Template details:', JSON.stringify(template, null, 4));
           }
         });

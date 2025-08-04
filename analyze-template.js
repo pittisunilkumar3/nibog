@@ -3,10 +3,10 @@
  */
 
 async function analyzeTemplate() {
-  console.log('🔍 Analyzing booking_confirmation template structure...');
-  
-  const ZAPTRA_API_URL = 'https://demo.zaptra.in/api/wpbox';
-  const ZAPTRA_API_TOKEN = 'QqfIcXJtovwgUSGMtX1a3PY0XbXQCETeqFMlfjYi5c0aa036';
+  console.log('🔍 Analyzing booking_confirmation_latest template structure...');
+
+  const ZAPTRA_API_URL = 'https://zaptra.in/api/wpbox';
+  const ZAPTRA_API_TOKEN = 'ub94jy7OiCmCiggguxLZ2ETkbYkh5OtpNX3ZYISD737595b9';
   
   try {
     // Get the specific template
@@ -21,10 +21,10 @@ async function analyzeTemplate() {
     
     if (response.ok && result.status === 'success') {
       const templates = result.templates;
-      const bookingTemplate = templates.find(t => t.name === 'booking_confirmation');
-      
+      const bookingTemplate = templates.find(t => t.name === 'booking_confirmation_latest');
+
       if (bookingTemplate) {
-        console.log('🎯 Found booking_confirmation template!');
+        console.log('🎯 Found booking_confirmation_latest template!');
         console.log('📋 Template ID:', bookingTemplate.id);
         console.log('📋 Language:', bookingTemplate.language);
         console.log('📋 Status:', bookingTemplate.status);

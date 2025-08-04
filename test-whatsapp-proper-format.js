@@ -6,8 +6,8 @@
 async function testProperWhatsAppFormat() {
   console.log('🧪 Testing proper WhatsApp Business API template format...');
   
-  const ZAPTRA_API_URL = 'https://demo.zaptra.in/api/wpbox';
-  const ZAPTRA_API_TOKEN = 'QqfIcXJtovwgUSGMtX1a3PY0XbXQCETeqFMlfjYi5c0aa036';
+  const ZAPTRA_API_URL = 'https://zaptra.in/api/wpbox';
+  const ZAPTRA_API_TOKEN = 'ub94jy7OiCmCiggguxLZ2ETkbYkh5OtpNX3ZYISD737595b9';
   const TEST_PHONE = '+919346015886';
   
   // Test data
@@ -27,7 +27,7 @@ async function testProperWhatsAppFormat() {
   const properFormat = {
     token: ZAPTRA_API_TOKEN,
     phone: TEST_PHONE,
-    template_name: 'booking_confirmation',
+    template_name: 'booking_confirmation_latest',
     template_language: 'en',
     template_data: {
       components: [
@@ -83,7 +83,7 @@ async function testProperWhatsAppFormat() {
   const simpleFormat = {
     token: ZAPTRA_API_TOKEN,
     phone: TEST_PHONE,
-    template_name: 'booking_confirmation',
+    template_name: 'booking_confirmation_latest',
     template_language: 'en',
     template_data: testData
   };

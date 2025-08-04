@@ -26,7 +26,7 @@ async function testWhatsAppTemplate() {
   try {
     console.log('📱 Sending WhatsApp template message...');
     console.log('📞 Target phone:', TEST_PHONE);
-    console.log('🎯 Template name: booking_confirmation');
+    console.log('🎯 Template name: booking_confirmation_latest');
     console.log('📋 Template data:', templateData);
 
     // Call Zaptra API directly
@@ -38,8 +38,8 @@ async function testWhatsAppTemplate() {
       body: JSON.stringify({
         token: ZAPTRA_API_TOKEN,
         phone: TEST_PHONE,
-        template_name: 'booking_confirmation',
-        template_language: 'en',  // Correct language for booking_confirmation template
+        template_name: 'booking_confirmation_latest',
+        template_language: 'en_US',  // Correct language for booking_confirmation_latest template
         template_data: templateData
       }),
     });

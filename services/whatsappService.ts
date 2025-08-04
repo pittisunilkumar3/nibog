@@ -135,7 +135,7 @@ async function sendWhatsAppMessageSafe(
           token: settings.apiToken,
           phone: phone,
           template_name: messageData.templateName,
-          template_language: 'en', // Correct language for booking_confirmation template
+          template_language: 'en_US', // Correct language for booking_confirmation_latest template
           components: messageData.templateData // Use 'components' instead of 'template_data'
         }
       : {
@@ -300,7 +300,7 @@ export async function sendBookingConfirmationWhatsApp(
       const bookingRef = bookingData.bookingRef || `B${String(bookingData.bookingId).padStart(7, '0')}`;
 
       messageData = {
-        templateName: 'booking_confirmation', // Template name in Zaptra
+        templateName: 'booking_confirmation_latest', // Template name in Zaptra
         templateData: [
           {
             type: "body",
