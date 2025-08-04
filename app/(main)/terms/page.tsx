@@ -128,8 +128,8 @@ export default function TermsPage() {
               For questions or concerns regarding these Terms and Conditions, please contact us at:
             </p>
             <p>
-              Email: legal@nibog.in<br />
-              Phone: +91 98765 43210<br />
+              Email: newindababyolympics@gmail.com<br />
+              Phone: +91 9000125959<br />
               Address: Gachibowli Indoor Stadium, Hyderabad, Telangana 500032
             </p>
           </section>

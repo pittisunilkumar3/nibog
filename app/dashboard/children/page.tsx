@@ -10,9 +10,9 @@ import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { CalendarIcon, Plus, Edit, Trash2, Baby } from "lucide-react"
-import { format, differenceInMonths } from "date-fns"
+import { format } from "date-fns"
 import { cn } from "@/lib/utils"
-import { formatAge } from "@/lib/age-calculation"
+import { formatAge, calculateAgeInMonths } from "@/lib/age-calculation"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -69,7 +69,7 @@ export default function ChildrenPage() {
   const getAgeInMonths = (dobString: string) => {
     const dob = new Date(dobString)
     const now = new Date()
-    return differenceInMonths(now, dob)
+    return calculateAgeInMonths(dob, now)
   }
 
   // Handle add child form submission

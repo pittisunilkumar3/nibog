@@ -899,6 +899,39 @@ export async function getBookingPaymentDetails(bookingId: number) {
 }
 
 /**
+ * Get booking add-ons by booking ID
+ * @param bookingId Booking ID
+ * @returns Promise with booking add-ons data
+ */
+export async function getBookingAddons(bookingId: number): Promise<any> {
+  try {
+    console.log(`Fetching booking add-ons for booking ID: ${bookingId}`);
+
+    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/getting/add-on/by-bookingid', {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        booking_id: bookingId
+      }),
+    });
+
+    if (!response.ok) {
+      console.error(`Failed to fetch booking add-ons: ${response.status}`);
+      return null;
+    }
+
+    const data = await response.json();
+    console.log('Booking add-ons data:', data);
+    return data;
+  } catch (error) {
+    console.error('Error fetching booking add-ons:', error);
+    return null;
+  }
+}
+
+/**
  * Update booking payment status
  * @param bookingId Booking ID
  * @param paymentStatus New payment status

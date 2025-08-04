@@ -70,6 +70,10 @@ export default function BookingsPage() {
   const [error, setError] = useState<string | null>(null)
   const [isProcessing, setIsProcessing] = useState<number | null>(null)
 
+  // Date filter state
+  const [fromDate, setFromDate] = useState<string>("")
+  const [toDate, setToDate] = useState<string>("")
+
   // Fetch bookings from API
   const fetchBookings = async () => {
     try {
@@ -100,6 +104,15 @@ export default function BookingsPage() {
     fetchBookings()
   }, [])
 
+  // Filter bookings by date
+  const filteredBookings = bookings.filter(b => {
+    if (!fromDate && !toDate) return true;
+    const bookingDate = new Date(b.booking_created_at);
+    if (fromDate && bookingDate < new Date(fromDate)) return false;
+    if (toDate && bookingDate > new Date(toDate)) return false;
+    return true;
+  });
+
   // Define table columns
   const columns: Column<Booking>[] = [
     {
@@ -108,6 +121,16 @@ export default function BookingsPage() {
       sortable: true,
       width: '100px',
       render: (value) => <span className="font-mono text-sm">#{value}</span>
+    },
+    {
+      key: 'parent_additional_phone',
+      label: 'Phone Number',
+      sortable: false,
+      render: (value, row) => (
+        <div>
+          {row.parent_additional_phone || "-"}
+        </div>
+      )
     },
     {
       key: 'parent_name',
@@ -136,6 +159,16 @@ export default function BookingsPage() {
           {row.child_age && (
             <div className="text-xs text-muted-foreground">Age: {row.child_age}</div>
           )}
+        </div>
+      )
+    },
+    {
+      key: 'game_name',
+      label: 'Game Name',
+      sortable: true,
+      render: (value) => (
+        <div>
+          <div className="font-medium">{value}</div>
         </div>
       )
     },
@@ -331,12 +364,29 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
           <p className="text-muted-foreground">Manage NIBOG event bookings</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col md:flex-row gap-2 items-center">
+          {/* Date Filters */}
+          <div className="flex gap-2 items-center">
+            <label className="text-sm text-muted-foreground">From</label>
+            <input
+              type="date"
+              value={fromDate}
+              onChange={e => setFromDate(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            />
+            <label className="text-sm text-muted-foreground">To</label>
+            <input
+              type="date"
+              value={toDate}
+              onChange={e => setToDate(e.target.value)}
+              className="border rounded px-2 py-1 text-sm"
+            />
+          </div>
           <Button
             variant="outline"
             onClick={fetchBookings}
@@ -390,7 +440,7 @@ export default function BookingsPage() {
 
       {/* Enhanced Data Table */}
       <EnhancedDataTable
-        data={bookings}
+        data={filteredBookings}
         columns={columns}
         actions={actions}
         bulkActions={bulkActions}

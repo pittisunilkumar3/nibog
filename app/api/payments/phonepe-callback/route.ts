@@ -93,7 +93,7 @@ function generateBookingConfirmationHTML(emailData: any): string {
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ddd;">
       <p style="margin: 0 0 10px 0; color: #666; font-size: 14px;">
-        If you have any questions, please contact us at support@nibog.com
+        If you have any questions, please contact us at newindababyolympics@gmail.com
       </p>
       <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
         Thank you for choosing NIBOG! 🎮
@@ -126,6 +126,10 @@ interface PendingBookingData {
     variantId?: string;
   }>;
   promoCode?: string;
+  eventTitle?: string;
+  eventDate?: string;
+  eventVenue?: string;
+  gameDetails?: any[];
 }
 
 /**
@@ -379,7 +383,15 @@ async function createBookingAndPaymentDirect(
         console.log(`⚠️ Cannot get response text but status OK. Using user ID as fallback booking ID: ${userId}`);
         bookingResultJson = { booking_id: userId };
       } else {
-        return { success: false, bookingData: finalBookingData, error: `Failed to get response text: ${textError.message}` };
+        return {
+          success: false,
+          bookingData: finalBookingData,
+          error: `Failed to get response text: ${
+            typeof textError === 'object' && textError !== null && 'message' in textError
+              ? (textError as any).message
+              : String(textError)
+          }`
+        };
       }
     }
 

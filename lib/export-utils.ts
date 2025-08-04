@@ -381,8 +381,10 @@ export class ExportService {
 // Utility functions for common export scenarios
 export const createBookingExportColumns = () => [
   { key: 'booking_id' as const, label: 'Booking ID', width: 80 },
+  { key: 'game_name' as const, label: 'Game Name', width: 120 },
   { key: 'parent_name' as const, label: 'Parent Name', width: 120 },
   { key: 'parent_email' as const, label: 'Email', width: 150 },
+  { key: 'parent_additional_phone' as const, label: 'Phone Number', width: 120 },
   { key: 'child_full_name' as const, label: 'Child Name', width: 120 },
   { key: 'event_title' as const, label: 'Event', width: 150 },
   { key: 'city_name' as const, label: 'City', width: 100 },

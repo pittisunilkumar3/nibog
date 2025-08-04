@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import React, { useState } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -16,74 +16,221 @@ export default function EmailSendingPage() {
   const [isLoading, setIsLoading] = useState(false)
   
   // Email state
-  const [emailData, setEmailData] = useState({
+  type RecipientType =
+    | "all-users"
+    | "all-parents"
+    | "complete-users"
+    | "event-parents"
+    | "event-users"
+    | "event-all-users"
+    | "single-user";
+
+  const [emailData, setEmailData] = useState<{
+    subject: string;
+    content: string;
+    recipients: RecipientType;
+    attachments: any[];
+    template: string;
+    eventId: string;
+    singleUserEmail: string;
+  }>({
     subject: "",
     content: "",
-    recipients: "all-users", // all-users, all-parents, event-parents, event-users, event-all-users
+    recipients: "all-users",
     attachments: [],
     template: "default",
     eventId: "",
+    singleUserEmail: "",
   })
   
   // Template state
   const [templateData, setTemplateData] = useState({
+    id: null as number | null,
     name: "",
     subject: "",
     content: "",
+    created_at: "",
+    updated_at: ""
   })
+  const [templates, setTemplates] = useState<any[]>([])
+  const [isLoadingTemplates, setIsLoadingTemplates] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [refreshFlag, setRefreshFlag] = useState(0)
 
-  const handleSendEmail = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    
+  // Events state
+  const [events, setEvents] = useState<any[]>([])
+  const [isLoadingEvents, setIsLoadingEvents] = useState(false)
+
+  // Fetch all events
+  const fetchEvents = async () => {
+    setIsLoadingEvents(true)
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
-      toast({
-        title: "Success!",
-        description: "Email sent successfully.",
-      })
-      
-      // Reset form after successful send
-      setEmailData({
-        subject: "",
-        content: "",
-        recipients: "all-users",
-        attachments: [],
-        template: "default",
-        eventId: "",
-      })
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to send email.",
-        variant: "destructive",
-      })
+      const res = await fetch("/api/events/get-all")
+      const data = await res.json()
+      setEvents(Array.isArray(data) ? data : [])
+    } catch (e) {
+      setEvents([])
     } finally {
-      setIsLoading(false)
+      setIsLoadingEvents(false)
     }
+  }
+
+  // Fetch all templates
+  const fetchTemplates = async () => {
+    setIsLoadingTemplates(true)
+    try {
+      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get-all")
+      const data = await res.json()
+      setTemplates(Array.isArray(data) ? data : [])
+    } catch (e) {
+      setTemplates([])
+    } finally {
+      setIsLoadingTemplates(false)
+    }
+  }
+
+  // Get template by id (for edit/view)
+  const fetchTemplateById = async (id: number) => {
+    console.log("fetchTemplateById called", id, typeof id);
+    setIsLoadingTemplates(true)
+    try {
+      // Try with number id first
+      let res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id }),
+      });
+      let data = await res.json();
+      console.log("API response for template by id (number):", data);
+
+      let tpl = null;
+      if (Array.isArray(data) && data.length > 0) {
+        tpl = data[0];
+      } else if (data && typeof data === "object" && data.id) {
+        tpl = data;
+      }
+
+      // If not found, try with string id
+      if (!tpl) {
+        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ id: id.toString() }),
+        });
+        data = await res.json();
+        console.log("API response for template by id (string):", data);
+        if (Array.isArray(data) && data.length > 0) {
+          tpl = data[0];
+        } else if (data && typeof data === "object" && data.id) {
+          tpl = data;
+        }
+      }
+
+      if (tpl) {
+        setTemplateData({
+          id: tpl.id,
+          name: tpl.template_name,
+          subject: tpl.default_subject,
+          content: tpl.template_content,
+          created_at: tpl.created_at,
+          updated_at: tpl.updated_at
+        });
+        setIsEditing(true);
+        setTimeout(() => {
+          console.log("templateData after edit:", tpl);
+        }, 100);
+      } else {
+        toast({ title: "Error", description: "Template not found or API returned empty.", variant: "destructive" });
+      }
+    } catch (e) {
+      toast({ title: "Error", description: "Failed to fetch template.", variant: "destructive" });
+    } finally {
+      setIsLoadingTemplates(false)
+    }
+  }
+
+  // On mount, fetch templates
+  React.useEffect(() => {
+    fetchTemplates()
+    fetchEvents()
+  }, [refreshFlag])
+
+  // NOTE: Replace this with your real send email API endpoint if available
+  const recipientTypeMap = {
+    "all-users": "1",
+    "all-parents": "2",
+    "complete-users": "3",
+    "event-parents": "4",
+    "event-users": "5",
+    "event-all-users": "6",
+    "single-user": "7"
+  };
+
+  async function sendBulkEmail() {
+    setIsLoading(true);
+    const typeNum = recipientTypeMap[emailData.recipients];
+    const templateId = emailData.template && emailData.template !== "custom"
+      ? emailData.template
+      : null;
+    let payload: any = {
+      template_id: templateId,
+      type: typeNum
+    };
+    if (
+      (typeNum === "4" || typeNum === "5" || typeNum === "6") &&
+      emailData.eventId
+    ) {
+      payload.event_id = emailData.eventId;
+    }
+    await new Promise(resolve => setTimeout(resolve, 2000));
+    await fetch("https://ai.alviongs.com/webhook/v1/nibog/bulk/email/sending", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    });
+    setIsLoading(false);
+    toast({
+      title: "Success!",
+      description: "Email sent successfully.",
+    });
   }
 
   const handleSaveTemplate = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
-    
     try {
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      
-      toast({
-        title: "Success!",
-        description: "Email template saved successfully.",
-      })
-      
-      // Reset form after successful save
-      setTemplateData({
-        name: "",
-        subject: "",
-        content: "",
-      })
+      let res, data;
+      if (isEditing && templateData.id) {
+        // Update template
+        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/update", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: templateData.id,
+            template_name: templateData.name,
+            default_subject: templateData.subject,
+            template_content: templateData.content,
+          }),
+        });
+        data = await res.json();
+        toast({ title: "Success!", description: "Template updated." });
+      } else {
+        // Create template
+        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/create", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            template_name: templateData.name,
+            default_subject: templateData.subject,
+            template_content: templateData.content,
+          }),
+        });
+        data = await res.json();
+        toast({ title: "Success!", description: "Template created." });
+      }
+      setTemplateData({ id: null, name: "", subject: "", content: "", created_at: "", updated_at: "" });
+      setIsEditing(false)
+      setRefreshFlag(f => f + 1) // trigger refresh
     } catch (error) {
       toast({
         title: "Error",
@@ -116,7 +263,13 @@ export default function EmailSendingPage() {
                 <CardDescription>Compose and send emails to users</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSendEmail} className="space-y-6 w-full">
+                <form
+                  onSubmit={async e => {
+                    e.preventDefault();
+                    await sendBulkEmail();
+                  }}
+                  className="space-y-6 w-full"
+                >
                   <div className="space-y-2">
                     <Label>Recipients</Label>
                     <div className="flex flex-wrap gap-4">
@@ -124,7 +277,7 @@ export default function EmailSendingPage() {
                         <Checkbox
                           id="recipients-all-users"
                           checked={emailData.recipients === "all-users"}
-                          onCheckedChange={() => setEmailData({...emailData, recipients: "all-users"})}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "all-users" })}
                         />
                         <Label htmlFor="recipients-all-users">All Users</Label>
                       </div>
@@ -132,15 +285,23 @@ export default function EmailSendingPage() {
                         <Checkbox
                           id="recipients-all-parents"
                           checked={emailData.recipients === "all-parents"}
-                          onCheckedChange={() => setEmailData({...emailData, recipients: "all-parents"})}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "all-parents" })}
                         />
                         <Label htmlFor="recipients-all-parents">All Parents</Label>
                       </div>
                       <div className="flex items-center space-x-2">
                         <Checkbox
+                          id="recipients-complete-users"
+                          checked={emailData.recipients === "complete-users"}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "complete-users" })}
+                        />
+                        <Label htmlFor="recipients-complete-users">Complete Users</Label>
+                      </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
                           id="recipients-event-parents"
                           checked={emailData.recipients === "event-parents"}
-                          onCheckedChange={() => setEmailData({...emailData, recipients: "event-parents"})}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "event-parents" })}
                         />
                         <Label htmlFor="recipients-event-parents">Event Parents</Label>
                       </div>
@@ -148,7 +309,7 @@ export default function EmailSendingPage() {
                         <Checkbox
                           id="recipients-event-users"
                           checked={emailData.recipients === "event-users"}
-                          onCheckedChange={() => setEmailData({...emailData, recipients: "event-users"})}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "event-users" })}
                         />
                         <Label htmlFor="recipients-event-users">Event Users</Label>
                       </div>
@@ -156,11 +317,34 @@ export default function EmailSendingPage() {
                         <Checkbox
                           id="recipients-event-all-users"
                           checked={emailData.recipients === "event-all-users"}
-                          onCheckedChange={() => setEmailData({...emailData, recipients: "event-all-users"})}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "event-all-users" })}
                         />
                         <Label htmlFor="recipients-event-all-users">Event All Users</Label>
                       </div>
+                      <div className="flex items-center space-x-2">
+                        <Checkbox
+                          id="recipients-single-user"
+                          checked={emailData.recipients === "single-user"}
+                          onCheckedChange={() => setEmailData({ ...emailData, recipients: "single-user" })}
+                        />
+                        <Label htmlFor="recipients-single-user">Single User</Label>
+                      </div>
                     </div>
+
+                    {/* Show single user email input if selected */}
+                    {emailData.recipients === "single-user" && (
+                      <div className="mt-4">
+                        <Label htmlFor="single-user-email">User Email</Label>
+                        <Input
+                          id="single-user-email"
+                          type="email"
+                          value={emailData.singleUserEmail || ""}
+                          onChange={e => setEmailData({ ...emailData, singleUserEmail: e.target.value })}
+                          placeholder="Enter user email address"
+                          required
+                        />
+                      </div>
+                    )}
                     {(emailData.recipients === "event-parents" ||
                       emailData.recipients === "event-users" ||
                       emailData.recipients === "event-all-users") && (
@@ -174,10 +358,17 @@ export default function EmailSendingPage() {
                             <SelectValue placeholder="Select an event" />
                           </SelectTrigger>
                           <SelectContent>
-                            {/* TODO: Replace with dynamic event list */}
-                            <SelectItem value="1">Event 1</SelectItem>
-                            <SelectItem value="2">Event 2</SelectItem>
-                            <SelectItem value="3">Event 3</SelectItem>
+                            {isLoadingEvents ? (
+                              <SelectItem value="" disabled>Loading events...</SelectItem>
+                            ) : events.length === 0 ? (
+                              <SelectItem value="" disabled>No events found</SelectItem>
+                            ) : (
+                              events.map((event: any) => (
+                                <SelectItem key={event.event_id || event.id} value={String(event.event_id || event.id)}>
+                                  {event.event_title || event.title || `Event #${event.event_id || event.id}`}
+                                </SelectItem>
+                              ))
+                            )}
                           </SelectContent>
                         </Select>
                       </div>
@@ -193,13 +384,53 @@ export default function EmailSendingPage() {
                         <SelectValue placeholder="Select a template" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="default">Default Template</SelectItem>
-                        <SelectItem value="newsletter">Newsletter Template</SelectItem>
-                        <SelectItem value="event-reminder">Event Reminder</SelectItem>
+                        {templates.map((tpl) => (
+                          <SelectItem key={tpl.id} value={tpl.id.toString()}>
+                            {tpl.template_name}
+                          </SelectItem>
+                        ))}
                         <SelectItem value="custom">Custom (No Template)</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
+
+                  {/* Show subject/content fields if "custom" is selected */}
+                  {emailData.template === "custom" && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-subject">Subject</Label>
+                        <Input
+                          id="custom-subject"
+                          value={emailData.subject}
+                          onChange={e => setEmailData({ ...emailData, subject: e.target.value })}
+                          placeholder="Enter email subject"
+                          required
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="custom-content">Content</Label>
+                        <Textarea
+                          id="custom-content"
+                          value={emailData.content}
+                          onChange={e => setEmailData({ ...emailData, content: e.target.value })}
+                          placeholder="Enter email content"
+                          rows={8}
+                          required
+                        />
+                      </div>
+                      {/* <div className="pt-2">
+                        <p className="text-sm text-muted-foreground mb-2">Available placeholders:</p>
+                        <div className="flex flex-wrap gap-2">
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{name}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{email}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{event_name}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{event_date}}"}</span>
+                          <span className="text-xs bg-muted px-2 py-1 rounded">{"{{venue}}"}</span>
+                        </div>
+                      </div> */}
+                    </>
+                  )}
+
                   <Button type="submit" disabled={isLoading} className="w-full md:w-auto mt-4">
                     {isLoading ? (
                       <span className="flex items-center gap-2">
@@ -224,7 +455,33 @@ export default function EmailSendingPage() {
                 <CardDescription>Create and manage email templates</CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleSaveTemplate} className="space-y-6 w-full">
+                {isLoadingTemplates && (
+                  <div className="absolute inset-0 bg-white bg-opacity-60 flex items-center justify-center z-10">
+                    <span className="text-blue-600 font-semibold flex items-center gap-2">
+                      <svg className="animate-spin" width="24" height="24" fill="none" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" stroke="#2563eb" strokeWidth="4" opacity="0.2"/><path d="M22 12a10 10 0 0 1-10 10" stroke="#2563eb" strokeWidth="4" strokeLinecap="round"/></svg>
+                      Loading template...
+                    </span>
+                  </div>
+                )}
+                <form onSubmit={handleSaveTemplate} className="space-y-6 w-full relative">
+                  <div className="flex items-center justify-between mb-2">
+                    <h3 className="text-lg font-semibold">
+                      {isEditing ? "Edit Email Template" : "Add Email Template"}
+                    </h3>
+                    {isEditing && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => {
+                          setTemplateData({ id: null, name: "", subject: "", content: "", created_at: "", updated_at: "" });
+                          setIsEditing(false);
+                        }}
+                      >
+                        Cancel Edit
+                      </Button>
+                    )}
+                  </div>
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div className="space-y-2">
                       <Label htmlFor="template-name">Template Name</Label>
@@ -234,7 +491,8 @@ export default function EmailSendingPage() {
                         onChange={(e) => setTemplateData({...templateData, name: e.target.value})}
                         placeholder="Template name"
                         required
-                      />
+                        autoFocus={isEditing}
+                        />
                     </div>
                     <div className="space-y-2">
                       <Label htmlFor="template-subject">Default Subject</Label>
@@ -252,12 +510,12 @@ export default function EmailSendingPage() {
                       id="template-content"
                       value={templateData.content}
                       onChange={(e) => setTemplateData({...templateData, content: e.target.value})}
-                      placeholder="Create your template with placeholders like {{name}}, {{event}}, etc."
+                      placeholder="Create your template"
                       rows={8}
                       required
                     />
                   </div>
-                  <div className="pt-2">
+                  {/* <div className="pt-2">
                     <p className="text-sm text-muted-foreground mb-2">Available placeholders:</p>
                     <div className="flex flex-wrap gap-2">
                       <span className="text-xs bg-muted px-2 py-1 rounded">{"{{name}}"}</span>
@@ -266,7 +524,7 @@ export default function EmailSendingPage() {
                       <span className="text-xs bg-muted px-2 py-1 rounded">{"{{event_date}}"}</span>
                       <span className="text-xs bg-muted px-2 py-1 rounded">{"{{venue}}"}</span>
                     </div>
-                  </div>
+                  </div> */}
                   <Button type="submit" disabled={isLoading} className="w-full md:w-auto">
                     {isLoading ? (
                       <span className="flex items-center gap-2">
@@ -298,37 +556,61 @@ export default function EmailSendingPage() {
                             </tr>
                           </thead>
                           <tbody>
-                            {/* Example static templates, replace with dynamic data as needed */}
-                            <tr>
-                              <td className="px-4 py-2">Default Template</td>
-                              <td className="px-4 py-2">Welcome to NIBOG</td>
-                              <td className="px-4 py-2">Hello {'{{name}}'}, welcome to NIBOG!</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="px-4 py-2">Newsletter</td>
-                              <td className="px-4 py-2">Monthly Updates</td>
-                              <td className="px-4 py-2">Dear {'{{name}}'}, here are our latest updates...</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
-                            <tr>
-                              <td className="px-4 py-2">Event Reminder</td>
-                              <td className="px-4 py-2">Don't Miss Your Event!</td>
-                              <td className="px-4 py-2">Hi {'{{name}}'}, your event {'{{event_name}}'} is coming up soon.</td>
-                              <td className="px-4 py-2 text-center">
-                                <button className="text-blue-600 hover:underline">Edit</button>
-                                <span className="mx-2 text-gray-300">|</span>
-                                <button className="text-red-600 hover:underline">Delete</button>
-                              </td>
-                            </tr>
+                            {isLoadingTemplates ? (
+                              <tr>
+                                <td colSpan={4} className="text-center py-6">Loading...</td>
+                              </tr>
+                            ) : templates.length === 0 ? (
+                              <tr>
+                                <td colSpan={4} className="text-center py-6 text-muted-foreground">No templates found.</td>
+                              </tr>
+                            ) : (
+                              templates.map((tpl) => (
+                                <tr key={tpl.id}>
+                                  <td className="px-4 py-2">{tpl.template_name}</td>
+                                  <td className="px-4 py-2">{tpl.default_subject}</td>
+                                  <td className="px-4 py-2 truncate max-w-xs">{tpl.template_content}</td>
+                                  <td className="px-4 py-2 text-center">
+                                    <button
+                                      className="text-blue-600 hover:underline"
+                                      onClick={() => {
+                                        // Always use the backend id and show a toast if not found
+                                        if (!tpl.id) {
+                                          toast({ title: "Error", description: "Template ID not found.", variant: "destructive" });
+                                          return;
+                                        }
+                                        fetchTemplateById(tpl.id);
+                                      }}
+                                    >
+                                      Edit
+                                    </button>
+                                    <span className="mx-2 text-gray-300">|</span>
+                                    <button
+                                      className="text-red-600 hover:underline"
+                                      onClick={async () => {
+                                        if (!window.confirm("Delete this template?")) return;
+                                        setIsLoadingTemplates(true);
+                                        try {
+                                          await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/delete", {
+                                            method: "POST",
+                                            headers: { "Content-Type": "application/json" },
+                                            body: JSON.stringify({ id: tpl.id }),
+                                          });
+                                          toast({ title: "Deleted", description: "Template deleted." });
+                                          setRefreshFlag(f => f + 1) // trigger refresh
+                                        } catch (e) {
+                                          toast({ title: "Error", description: "Failed to delete template.", variant: "destructive" });
+                                        } finally {
+                                          setIsLoadingTemplates(false);
+                                        }
+                                      }}
+                                    >
+                                      Delete
+                                    </button>
+                                  </td>
+                                </tr>
+                              ))
+                            )}
                           </tbody>
                         </table>
                       </div>

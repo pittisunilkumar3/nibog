@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { Dialog, DialogTrigger, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -9,7 +10,7 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 import { ArrowLeft, Edit, X, Check, AlertTriangle, User, Mail, Phone, Calendar, Clock, MapPin, Users, CreditCard, Loader2, RefreshCw } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { getBookingById, updateBookingStatus, getAllBookings, getBookingPaymentDetails, getEventGameSlotDetails, getEventGameSlotDetailsBySlotId, findMostLikelySlotForBooking, type Booking } from "@/services/bookingService"
+import { getBookingById, updateBookingStatus, getAllBookings, getBookingPaymentDetails, getEventGameSlotDetails, getEventGameSlotDetailsBySlotId, findMostLikelySlotForBooking, getBookingAddons, type Booking } from "@/services/bookingService"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -21,6 +22,37 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+
+// Interface for booking add-ons
+interface BookingAddon {
+  booking_addon_id: number;
+  addon_id: number;
+  variant_id: number | null;
+  quantity: number;
+  addon_name: string | null;
+  addon_description: string | null;
+  base_price: string | null;
+  category: string | null;
+  addon_sku: string | null;
+  has_variants: boolean | null;
+  variant_name: string | null;
+  price_modifier: string | null;
+  variant_sku: string | null;
+  addon_image: string | null;
+  final_price_per_unit: string | null;
+  total_price: string | null;
+}
+
+// Interface for booking add-ons response
+interface BookingAddonsResponse {
+  booking_id: number;
+  booking_ref: string;
+  user_id: number;
+  event_id: number;
+  booking_status: string;
+  total_amount: string;
+  booking_addons: BookingAddon[];
+}
 
 // Interface for enhanced booking with slot details and payment info
 interface EnhancedBooking extends Booking {
@@ -49,6 +81,7 @@ interface EnhancedBooking extends Booking {
     payment_date?: string;
     payment_method?: string;
   };
+  booking_addons?: BookingAddonsResponse[];
 }
 
 
@@ -225,6 +258,12 @@ export default function BookingDetailPage({ params }: Props) {
           enhancedBooking.payment_details = paymentDetails;
         }
 
+        // Fetch booking add-ons
+        const bookingAddons = await getBookingAddons(data.booking_id);
+        if (bookingAddons && Array.isArray(bookingAddons)) {
+          enhancedBooking.booking_addons = bookingAddons;
+        }
+
         // Update booking with enhanced details
         setBooking(enhancedBooking);
         setIsLoadingEnhanced(false);
@@ -382,6 +421,8 @@ export default function BookingDetailPage({ params }: Props) {
             <h1 className="text-3xl font-bold tracking-tight">Booking #{booking.booking_id}</h1>
             <p className="text-muted-foreground">{booking.event_title} - {new Date(booking.event_event_date).toLocaleDateString()}</p>
           </div>
+          {/* Explore Modal Trigger */}
+          <ExploreModal booking={booking} />
         </div>
         <div className="flex gap-2">
           <Button variant="outline" asChild>
@@ -562,7 +603,76 @@ export default function BookingDetailPage({ params }: Props) {
                 </div>
               </div>
             </div>
-            
+
+            {/* Booking Add-ons Section */}
+            {booking.booking_addons &&
+             booking.booking_addons.length > 0 &&
+             booking.booking_addons.some(data =>
+               data.booking_addons &&
+               Array.isArray(data.booking_addons) &&
+               data.booking_addons.length > 0
+             ) && (
+              <>
+                <Separator />
+                <div>
+                  <h3 className="mb-2 font-medium">Booking Add-ons</h3>
+                  <div className="space-y-2">
+                    {booking.booking_addons.map((bookingAddonData, index) => (
+                      bookingAddonData.booking_addons &&
+                      Array.isArray(bookingAddonData.booking_addons) &&
+                      bookingAddonData.booking_addons.length > 0 ? (
+                        <div key={index} className="rounded-lg border p-3">
+                          <div className="space-y-3">
+                            {bookingAddonData.booking_addons.map((addon) => (
+                              addon && addon.booking_addon_id ? (
+                                <div key={addon.booking_addon_id} className="flex items-start gap-2">
+                                  <div className="flex-1">
+                                    <div className="flex items-center justify-between">
+                                      <p className="font-medium">
+                                        {addon.addon_name || `Add-on #${addon.addon_id}`}
+                                      </p>
+                                      <div className="text-right">
+                                        <p className="text-sm font-medium">Qty: {addon.quantity}</p>
+                                        {addon.final_price_per_unit && (
+                                          <p className="text-sm text-muted-foreground">
+                                            ₹{addon.final_price_per_unit} each
+                                          </p>
+                                        )}
+                                        {addon.total_price && (
+                                          <p className="text-sm font-semibold text-green-600">
+                                            Total: ₹{addon.total_price}
+                                          </p>
+                                        )}
+                                      </div>
+                                    </div>
+                                    {addon.addon_description && (
+                                      <p className="text-sm text-muted-foreground mt-1">
+                                        {addon.addon_description}
+                                      </p>
+                                    )}
+                                    {addon.variant_name && (
+                                      <p className="text-sm text-blue-600 mt-1">
+                                        Variant: {addon.variant_name}
+                                      </p>
+                                    )}
+                                    {addon.addon_sku && (
+                                      <p className="text-xs text-muted-foreground mt-1">
+                                        SKU: {addon.addon_sku}
+                                      </p>
+                                    )}
+                                  </div>
+                                </div>
+                              ) : null
+                            ))}
+                          </div>
+                        </div>
+                      ) : null
+                    ))}
+                  </div>
+                </div>
+              </>
+            )}
+
             <Separator />
             
             <div className="grid gap-4 sm:grid-cols-2">
@@ -730,4 +840,116 @@ export default function BookingDetailPage({ params }: Props) {
       </div>
     </div>
   )
+}
+
+/*
+  --- ExploreModal Component ---
+  (Moved to top-level import to avoid duplicate useState import error)
+*/
+function ExploreModal({ booking }: { booking: any }) {
+  const [open, setOpen] = useState(false)
+  const [selectedCol, setSelectedCol] = useState<string | null>(null)
+
+  // List all columns you want to show (add more as needed)
+  const columns = [
+    { key: "booking_id", label: "Booking ID" },
+    { key: "game_name", label: "Game Name" },
+    { key: "parent_name", label: "Parent Name" },
+    { key: "parent_email", label: "Parent Email" },
+    { key: "parent_additional_phone", label: "Parent Phone" },
+    { key: "child_full_name", label: "Child Name" },
+    { key: "child_gender", label: "Child Gender" },
+    { key: "child_date_of_birth", label: "Child DOB" },
+    { key: "child_school_name", label: "Child School" },
+    { key: "event_title", label: "Event" },
+    { key: "city_name", label: "City" },
+    { key: "venue_name", label: "Venue" },
+    { key: "total_amount", label: "Amount" },
+    { key: "booking_status", label: "Status" },
+    { key: "booking_created_at", label: "Booking Date" },
+    // Add more fields as needed
+  ];
+
+  function renderDetail(colKey: string) {
+    switch (colKey) {
+      case "game_name":
+        return <div><strong>Game Name:</strong> {booking.game_name || "N/A"}</div>;
+      case "parent_name":
+        return (
+          <div>
+            <strong>Parent:</strong> {booking.parent_name}
+            <br />
+            <span className="text-muted-foreground">{booking.parent_email}</span>
+          </div>
+        );
+      case "parent_email":
+        return <div><strong>Email:</strong> {booking.parent_email}</div>;
+      case "parent_additional_phone":
+        return <div><strong>Phone:</strong> {booking.parent_additional_phone}</div>;
+      case "child_full_name":
+        return (
+          <div>
+            <strong>Child:</strong> {booking.child_full_name}
+            <br />
+            <span className="text-muted-foreground">{booking.child_gender}, {booking.child_date_of_birth}</span>
+          </div>
+        );
+      case "child_gender":
+        return <div><strong>Gender:</strong> {booking.child_gender}</div>;
+      case "child_date_of_birth":
+        return <div><strong>DOB:</strong> {booking.child_date_of_birth}</div>;
+      case "child_school_name":
+        return <div><strong>School:</strong> {booking.child_school_name}</div>;
+      case "event_title":
+        return <div><strong>Event:</strong> {booking.event_title}</div>;
+      case "venue_name":
+        return <div><strong>Venue:</strong> {booking.venue_name}</div>;
+      case "city_name":
+        return <div><strong>City:</strong> {booking.city_name}</div>;
+      case "total_amount":
+        return <div><strong>Total Amount:</strong> ₹{booking.total_amount}</div>;
+      case "booking_status":
+        return <div><strong>Status:</strong> {booking.booking_status}</div>;
+      case "booking_created_at":
+        return <div><strong>Booking Date:</strong> {new Date(booking.booking_created_at).toLocaleDateString()}</div>;
+      default:
+        return <div>{booking[colKey]}</div>;
+    }
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" className="ml-2">Explore</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Explore Booking Columns</DialogTitle>
+        </DialogHeader>
+        <div className="flex gap-4">
+          <div className="w-1/3 border-r pr-4">
+            <ul>
+              {columns.map(col => (
+                <li key={col.key}>
+                  <button
+                    className={`w-full text-left py-1 px-2 rounded ${selectedCol === col.key ? "bg-primary text-white" : "hover:bg-muted"}`}
+                    onClick={() => setSelectedCol(col.key)}
+                  >
+                    {col.label}
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="w-2/3 pl-4">
+            {selectedCol ? (
+              <div>{renderDetail(selectedCol)}</div>
+            ) : (
+              <div className="text-muted-foreground">Select a column to view details.</div>
+            )}
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }

@@ -193,11 +193,22 @@ export function formatBookingDataForAPI(formData: {
       console.log("Processing game prices:", gamePrices);
       console.log("Processing slot IDs:", slotIds);
 
+      // SINGLE GAME VALIDATION: Ensure only one game is being registered
+      if (gameIds.length > 1) {
+        console.error("Multiple games detected in booking registration:", gameIds);
+        throw new Error("Multiple games detected. Only one game can be registered per booking.");
+      }
+
       // Use validation utility to process game data
       const validationResult = validateGameData(gameIds, gamePrices, formData.totalAmount, slotIds);
 
       if (validationResult.isValid && validationResult.validGames.length > 0) {
-        console.log("Successfully validated games for booking registration");
+        // Additional check: ensure only one game after validation
+        if (validationResult.validGames.length > 1) {
+          console.error("Multiple games found after validation:", validationResult.validGames);
+          throw new Error("Multiple games found after validation. Only one game can be registered per booking.");
+        }
+        console.log("Successfully validated single game for booking registration");
         return formatGamesForAPI(validationResult.validGames);
       } else {
         console.error("Game validation failed for booking registration:", validationResult.errors);

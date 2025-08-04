@@ -44,21 +44,26 @@ export function isChildEligible(
 /**
  * Format age in months to a human-readable string
  * @param months Age in months
- * @returns Formatted age string (e.g., "18 months" or "2 years, 6 months")
+ * @returns Formatted age string (e.g., "18 months" or "2 years 6 months")
  */
 export function formatAge(months: number): string {
+  // Handle edge cases
+  if (months < 0) {
+    return "0 months";
+  }
+
   if (months < 24) {
     return `${months} month${months !== 1 ? 's' : ''}`;
   }
-  
+
   const years = Math.floor(months / 12);
   const remainingMonths = months % 12;
-  
+
   if (remainingMonths === 0) {
-    return `${years} year${years !== 1 ? 's' : ''}`;
+    return `${years} ${years === 1 ? "year" : "years"}`;
   }
-  
-  return `${years} year${years !== 1 ? 's' : ''}, ${remainingMonths} month${remainingMonths !== 1 ? 's' : ''}`;
+
+  return `${years} ${years === 1 ? "year" : "years"} ${remainingMonths} ${remainingMonths === 1 ? "month" : "months"}`;
 }
 
 /**

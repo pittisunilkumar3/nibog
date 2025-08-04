@@ -257,7 +257,49 @@ response
 
 
 
+POST https://ai.alviongs.com/webhook/v1/nibog/getting/add-on/by-bookingid
 
+Payload :-
+-----------
+
+{
+    "booking_id":212
+}
+
+Responsive :- 
+------------
+
+
+[
+    {
+        "booking_id": 212,
+        "booking_ref": "PPT250715101",
+        "user_id": 18,
+        "event_id": 100,
+        "booking_status": "Confirmed",
+        "total_amount": "1809.00",
+        "booking_addons": [
+            {
+                "booking_addon_id": 70,
+                "addon_id": 45,
+                "variant_id": null,
+                "quantity": 1,
+                "addon_name": null,
+                "addon_description": null,
+                "base_price": null,
+                "category": null,
+                "addon_sku": null,
+                "has_variants": null,
+                "variant_name": null,
+                "price_modifier": null,
+                "variant_sku": null,
+                "addon_image": null,
+                "final_price_per_unit": null,
+                "total_price": null
+            }
+        ]
+    }
+]
 
 
 
