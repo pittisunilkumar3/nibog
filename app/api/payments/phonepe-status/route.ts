@@ -458,6 +458,44 @@ export async function POST(request: Request) {
           console.log(`📧 Booking data for email:`, JSON.stringify(bookingData, null, 2));
           console.log(`📧 Available booking data keys:`, Object.keys(bookingData || {}));
 
+          // Send WhatsApp notification immediately after successful booking and payment creation
+          console.log(`📱 STARTING WHATSAPP PROCESS for booking ID: ${bookingId}`);
+          try {
+            if (bookingData && bookingData.phone) {
+              console.log(`📱 Sending WhatsApp notification to: ${bookingData.phone}`);
+
+              const whatsappData = {
+                bookingId: parseInt(bookingId.toString()),
+                bookingRef: bookingRef,
+                parentName: bookingData.parentName || 'Valued Customer',
+                parentPhone: bookingData.phone,
+                childName: bookingData.childName || 'Child',
+                eventTitle: bookingData.eventTitle || 'NIBOG Event',
+                eventDate: bookingData.eventDate || new Date().toLocaleDateString(),
+                eventVenue: bookingData.eventVenue || 'Main Stadium',
+                totalAmount: amount / 100,
+                paymentMethod: 'PhonePe',
+                transactionId: transactionId,
+                gameDetails: bookingData.gameDetails || []
+              };
+
+              // Import and call WhatsApp service directly
+              const { sendBookingConfirmationWhatsApp } = await import('@/services/whatsappService');
+              const whatsappResult = await sendBookingConfirmationWhatsApp(whatsappData);
+
+              if (whatsappResult.success) {
+                console.log(`📱 WhatsApp notification sent successfully from server! Message ID: ${whatsappResult.messageId}`);
+              } else {
+                console.error(`📱 Failed to send WhatsApp notification from server: ${whatsappResult.error}`);
+              }
+            } else {
+              console.log(`📱 No phone number available for WhatsApp notification`);
+            }
+          } catch (whatsappError) {
+            console.error(`📱 Error sending WhatsApp notification from server:`, whatsappError);
+            // Don't fail the entire process if WhatsApp fails
+          }
+
           try {
             console.log(`📧 Getting email settings...`);
 
@@ -540,7 +578,10 @@ export async function POST(request: Request) {
 
             // Send email using existing send-receipt-email API function directly
             const { POST: sendReceiptEmail } = await import('@/app/api/send-receipt-email/route');
-            const emailRequest = new Request('http://localhost:3000/api/send-receipt-email', {
+            // Use dynamic URL instead of hardcoded localhost
+            const { getAppUrl } = await import('@/config/phonepe');
+            const appUrl = getAppUrl();
+            const emailRequest = new Request(`${appUrl}/api/send-receipt-email`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -783,7 +824,10 @@ async function sendBookingConfirmationWithExistingData(
 
     // Send email using existing send-receipt-email API function directly
     const { POST: sendReceiptEmail } = await import('@/app/api/send-receipt-email/route');
-    const emailRequest = new Request('http://localhost:3000/api/send-receipt-email', {
+    // Use dynamic URL instead of hardcoded localhost
+    const { getAppUrl } = await import('@/config/phonepe');
+    const appUrl = getAppUrl();
+    const emailRequest = new Request(`${appUrl}/api/send-receipt-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

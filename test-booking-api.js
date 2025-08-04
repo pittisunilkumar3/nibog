@@ -56,46 +56,51 @@ async function testBookingAPI() {
     return;
   }
 
-  // Sample booking data for testing
+  // Sample booking data for testing - using realistic customer data format
   const testBookingData = {
     bookingId: 12345,
     bookingRef: 'B0012345',
-    parentName: 'Test Parent',
-    parentPhone: '7780288416', // Your test number
-    childName: 'Test Child',
-    eventTitle: 'Birthday Party Celebration',
-    eventDate: '2024-01-15',
-    eventVenue: 'NIBOG Party Hall, Bangalore',
+    parentName: 'Rajesh Kumar',
+    parentPhone: '6281102112', // Your test number
+    childName: 'Aarav Kumar',
+    eventTitle: 'NIBOG Baby Olympics 2024',
+    eventDate: '2024-12-15',
+    eventVenue: 'NIBOG Sports Complex, Bangalore',
     totalAmount: 2500,
     paymentMethod: 'PhonePe',
-    transactionId: 'TXN_TEST_001',
+    transactionId: 'TXN_PROD_' + Date.now(),
     gameDetails: [
       {
-        gameName: 'Balloon Popping',
-        gameTime: '10:00 AM',
+        gameName: 'Baby Crawling Race',
+        gameTime: '10:00 AM - 10:30 AM',
         gamePrice: 500
       },
       {
-        gameName: 'Musical Chairs',
-        gameTime: '11:00 AM',
+        gameName: 'Toddler Ball Toss',
+        gameTime: '11:00 AM - 11:30 AM',
         gamePrice: 300
       },
       {
-        gameName: 'Treasure Hunt',
-        gameTime: '12:00 PM',
+        gameName: 'Mini Obstacle Course',
+        gameTime: '12:00 PM - 12:30 PM',
         gamePrice: 700
       }
     ],
     addOns: [
       {
-        name: 'Birthday Cake',
-        quantity: 1,
-        price: 800
-      },
-      {
-        name: 'Party Decorations',
+        name: 'Participation Certificate',
         quantity: 1,
         price: 200
+      },
+      {
+        name: 'Photo Package',
+        quantity: 1,
+        price: 500
+      },
+      {
+        name: 'Snack Box',
+        quantity: 1,
+        price: 300
       }
     ]
   };
