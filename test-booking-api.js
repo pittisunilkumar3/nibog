@@ -23,7 +23,7 @@ async function checkServerHealth() {
       console.log(`🔍 Checking server health (attempt ${i + 1}/${maxRetries})...`);
 
       // Try the WhatsApp health endpoint first
-      const response = await fetch('http://localhost:3000/api/whatsapp/health', {
+      const response = await fetch('http://localhost:3111/api/whatsapp/health', {
         method: 'GET'
       });
 
@@ -111,7 +111,7 @@ async function testBookingAPI() {
     console.log('🎉 Event:', testBookingData.eventTitle);
 
     // Call the booking confirmation API endpoint
-    const response = await fetch('http://localhost:3000/api/whatsapp/send-booking-confirmation', {
+    const response = await fetch('http://localhost:3111/api/whatsapp/send-booking-confirmation', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -159,7 +159,7 @@ async function testBookingAPI() {
 
   } catch (error) {
     console.error('🚨 Test failed with error:', error.message);
-    console.error('💡 Make sure the Next.js server is running on http://localhost:3000');
+    console.error('💡 Make sure the Next.js server is running on http://localhost:3111');
   }
 }
 
