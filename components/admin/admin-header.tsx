@@ -56,6 +56,7 @@ const routeMap: Record<string, { label: string; parent?: string }> = {
   "/admin/testimonials": { label: "Testimonials", parent: "/admin" },
   "/admin/settings": { label: "Settings", parent: "/admin" },
   "/admin/home": { label: "Home Section", parent: "/admin" },
+  "/admin/footer": { label: "Footer Management", parent: "/admin" },
   "/admin/email": { label: "Email Sending", parent: "/admin" },
   "/admin/completed-events": { label: "Completed Events", parent: "/admin" },
 }

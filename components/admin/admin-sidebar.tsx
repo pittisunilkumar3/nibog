@@ -30,6 +30,7 @@ import {
   Mail,
   Award,
   Star,
+  Layout,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -147,6 +148,12 @@ const adminRoutes = [
         label: "Home Section",
         icon: <Home className="h-4 w-4" />,
         description: "Homepage content",
+      },
+      {
+        href: "/admin/footer",
+        label: "Footer Management",
+        icon: <Layout className="h-4 w-4" />,
+        description: "Footer content & links",
       },
       {
         href: "/admin/email",
