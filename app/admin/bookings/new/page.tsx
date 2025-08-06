@@ -18,7 +18,10 @@ import { useToast } from "@/hooks/use-toast"
 import { BOOKING_API, PAYMENT_API } from "@/config/api"
 import { getAllCities, City } from "@/services/cityService"
 import { getAllAddOns, AddOn, AddOnVariant } from "@/services/addOnService"
-import { generateConsistentBookingRef } from "@/utils/bookingReference"
+import { generateConsistentBookingRef, generateManualBookingRef } from "@/utils/bookingReference"
+import { sendBookingConfirmationFromServer, BookingConfirmationData } from "@/services/emailNotificationService"
+import { sendTicketEmail, TicketEmailData } from "@/services/ticketEmailService"
+import { sendBookingConfirmationWhatsApp, WhatsAppBookingData } from "@/services/whatsappService"
 // Promo code functionality simplified for admin panel
 import { getEventsByCityId, getGamesByAgeAndEvent } from "@/services/eventService"
 import { differenceInMonths } from "date-fns"
@@ -45,19 +48,22 @@ interface EventListItem {
   venue_id: number;
 }
 
-// Interface for game from API (matching user panel structure)
+// Interface for game from API (matching frontend structure exactly)
 interface EligibleGame {
-  id: string; // This will be slot_id as string for unique identification
+  id: number; // This will be slot_id as number for unique identification (matching frontend)
+  game_id: number; // Store game_id separately for API calls
   title: string;
   description: string;
   price: number;
+  slot_price?: number; // Prioritized price from slot (matching frontend)
+  custom_price?: number; // Fallback price (matching frontend)
   start_time: string;
   end_time: string;
   custom_title: string;
   custom_description: string;
   max_participants: number;
   slot_id: number;
-  game_id: number; // Store game_id separately for API calls
+  game_name: string; // Store original game name for reference
 }
 
 // Generate unique transaction ID
@@ -183,10 +189,13 @@ export default function NewBookingPage() {
   const [childGender, setChildGender] = useState("")
   const [schoolName, setSchoolName] = useState("")
 
-  // Selection State (matching user panel structure)
+  // Payment Method Selection
+  const [paymentMethod, setPaymentMethod] = useState("")
+
+  // Selection State (matching frontend structure exactly)
   const [selectedCityId, setSelectedCityId] = useState<string | number>("")
   const [selectedEventType, setSelectedEventType] = useState("")
-  const [selectedGames, setSelectedGames] = useState<string[]>([])
+  const [selectedGames, setSelectedGames] = useState<Array<{gameId: number; slotId: number}>>([])
   const [childAgeMonths, setChildAgeMonths] = useState<number | null>(null)
 
   // Data state (matching user panel structure)
@@ -215,6 +224,7 @@ export default function NewBookingPage() {
   const [createdBookingEmail, setCreatedBookingEmail] = useState<string>("")
   const [createdBookingParentName, setCreatedBookingParentName] = useState<string>("")
   const [createdBookingChildName, setCreatedBookingChildName] = useState<string>("")
+  const [createdBookingPaymentMethod, setCreatedBookingPaymentMethod] = useState<string>("")
   const [isGeneratingPaymentLink, setIsGeneratingPaymentLink] = useState(false)
   const [paymentLinkGenerated, setPaymentLinkGenerated] = useState<string>("")
   const [isSendingEmail, setIsSendingEmail] = useState(false)
@@ -245,32 +255,64 @@ export default function NewBookingPage() {
       const ageInMonths = calculateAge(date)
       setChildAgeMonths(ageInMonths)
 
-      console.log(`Child's age: ${ageInMonths} months`)
+      console.log(`👶 Child's date of birth: ${date.toDateString()}`);
+      console.log(`📅 Child's age: ${ageInMonths} months`);
+      console.log(`🎯 Selected event type: ${selectedEventType}`);
 
       // If an event is already selected, fetch games for this age
       if (selectedEventType) {
         const selectedApiEvent = apiEvents.find(event => event.event_title === selectedEventType);
         if (selectedApiEvent) {
+          console.log(`🎮 Fetching games for selected event:`, selectedApiEvent);
           fetchGamesByEventAndAge(selectedApiEvent.event_id, ageInMonths);
+        } else {
+          console.warn(`⚠️ Selected event type "${selectedEventType}" not found in API events`);
         }
+      } else {
+        console.log(`ℹ️ No event selected yet, games will be fetched when event is selected`);
       }
     } else {
       // Reset age if DOB is cleared
+      console.log(`🔄 Date of birth cleared, resetting age`);
       setChildAgeMonths(null)
+      setEligibleGames([]);
     }
   }
 
-  // Calculate games total (matching user panel logic)
+  // Calculate games total (matching frontend logic exactly)
   const calculateGamesTotal = () => {
-    let total = 0;
-
-    for (const gameId of selectedGames) {
-      const game = eligibleGames.find(g => g.id === gameId);
-      if (game) {
-        total += game.price;
-      }
+    if (!selectedGames || selectedGames.length === 0) {
+      return 0;
     }
 
+    // Calculate total based on eligible games prices (matching frontend)
+    let total = 0;
+
+    for (const selection of selectedGames) {
+      // Find the slot in eligible games by slot ID (matching frontend)
+      const game = eligibleGames.find(g => g.id === selection.slotId);
+
+      // Get price from the game object - prioritize slot_price (matching frontend)
+      let gamePrice = 0;
+      if (game) {
+        // Parse price values as numbers since they might be stored as strings
+        // Use slot_price first, then fallback to custom_price (matching frontend)
+        if (game.slot_price) {
+          gamePrice = parseFloat(game.slot_price.toString());
+        } else if (game.custom_price) {
+          gamePrice = parseFloat(game.custom_price.toString());
+        } else {
+          gamePrice = parseFloat(game.price.toString()) || 0;
+        }
+        console.log(`💰 Adding game "${game.title}" (slot ${selection.slotId}): ₹${gamePrice}`);
+      } else {
+        console.warn(`⚠️ Slot with ID ${selection.slotId} not found in eligible games`);
+      }
+
+      total += gamePrice;
+    }
+
+    console.log(`💰 Total games price: ₹${total}`);
     return total;
   }
 
@@ -285,53 +327,52 @@ export default function NewBookingPage() {
         if (variant && variant.price_modifier) {
           const modifier = parseFloat(variant.price_modifier.toString());
           price = parseFloat(item.addOn.price.toString()) + modifier;
+          console.log(`🛍️ Add-on "${item.addOn.name}" variant "${variant.name}": base ₹${item.addOn.price} + modifier ₹${modifier} = ₹${price}`);
         }
       }
 
       // Round to 2 decimal places for each item's total
       const itemTotal = price * item.quantity;
+      console.log(`🛍️ Add-on "${item.addOn.name}" x${item.quantity}: ₹${price} each = ₹${itemTotal}`);
       return sum + parseFloat(itemTotal.toFixed(2));
     }, 0);
 
     // Round final total to 2 decimal places
-    return parseFloat(total.toFixed(2));
+    const finalTotal = parseFloat(total.toFixed(2));
+    console.log(`🛍️ Total add-ons price: ₹${finalTotal}`);
+    return finalTotal;
   }
 
-  // Calculate total price including add-ons, GST, and promocode discount (matching user panel logic)
+  // Calculate total price including add-ons and promocode discount (matching frontend logic - NO GST)
   const calculateTotalPrice = () => {
     const gamesTotal = calculateGamesTotal();
     const addOnsTotal = calculateAddOnsTotal();
     const subtotal = gamesTotal + addOnsTotal;
 
+    console.log(`💰 Pricing breakdown:`);
+    console.log(`   Games total: ₹${gamesTotal}`);
+    console.log(`   Add-ons total: ₹${addOnsTotal}`);
+    console.log(`   Subtotal: ₹${subtotal}`);
+
     // Apply promocode discount if available
     let discountedSubtotal = subtotal;
-    if (appliedPromoCode) {
+    if (appliedPromoCode && discountAmount > 0) {
       discountedSubtotal = subtotal - discountAmount;
+      console.log(`   Promo discount (${appliedPromoCode}): -₹${discountAmount}`);
+      console.log(`   After discount: ₹${discountedSubtotal}`);
     }
 
-    const gst = parseFloat((discountedSubtotal * 0.18).toFixed(2));
-    const total = discountedSubtotal + gst;
-
+    // Frontend doesn't add GST - removed GST calculation to match frontend
     // Ensure final total is rounded to 2 decimal places
-    return parseFloat(total.toFixed(2));
+    const finalTotal = parseFloat(discountedSubtotal.toFixed(2));
+    console.log(`💰 Final total: ₹${finalTotal}`);
+    return finalTotal;
   }
 
-  // Calculate GST amount (matching user panel logic)
+  // GST calculation removed to match frontend (frontend doesn't include GST)
   const calculateGST = () => {
-    const gamesTotal = calculateGamesTotal();
-    const addOnsTotal = calculateAddOnsTotal();
-    const subtotal = gamesTotal + addOnsTotal;
-
-    // Apply promocode discount if available
-    let discountedSubtotal = subtotal;
-    if (appliedPromoCode) {
-      discountedSubtotal = subtotal - discountAmount;
-    }
-
-    const gst = discountedSubtotal * 0.18;
-
-    // Round to 2 decimal places
-    return parseFloat(gst.toFixed(2));
+    // Frontend doesn't calculate GST, so return 0
+    return 0;
   }
 
   // Fetch cities from API when component mounts (matching user panel logic)
@@ -341,9 +382,9 @@ export default function NewBookingPage() {
         setIsLoadingCities(true)
         setCityError(null)
 
-        console.log("Fetching cities from API...")
+        console.log("📍 Fetching cities from API...")
         const citiesData = await getAllCities()
-        console.log("Cities data from API:", citiesData)
+        console.log(`📍 Cities data from API (${citiesData.length} cities):`, citiesData)
 
         // Map the API response to the format expected by the dropdown
         const formattedCities = citiesData.map(city => ({
@@ -353,9 +394,15 @@ export default function NewBookingPage() {
 
         console.log("Formatted cities for dropdown:", formattedCities)
         setCities(formattedCities)
+        console.log("✅ Cities loaded successfully")
       } catch (error: any) {
-        console.error("Failed to fetch cities:", error)
+        console.error("❌ Failed to fetch cities:", error)
         setCityError("Failed to load cities. Please try again.")
+        toast({
+          title: "Cities Loading Error",
+          description: "Failed to load cities. Please refresh the page.",
+          variant: "destructive",
+        });
       } finally {
         setIsLoadingCities(false)
       }
@@ -369,14 +416,19 @@ export default function NewBookingPage() {
     async function loadAddOns() {
       setIsLoadingData(true);
       try {
+        console.log('🛍️ Fetching add-ons from external API...');
         const addOnData = await getAllAddOns();
-        console.log('Fetched add-ons from external API:', addOnData);
-        setAddOns(addOnData.filter(addon => addon.is_active));
+        console.log(`🛍️ Fetched ${addOnData.length} add-ons from external API:`, addOnData);
+
+        const activeAddOns = addOnData.filter(addon => addon.is_active);
+        console.log(`🛍️ Filtered to ${activeAddOns.length} active add-ons`);
+        setAddOns(activeAddOns);
+        console.log('✅ Add-ons loaded successfully');
       } catch (error) {
-        console.error('Failed to load add-ons:', error);
+        console.error('❌ Failed to load add-ons:', error);
         toast({
-          title: "Error",
-          description: "Failed to load add-ons. Please try again.",
+          title: "Add-ons Loading Error",
+          description: "Failed to load add-ons. Some features may not be available.",
           variant: "destructive",
         });
       } finally {
@@ -401,18 +453,47 @@ export default function NewBookingPage() {
       setIsLoadingEvents(true);
       setEventError(null);
 
-      console.log(`Fetching events for city ID: ${cityId}`);
+      console.log(`🎪 Fetching events for city ID: ${cityId}`);
       const eventsData = await getEventsByCityId(Number(cityId));
-      console.log("Events data from API:", eventsData);
+      console.log(`🎪 Events data from API (${eventsData?.length || 0} events):`, eventsData);
 
-      setApiEvents(eventsData);
+      // Validate API response
+      if (!Array.isArray(eventsData)) {
+        throw new Error('Invalid events data format: expected an array');
+      }
+
+      if (eventsData.length === 0) {
+        console.log(`ℹ️ No events found for city ID: ${cityId}`);
+        setApiEvents([]);
+        setEventError("No events available for this city.");
+        return;
+      }
+
+      // Validate each event has required properties
+      const validEvents = eventsData.filter(event => {
+        const isValid = event.event_id && event.event_title;
+        if (!isValid) {
+          console.warn('⚠️ Invalid event data:', event);
+        }
+        return isValid;
+      });
+
+      console.log(`✅ Loaded ${validEvents.length} valid events out of ${eventsData.length} total`);
+      setApiEvents(validEvents);
 
       // No need to filter events by age anymore - games will be fetched separately
       // when both event and DOB are selected
 
     } catch (error: any) {
-      console.error(`Failed to fetch events for city ID ${cityId}:`, error);
-      setEventError("Failed to load events. Please try again.");
+      console.error(`❌ Failed to fetch events for city ID ${cityId}:`, error);
+      const errorMessage = error instanceof Error ? error.message : "Failed to load events. Please try again.";
+      setEventError(errorMessage);
+
+      toast({
+        title: "Events Loading Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
 
       // Clear events on error
       setApiEvents([]);
@@ -423,6 +504,7 @@ export default function NewBookingPage() {
 
   // Handle event type selection (matching user panel logic)
   const handleEventTypeChange = (eventType: string) => {
+    console.log(`🎪 Event type selected: ${eventType}`);
     setSelectedEventType(eventType)
     setSelectedGames([]) // Reset selected games
     setEligibleGames([]) // Reset eligible games
@@ -431,51 +513,100 @@ export default function NewBookingPage() {
     const selectedApiEvent = apiEvents.find(event => event.event_title === eventType);
 
     if (selectedApiEvent) {
-      console.log("Selected event:", selectedApiEvent);
+      console.log("✅ Selected event found:", selectedApiEvent);
+      console.log(`📅 Child DOB: ${childDateOfBirth}, Age: ${childAgeMonths} months`);
 
       // If DOB is set, use the already calculated age (based on current date)
       if (childDateOfBirth && childAgeMonths !== null) {
+        console.log(`🎮 Fetching games for event ID ${selectedApiEvent.event_id} and age ${childAgeMonths} months`);
         // Fetch games for this event and child age
         fetchGamesByEventAndAge(selectedApiEvent.event_id, childAgeMonths);
+      } else {
+        console.log(`⚠️ Child date of birth not set, cannot fetch games yet`);
       }
     } else {
       // If no matching event found, clear eligible games
+      console.error(`❌ Selected event "${eventType}" not found in API events:`, apiEvents);
       setEligibleGames([]);
     }
   }
 
   // Fetch games based on event ID and child age (matching user panel logic)
   const fetchGamesByEventAndAge = async (eventId: number, childAge: number) => {
-    if (!eventId || childAge === null) return;
+    if (!eventId || childAge === null || childAge === undefined) {
+      console.log(`⚠️ Skipping games fetch - missing required data:`, { eventId, childAge });
+      return;
+    }
+
+    if (childAge < 0 || childAge > 120) {
+      console.error(`❌ Invalid child age: ${childAge} months`);
+      setGameError(`Invalid child age: ${childAge} months. Please check the date of birth.`);
+      return;
+    }
 
     setIsLoadingGames(true);
     setGameError("");
 
     try {
-      console.log(`Fetching games for event ID: ${eventId} and child age: ${childAge} months`);
+      console.log(`🎮 Fetching games for event ID: ${eventId} and child age: ${childAge} months`);
+      console.log(`📡 API endpoint: https://ai.alviongs.com/webhook/v1/nibog/events/get-games-by-ageandevent-new`);
+      console.log(`📤 Request payload:`, { event_id: eventId, child_age: childAge });
 
       // Call the new API to get games by age and event
       const gamesData = await getGamesByAgeAndEvent(eventId, childAge);
+      console.log(`📥 Raw API response:`, gamesData);
 
       if (gamesData && gamesData.length > 0) {
         console.log(`Found ${gamesData.length} games for event ${eventId} and age ${childAge} months`);
         console.log('Game data from API:', gamesData);
 
-        // Format games data to match the expected structure (using slot_id as unique identifier)
-        const formattedGames: EligibleGame[] = gamesData.map((game: any) => ({
-          id: String(game.slot_id || game.id), // Use slot_id as unique identifier
-          title: game.title || game.game_title || game.name || '',
-          description: game.description || game.game_description || '',
-          price: parseFloat(game.price || game.slot_price || '0'),
-          start_time: game.start_time || '',
-          end_time: game.end_time || '',
-          custom_title: game.title || '',
-          custom_description: game.description || '',
-          max_participants: game.max_participants || 0,
-          // Store both slot_id and game_id for reference
-          slot_id: Number(game.slot_id || 0),
-          game_id: Number(game.game_id || game.id || 0)
-        }));
+        // Format games data to match the expected structure - API returns games with slots array
+        const formattedGames: EligibleGame[] = [];
+
+        gamesData.forEach((game: any) => {
+          // Each game now has a slots array - process each slot as a separate selectable item
+          if (game.slots && Array.isArray(game.slots)) {
+            game.slots.forEach((slot: any) => {
+              formattedGames.push({
+                id: Number(slot.slot_id || 0), // Use slot_id as number (matching frontend)
+                game_id: Number(game.game_id || 0), // Store actual game_id for API calls
+                title: game.title || game.game_title || game.name || '',
+                description: game.description || game.game_description || '',
+                price: parseFloat(slot.slot_price || game.listed_price || '0'),
+                slot_price: parseFloat(slot.slot_price || '0'), // Prioritized price (matching frontend)
+                custom_price: parseFloat(game.listed_price || '0'), // Fallback price (matching frontend)
+                start_time: slot.start_time || '',
+                end_time: slot.end_time || '',
+                custom_title: game.title || '',
+                custom_description: game.description || '',
+                max_participants: slot.max_participants || 0,
+                slot_id: Number(slot.slot_id || 0),
+                game_name: game.title || game.game_title || game.name || ''
+              });
+            });
+          } else {
+            // Fallback for games without slots array (backward compatibility)
+            formattedGames.push({
+              id: Number(game.slot_id || game.id || 0),
+              game_id: Number(game.game_id || game.id || 0),
+              title: game.title || game.game_title || game.name || '',
+              description: game.description || game.game_description || '',
+              price: parseFloat(game.price || game.slot_price || game.listed_price || '0'),
+              slot_price: parseFloat(game.slot_price || game.price || '0'),
+              custom_price: parseFloat(game.listed_price || game.price || '0'),
+              start_time: game.start_time || '',
+              end_time: game.end_time || '',
+              custom_title: game.title || '',
+              custom_description: game.description || '',
+              max_participants: game.max_participants || 0,
+              slot_id: Number(game.slot_id || game.id || 0),
+              game_name: game.title || game.game_title || game.name || ''
+            });
+          }
+        });
+
+        console.log(`Formatted ${formattedGames.length} game slots from ${gamesData.length} games`);
+        console.log('Formatted games:', formattedGames);
 
         // Set the formatted games (this is separate from eligibleEvents which contains event details)
         setEligibleGames(formattedGames);
@@ -484,30 +615,73 @@ export default function NewBookingPage() {
         setEligibleGames([]);
       }
     } catch (error) {
-      console.error('Error fetching games:', error);
-      setGameError("Failed to load games. Please try again.");
+      console.error('❌ Error fetching games:', error);
+      console.error('❌ Error details:', {
+        eventId,
+        childAge,
+        error: error instanceof Error ? error.message : error
+      });
+
+      const errorMessage = error instanceof Error
+        ? `Failed to load games: ${error.message}`
+        : "Failed to load games. Please try again.";
+
+      setGameError(errorMessage);
       setEligibleGames([]);
+
+      // Show toast notification for better user feedback
+      toast({
+        title: "Games Loading Error",
+        description: errorMessage,
+        variant: "destructive",
+      });
     } finally {
       setIsLoadingGames(false);
     }
   }
 
-  // Handle game selection (matching user panel logic)
-  const handleGameToggle = (gameId: string) => {
-    const newSelectedGames = selectedGames.includes(gameId)
-      ? selectedGames.filter(id => id !== gameId)
-      : [...selectedGames, gameId]
+  // Handle game selection with slot selection - SINGLE SELECTION ONLY (matching frontend exactly)
+  const handleGameSelection = (slotId: number) => {
+    // Find the game associated with this slot
+    const selectedSlot = eligibleGames.find((g) => g.id === slotId);
+    if (!selectedSlot) {
+      console.error(`❌ Slot with ID ${slotId} not found in eligible games`);
+      return;
+    }
 
-    setSelectedGames(newSelectedGames)
+    const gameId = selectedSlot.game_id;
 
-    // Find the selected game objects to show both slot_id and game_id in logs
-    const selectedGamesObj = eligibleGames.filter(game => newSelectedGames.includes(game.id))
-    console.log("Selected games (slot_ids):", newSelectedGames)
-    console.log("Selected games details:", selectedGamesObj.map(game => ({
-      slot_id: game.slot_id,
-      game_id: game.game_id,
-      title: game.title
-    })))
+    // SINGLE SELECTION LOGIC: Only allow one game/slot selection at a time (matching frontend)
+    setSelectedGames((prev) => {
+      // Check if this exact slot is already selected
+      const isCurrentlySelected = prev.length === 1 && prev[0].slotId === slotId;
+
+      let newSelectedGames: Array<{ gameId: number; slotId: number }>;
+
+      if (isCurrentlySelected) {
+        // If clicking the same slot that's already selected, deselect it
+        newSelectedGames = [];
+        console.log(`🎮 Deselected slot ID: ${slotId} for game ID: ${gameId}`);
+      } else {
+        // Replace any existing selection with this new selection (SINGLE SELECTION)
+        newSelectedGames = [{ gameId, slotId }];
+        console.log(`🎮 Selected slot ID: ${slotId} for game ID: ${gameId} (SINGLE SELECTION)`);
+      }
+
+      // Clear promo code when games selection changes (matching frontend)
+      if (appliedPromoCode) {
+        console.log("🏷️ Clearing promo code due to games selection change");
+        setAppliedPromoCode("");
+        setDiscountAmount(0);
+        setPromoCodeInput("");
+      }
+
+      // Log selection details for debugging
+      console.log("🎮 New selected games:", newSelectedGames);
+      console.log("🎮 Selected slot details:", selectedSlot);
+
+      return newSelectedGames;
+    });
   }
 
   // Handle promo code input change (matching user panel logic)
@@ -527,38 +701,84 @@ export default function NewBookingPage() {
       return
     }
 
-    // For admin panel, we'll implement a simple validation
-    // In a real scenario, you'd call the promo code validation API
+    // Use the same promo code validation API as frontend
     setIsValidatingPromoCode(true)
 
     try {
-      // Simulate API call - replace with actual validation
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Get the selected event ID
+      const selectedApiEvent = apiEvents.find(event => event.event_title === selectedEventType);
+      if (!selectedApiEvent) {
+        throw new Error('Selected event not found');
+      }
 
-      // For demo purposes, apply a 10% discount for code "ADMIN10"
-      if (promoCodeInput.trim().toUpperCase() === "ADMIN10") {
-        const subtotal = calculateGamesTotal() + calculateAddOnsTotal()
-        const discount = subtotal * 0.1
+      // Get the total amount before discount
+      const gamesTotal = calculateGamesTotal();
+      const addOnsTotal = calculateAddOnsTotal();
+      const subtotal = gamesTotal + addOnsTotal;
+
+      if (subtotal <= 0) {
+        throw new Error('Please select games before applying promo code');
+      }
+
+      // Get game IDs from selected games (use game_id, not slot_id for promo validation, matching frontend)
+      const gameIds = selectedGames.map(selection => selection.gameId);
+
+      if (gameIds.length === 0) {
+        throw new Error('No valid games selected for promo code validation');
+      }
+
+      console.log('Validating promo code:', {
+        code: promoCodeInput.trim(),
+        eventId: selectedApiEvent.event_id,
+        gameIds: gameIds,
+        subtotal: subtotal
+      });
+
+      // Use the same API endpoint as frontend
+      const response = await fetch('/api/promo-codes/validate-preview', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          promocode: promoCodeInput.trim(),
+          eventId: selectedApiEvent.event_id,
+          gameIds: gameIds,
+          subtotal: subtotal
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to validate promo code');
+      }
+
+      const result = await response.json();
+      console.log('Promo code validation result:', result);
+
+      if (result.isValid && result.discountAmount > 0) {
         setAppliedPromoCode(promoCodeInput.trim())
-        setDiscountAmount(discount)
+        setDiscountAmount(result.discountAmount)
         toast({
           title: "Promo Code Applied",
-          description: `10% discount applied: ₹${discount.toFixed(2)}`,
+          description: `Discount applied: ₹${result.discountAmount.toFixed(2)}`,
         })
       } else {
         setAppliedPromoCode("")
         setDiscountAmount(0)
         toast({
           title: "Invalid Promo Code",
-          description: "Please enter a valid promo code",
+          description: result.message || "Please enter a valid promo code",
           variant: "destructive",
         })
       }
     } catch (error) {
       console.error("Error validating promo code:", error)
+      setAppliedPromoCode("")
+      setDiscountAmount(0)
       toast({
-        title: "Validation Error",
-        description: "Failed to validate promo code",
+        title: "Error",
+        description: error instanceof Error ? error.message : "Failed to validate promo code. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -611,8 +831,17 @@ export default function NewBookingPage() {
         throw new Error("Please complete the event and game selection")
       }
 
+      // SINGLE GAME VALIDATION: Ensure exactly one game is selected (matching frontend)
+      if (selectedGames.length !== 1) {
+        throw new Error(`Invalid game selection. Expected exactly 1 game, but found ${selectedGames.length}. Please select exactly one game.`)
+      }
+
       if (!childAgeMonths) {
         throw new Error("Please enter child's date of birth")
+      }
+
+      if (!paymentMethod) {
+        throw new Error("Please select a payment method")
       }
 
       // Validate email format
@@ -634,8 +863,28 @@ export default function NewBookingPage() {
         throw new Error("Selected event not found")
       }
 
-      // Get selected games objects (using slot_id for selection)
-      const selectedGamesObj = eligibleGames.filter(game => selectedGames.includes(game.id))
+      // SINGLE GAME VALIDATION: Ensure exactly one game is selected (matching frontend)
+      if (selectedGames.length !== 1) {
+        throw new Error(`Invalid game selection. Expected exactly 1 game, but found ${selectedGames.length}. Please select exactly one game.`)
+      }
+
+      // Get selected games objects (using slot_id for selection, matching frontend)
+      const selectedGamesObj = selectedGames
+        .map(selection => {
+          const game = eligibleGames.find(game => game.id === selection.slotId)
+          if (!game) {
+            console.error(`❌ Game slot with ID ${selection.slotId} not found in eligible games!`)
+          } else {
+            console.log(`✅ Found game slot: Slot ID ${selection.slotId}, Game ID ${game.game_id}, Title: ${game.title}`)
+          }
+          return game
+        })
+        .filter(game => game !== undefined);
+
+      if (selectedGamesObj.length === 0) {
+        throw new Error("No valid games selected. Please select exactly one game.")
+      }
+
       if (selectedGamesObj.length !== selectedGames.length) {
         console.warn(`⚠️ Warning: ${selectedGames.length} games selected but only ${selectedGamesObj.length} found in eligible games`)
       }
@@ -643,10 +892,10 @@ export default function NewBookingPage() {
       // Calculate total amount using frontend logic
       const totalAmount = calculateTotalPrice()
 
-      // Generate unique booking reference using consistent format
+      // Generate unique manual booking reference using MAN format
       const generateBookingRef = () => {
         const timestamp = Date.now().toString()
-        return generateConsistentBookingRef(timestamp)
+        return generateManualBookingRef(timestamp)
       }
 
       // Process booking_addons according to API structure
@@ -702,13 +951,13 @@ export default function NewBookingPage() {
           event_id: selectedApiEvent.event_id,
           status: "Confirmed",
           total_amount: totalAmount,
-          payment_method: "Admin Created",
-          payment_status: "pending", // Admin bookings start as pending
+          payment_method: paymentMethod,
+          payment_status: paymentMethod === "Cash payment" ? "completed" : "pending",
           terms_accepted: true
         },
         booking_games: selectedGamesObj.map(game => ({
           game_id: game.game_id, // Use actual game_id for the API
-          game_price: game.price,
+          game_price: game.slot_price || game.price, // Prioritize slot_price (matching frontend)
           slot_id: game.slot_id // Add slot_id for proper game details lookup
         })),
         booking_addons: processedAddons,
@@ -741,15 +990,17 @@ export default function NewBookingPage() {
         throw new Error("Booking created but no booking ID returned")
       }
 
-      // Create payment record with pending status for admin management
+      // Create payment record based on selected payment method
       const paymentData = {
         booking_id: bookingId,
-        transaction_id: generateUniqueTransactionId("ADMIN_TXN"),
+        transaction_id: generateUniqueTransactionId("MAN_TXN"),
         amount: totalAmount,
-        payment_method: "Admin Created",
-        payment_status: "pending",
+        payment_method: paymentMethod,
+        payment_status: paymentMethod === "Cash payment" ? "completed" : "pending",
         created_by_admin: true,
-        notes: "Created by admin - pending manual processing"
+        notes: paymentMethod === "Cash payment"
+          ? "Manual booking - Cash payment received by admin"
+          : "Manual booking - Online payment pending"
       }
 
       console.log("Creating payment record:", paymentData)
@@ -779,14 +1030,224 @@ export default function NewBookingPage() {
       setCreatedBookingEmail(email)
       setCreatedBookingParentName(parentName)
       setCreatedBookingChildName(childName)
+      setCreatedBookingPaymentMethod(paymentMethod)
       setBookingCreated(true)
 
       toast({
         title: "Success",
-        description: "Booking created successfully! You can now generate a payment link.",
+        description: paymentMethod === "Cash payment"
+          ? "Manual booking created successfully! Cash payment has been recorded."
+          : "Manual booking created successfully! You can now generate a payment link.",
       })
 
-      // Don't redirect immediately - show payment management options
+      // Send booking confirmation email
+      try {
+        console.log("📧 Sending booking confirmation email for manual booking...");
+
+        // Prepare game details for email (matching frontend structure)
+        const gameDetails = selectedGamesObj.map(game => ({
+          gameName: game.custom_title || game.title || `Game ${game.game_id}`,
+          gameTime: game.start_time && game.end_time ? `${game.start_time} - ${game.end_time}` : 'Time TBD',
+          gamePrice: game.slot_price || game.price || 0
+        }));
+
+        // Prepare add-on details for email
+        const addOnDetails = selectedAddOns.map(item => {
+          let price = parseFloat(item.addOn.price.toString()) || 0;
+          if (item.variantId && item.addOn.variants) {
+            const variant = item.addOn.variants.find(v => v.id?.toString() === item.variantId);
+            if (variant) {
+              price += variant.price_modifier;
+            }
+          }
+          return {
+            name: item.addOn.name + (item.variantId ? ` (${item.addOn.variants?.find(v => v.id?.toString() === item.variantId)?.name || 'Variant'})` : ''),
+            quantity: item.quantity,
+            price: price * item.quantity
+          };
+        });
+
+        const confirmationData: BookingConfirmationData = {
+          bookingId: bookingId,
+          bookingRef: bookingData.booking.booking_ref,
+          parentName: parentName,
+          parentEmail: email,
+          childName: childName,
+          eventTitle: selectedApiEvent.event_title,
+          eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
+          eventVenue: selectedApiEvent.venue_name || 'Event Venue',
+          totalAmount: totalAmount,
+          paymentMethod: paymentMethod,
+          transactionId: paymentData.transaction_id,
+          gameDetails: gameDetails,
+          addOns: addOnDetails.length > 0 ? addOnDetails : undefined
+        };
+
+        const emailResult = await sendBookingConfirmationFromServer(confirmationData);
+
+        if (emailResult.success) {
+          console.log("✅ Booking confirmation email sent successfully");
+          toast({
+            title: "Email Sent",
+            description: "Booking confirmation email sent to customer",
+          });
+        } else {
+          console.error("❌ Failed to send booking confirmation email:", emailResult.error);
+          toast({
+            title: "Email Warning",
+            description: "Booking created but email failed to send. You can resend it later.",
+            variant: "destructive",
+          });
+        }
+      } catch (emailError) {
+        console.error("❌ Error sending booking confirmation email:", emailError);
+        toast({
+          title: "Email Warning",
+          description: "Booking created but email failed to send. You can resend it later.",
+          variant: "destructive",
+        });
+      }
+
+      // Send WhatsApp booking confirmation message (matching frontend implementation)
+      try {
+        console.log("📱 Sending WhatsApp booking confirmation message...");
+
+        // Validate phone number is provided
+        if (!phone || phone.trim() === '') {
+          console.log("⚠️ No phone number provided, skipping WhatsApp notification");
+        } else {
+          // Format phone number for WhatsApp (matching frontend format)
+          const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+
+          // Prepare WhatsApp message data (matching frontend structure exactly)
+          const whatsappData: WhatsAppBookingData = {
+            bookingId: bookingId,
+            bookingRef: bookingData.booking.booking_ref,
+            parentName: parentName,
+            parentPhone: formattedPhone, // Customer's WhatsApp number (formatted)
+            childName: childName,
+            eventTitle: selectedApiEvent.event_title,
+            eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
+            eventVenue: selectedApiEvent.venue_name || 'Event Venue',
+            totalAmount: totalAmount,
+            paymentMethod: paymentMethod,
+            transactionId: paymentData.transaction_id,
+            gameDetails: gameDetails,
+            addOns: addOnDetails.length > 0 ? addOnDetails : undefined
+          };
+
+          console.log("📱 WhatsApp data prepared:", {
+            bookingId: whatsappData.bookingId,
+            parentName: whatsappData.parentName,
+            parentPhone: whatsappData.parentPhone,
+            eventTitle: whatsappData.eventTitle
+          });
+
+          const whatsappResult = await sendBookingConfirmationWhatsApp(whatsappData);
+
+          if (whatsappResult.success) {
+            console.log("✅ WhatsApp booking confirmation sent successfully");
+            console.log(`📱 Message ID: ${whatsappResult.messageId}`);
+            toast({
+              title: "WhatsApp Sent",
+              description: "Booking confirmation sent via WhatsApp",
+            });
+          } else {
+            console.error("❌ Failed to send WhatsApp booking confirmation:", whatsappResult.error);
+            toast({
+              title: "WhatsApp Warning",
+              description: "Booking created but WhatsApp message failed to send.",
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (whatsappError) {
+        console.error("❌ Error sending WhatsApp booking confirmation:", whatsappError);
+        toast({
+          title: "WhatsApp Warning",
+          description: "Booking created but WhatsApp message failed to send.",
+          variant: "destructive",
+        });
+      }
+
+      // For cash payments, send tickets immediately since payment is completed
+      if (paymentMethod === "Cash payment") {
+        try {
+          console.log("🎫 Sending tickets for cash payment booking...");
+
+          // Prepare ticket details (matching frontend structure exactly)
+          const ticketDetails = selectedGamesObj.map((game, index) => ({
+            booking_id: bookingId,
+            booking_game_id: index + 1,
+            game_id: game.game_id,
+            game_name: game.title,
+            custom_title: game.custom_title || game.title,
+            custom_description: game.custom_description || game.description,
+            custom_price: game.slot_price || game.price,
+            slot_price: game.slot_price || game.price,
+            start_time: game.start_time,
+            end_time: game.end_time,
+            event_title: selectedApiEvent.event_title,
+            event_date: selectedApiEvent.event_date,
+            parent_name: parentName,
+            parent_email: email,
+            child_name: childName,
+            event_game_slot_id: game.slot_id || game.id
+          }));
+
+          // Prepare QR code data
+          const qrCodeData = JSON.stringify({
+            ref: bookingData.booking.booking_ref,
+            id: bookingId,
+            name: childName,
+            game: selectedApiEvent.event_title,
+            slot_id: ticketDetails[0]?.event_game_slot_id || 1
+          });
+
+          const ticketEmailData: TicketEmailData = {
+            bookingId: bookingId,
+            bookingRef: bookingData.booking.booking_ref,
+            parentName: parentName,
+            parentEmail: email,
+            childName: childName,
+            eventTitle: selectedApiEvent.event_title,
+            eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
+            eventVenue: selectedApiEvent.venue_name || 'Event Venue',
+            eventCity: selectedApiEvent.city_name || '',
+            ticketDetails: ticketDetails,
+            qrCodeData: qrCodeData
+          };
+
+          const ticketResult = await sendTicketEmail(ticketEmailData);
+
+          if (ticketResult.success) {
+            console.log("✅ Tickets sent successfully for cash payment");
+            toast({
+              title: "Tickets Sent",
+              description: "Event tickets have been sent to the customer's email",
+            });
+          } else {
+            console.error("❌ Failed to send tickets:", ticketResult.error);
+            toast({
+              title: "Ticket Warning",
+              description: "Booking created but tickets failed to send. You can resend them later.",
+              variant: "destructive",
+            });
+          }
+        } catch (ticketError) {
+          console.error("❌ Error sending tickets:", ticketError);
+          toast({
+            title: "Ticket Warning",
+            description: "Booking created but tickets failed to send. You can resend them later.",
+            variant: "destructive",
+          });
+        }
+
+        setTimeout(() => {
+          // Optionally redirect to bookings list for cash payments
+          // router.push("/admin/bookings")
+        }, 3000)
+      }
 
 
     } catch (error: any) {
@@ -852,7 +1313,10 @@ export default function NewBookingPage() {
           <CardHeader>
             <CardTitle>Payment Management</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Booking has been created with pending payment status. Generate a payment link to send to the customer.
+              {createdBookingPaymentMethod === "Cash payment"
+                ? "Booking has been created and marked as paid. Cash payment has been recorded."
+                : "Booking has been created with pending payment status. Generate a payment link to send to the customer."
+              }
             </p>
             <div className="p-2 bg-blue-50 border border-blue-200 rounded text-xs text-blue-800">
               💡 <strong>Testing Tip:</strong> In sandbox mode, avoid entering real UPI details. Look for "Test Payment" or "Simulate Success" buttons on the PhonePe page, or use test card details instead.
@@ -881,10 +1345,28 @@ export default function NewBookingPage() {
             <Separator />
 
             <div className="space-y-4">
-              <h3 className="text-lg font-semibold">Payment Options</h3>
+              <h3 className="text-lg font-semibold">
+                {createdBookingPaymentMethod === "Cash payment" ? "Payment Status" : "Payment Options"}
+              </h3>
 
-              {/* Payment Link Generation */}
-              <div className="space-y-2">
+              {createdBookingPaymentMethod === "Cash payment" ? (
+                // Cash Payment Status
+                <div className="p-4 bg-green-50 border border-green-200 rounded-lg">
+                  <div className="flex items-center gap-2">
+                    <CheckCircle className="h-5 w-5 text-green-600" />
+                    <div>
+                      <p className="font-medium text-green-800">Cash Payment Completed</p>
+                      <p className="text-sm text-green-700">
+                        This booking has been marked as paid. Cash payment was received by admin.
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                // Online Payment Options
+                <>
+                  {/* Payment Link Generation */}
+                  <div className="space-y-2">
                 <Button
                   onClick={handleGeneratePaymentLink}
                   disabled={isGeneratingPaymentLink}
@@ -992,21 +1474,23 @@ export default function NewBookingPage() {
                 )}
               </div>
 
-              {/* Manual Payment Recording */}
-              <div className="space-y-2">
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    // Navigate to manual payment page
-                    router.push(`/admin/bookings/payment/${createdBookingId}?amount=${createdBookingAmount}`)
-                  }}
-                  className="w-full"
-                  disabled={!createdBookingId}
-                >
-                  <CheckCircle className="mr-2 h-4 w-4" />
-                  Record Manual Payment
-                </Button>
-              </div>
+                  {/* Manual Payment Recording */}
+                  <div className="space-y-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        // Navigate to manual payment page
+                        router.push(`/admin/bookings/payment/${createdBookingId}?amount=${createdBookingAmount}`)
+                      }}
+                      className="w-full"
+                      disabled={!createdBookingId}
+                    >
+                      <CheckCircle className="mr-2 h-4 w-4" />
+                      Record Manual Payment
+                    </Button>
+                  </div>
+                </>
+              )}
             </div>
 
             <Separator />
@@ -1154,6 +1638,53 @@ export default function NewBookingPage() {
 
           <Card>
             <CardHeader>
+              <CardTitle>Payment Method</CardTitle>
+              <CardDescription>
+                Select how the payment will be processed for this booking. Manual bookings use MAN prefix (e.g., MAN250806123).
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="space-y-2">
+                <Label htmlFor="paymentMethod">Payment Method</Label>
+                <Select value={paymentMethod} onValueChange={setPaymentMethod} required>
+                  <SelectTrigger id="paymentMethod">
+                    <SelectValue placeholder="Select payment method" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cash payment">Cash Payment</SelectItem>
+                    <SelectItem value="Online payment">Online Payment</SelectItem>
+                  </SelectContent>
+                </Select>
+                <div className="text-sm text-muted-foreground">
+                  {paymentMethod === "Cash payment" && (
+                    <div className="flex items-start gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                      <CheckCircle className="h-4 w-4 text-green-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-green-800">Cash Payment Selected</p>
+                        <p className="text-green-700">
+                          The booking will be marked as paid immediately. Use this when cash has been received.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                  {paymentMethod === "Online payment" && (
+                    <div className="flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                      <CreditCard className="h-4 w-4 text-blue-600 mt-0.5" />
+                      <div>
+                        <p className="font-medium text-blue-800">Online Payment Selected</p>
+                        <p className="text-blue-700">
+                          A payment link will be generated after booking creation for the customer to pay online.
+                        </p>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
               <CardTitle>Event Information</CardTitle>
               <CardDescription>Select city, event, game, date and time slot in order</CardDescription>
             </CardHeader>
@@ -1255,53 +1786,158 @@ export default function NewBookingPage() {
                 ) : gameError ? (
                   <p className="text-sm text-muted-foreground text-red-600">{gameError}</p>
                 ) : eligibleGames.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No games available for this event and child's age</p>
-                ) : (
-                  <div className="space-y-3">
-                    {eligibleGames.map((game) => {
-                      const isSelected = selectedGames.includes(game.id)
-
-                      return (
-                        <div key={game.id} className="flex items-start space-x-3 p-3 border rounded-lg border-green-200 bg-green-50">
-                          <input
-                            type="checkbox"
-                            id={`game-${game.id}`}
-                            checked={isSelected}
-                            onChange={() => handleGameToggle(game.id)}
-                            className="mt-1"
-                          />
-                          <div className="flex-1">
-                            <label
-                              htmlFor={`game-${game.id}`}
-                              className="block text-sm font-medium cursor-pointer text-gray-900"
-                            >
-                              {game.title}
-                            </label>
-                            <p className="text-xs text-gray-600">
-                              Price: ₹{game.price}
-                              {game.start_time && game.end_time && (
-                                <span className="ml-2">
-                                  Time: {game.start_time} - {game.end_time}
-                                </span>
-                              )}
-                            </p>
-                            {game.description && (
-                              <p className="text-xs mt-1 text-gray-500">
-                                {game.description}
-                              </p>
-                            )}
-                          </div>
-                        </div>
-                      )
-                    })}
-                    {selectedGames.length > 0 && (
-                      <div className="mt-3 p-2 bg-blue-50 border border-blue-200 rounded">
-                        <p className="text-sm text-blue-800">
-                          Selected {selectedGames.length} game{selectedGames.length > 1 ? 's' : ''}
-                        </p>
-                      </div>
-                    )}
+                  <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <p className="text-sm text-yellow-800 font-medium">No games/time slots available</p>
+                    <p className="text-xs text-yellow-600 mt-1">
+                      No games found for this event and child's age ({childAgeMonths} months).
+                      Please try selecting a different event or check the child's date of birth.
+                    </p>
                   </div>
+                ) : (
+                  <>
+                    {/* Selection Status Indicator (matching frontend) */}
+                    <div className={`mb-4 p-3 rounded-lg border text-sm ${
+                      selectedGames.length === 0
+                        ? "bg-gray-50 border-gray-200 text-gray-600"
+                        : selectedGames.length === 1
+                        ? "bg-green-50 border-green-200 text-green-700"
+                        : "bg-red-50 border-red-200 text-red-700"
+                    }`}>
+                      <div className="flex items-center gap-2">
+                        {selectedGames.length === 0 && (
+                          <>
+                            <div className="w-2 h-2 rounded-full bg-gray-400"></div>
+                            <span>No game selected - Please select one game and time slot</span>
+                          </>
+                        )}
+                        {selectedGames.length === 1 && (
+                          <>
+                            <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                            <span>✓ One game selected - Ready to continue</span>
+                          </>
+                        )}
+                        {selectedGames.length > 1 && (
+                          <>
+                            <div className="w-2 h-2 rounded-full bg-red-500"></div>
+                            <span>⚠ Multiple games selected - Please select only one</span>
+                          </>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="grid gap-4 sm:grid-cols-1">
+                      {(() => {
+                        // Group games by game_id to show slots for each game (matching frontend exactly)
+                        const groupedGames = eligibleGames.reduce((acc, game) => {
+                          const gameId = game.game_id;
+                          if (!acc[gameId]) {
+                            acc[gameId] = {
+                              gameInfo: {
+                                game_id: game.game_id,
+                                custom_title: game.custom_title || game.title,
+                                game_title: game.title,
+                                custom_description: game.custom_description || game.description,
+                                game_description: game.description,
+                                min_age: 0, // Will be set from first slot
+                                max_age: 0, // Will be set from first slot
+                                game_duration_minutes: 0 // Will be set from first slot
+                              },
+                              slots: []
+                            };
+                          }
+
+                          // Add this slot to the game group
+                          acc[gameId].slots.push({
+                            id: game.id, // This is the slot_id
+                            slot_id: game.slot_id,
+                            slot_price: game.price,
+                            start_time: game.start_time,
+                            end_time: game.end_time,
+                            max_participants: game.max_participants || 0
+                          });
+
+                          return acc;
+                        }, {} as Record<number, { gameInfo: any; slots: any[] }>);
+
+                        return Object.values(groupedGames).map((gameGroup) => {
+                          const { gameInfo, slots } = gameGroup;
+                          const selectedSlotForGame = selectedGames.find(selection => selection.gameId === gameInfo.game_id);
+
+                          return (
+                            <div
+                              key={gameInfo.game_id}
+                              className="rounded-lg border-2 border-muted p-4 space-y-3"
+                            >
+                              {/* Game Header */}
+                              <div className="space-y-2">
+                                <h4 className="font-medium text-lg">
+                                  {gameInfo.custom_title || gameInfo.game_title}
+                                </h4>
+                                <p className="text-sm text-muted-foreground">
+                                  {gameInfo.custom_description || gameInfo.game_description}
+                                </p>
+                              </div>
+
+                              {/* Slot Selection */}
+                              <div className="space-y-2">
+                                <Label className="text-sm font-medium">
+                                  Select Time Slot {slots.length > 1 ? '(Choose one)' : ''}:
+                                </Label>
+                                <div className="grid gap-2">
+                                  {slots.map((slot) => {
+                                    const isSelected = selectedSlotForGame?.slotId === slot.id;
+                                    return (
+                                      <div
+                                        key={slot.id}
+                                        className={`flex items-center justify-between p-3 rounded-lg border transition-all duration-200 ${
+                                          isSelected
+                                            ? "border-primary bg-primary/10 shadow-md"
+                                            : slot.max_participants <= 0
+                                              ? "border-muted bg-gray-100 opacity-70"
+                                              : "border-muted hover:border-primary/30 hover:bg-primary/5 cursor-pointer"
+                                        }`}
+                                        onClick={() => slot.max_participants > 0 && handleGameSelection(slot.id)}
+                                      >
+                                        <div className="flex items-center space-x-3">
+                                          <input
+                                            type="radio"
+                                            name="game-slot-selection"
+                                            checked={isSelected}
+                                            onChange={() => slot.max_participants > 0 && handleGameSelection(slot.id)}
+                                            disabled={slot.max_participants <= 0}
+                                            className={`${slot.max_participants <= 0 ? 'opacity-50 cursor-not-allowed' : 'text-primary focus:ring-primary'}`}
+                                          />
+                                          <div>
+                                            <div className="font-medium text-sm">
+                                              {slot.start_time} - {slot.end_time}
+                                            </div>
+                                            <div className={`text-xs ${slot.max_participants <= 0 ? 'text-destructive font-medium' : 'text-muted-foreground'}`}>
+                                              {slot.max_participants <= 0
+                                                ? 'Max participants reached'
+                                                : `Max ${slot.max_participants} participants`
+                                              }
+                                            </div>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          <div className="font-bold text-lg text-primary">
+                                            ₹{slot.slot_price.toLocaleString()}
+                                          </div>
+                                          <div className="text-xs text-muted-foreground">
+                                            per child
+                                          </div>
+                                        </div>
+                                      </div>
+                                    );
+                                  })}
+                                </div>
+                              </div>
+                            </div>
+                          );
+                        });
+                      })()}
+                    </div>
+                  </>
                 )}
               </div>
 
@@ -1461,11 +2097,11 @@ export default function NewBookingPage() {
                     {selectedGames.length > 0 && (
                       <>
                         <div className="text-sm font-medium">Games:</div>
-                        {selectedGames.map((gameId) => {
-                          const game = eligibleGames.find(g => g.id === gameId)
+                        {selectedGames.map((selection) => {
+                          const game = eligibleGames.find(g => g.id === selection.slotId)
                           return game ? (
-                            <div key={gameId} className="flex justify-between text-sm ml-4">
-                              <span>{game.title}</span>
+                            <div key={selection.slotId} className="flex justify-between text-sm ml-4">
+                              <span>{game.title} ({game.start_time} - {game.end_time})</span>
                               <span>₹{game.price.toLocaleString()}</span>
                             </div>
                           ) : null
@@ -1531,11 +2167,7 @@ export default function NewBookingPage() {
                       </div>
                     )}
 
-                    {/* GST */}
-                    <div className="flex justify-between text-sm">
-                      <span>GST (18%):</span>
-                      <span>₹{calculateGST().toLocaleString()}</span>
-                    </div>
+                    {/* GST removed to match frontend pricing */}
 
                     <Separator className="my-2" />
 

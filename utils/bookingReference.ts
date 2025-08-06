@@ -125,20 +125,77 @@ export function isValidPPTFormat(bookingRef: string): boolean {
 
 /**
  * Extracts the date from a PPT format booking reference
- * 
+ *
  * @param bookingRef - PPT format booking reference
  * @returns Date object or null if invalid format
  */
 export function extractDateFromPPTRef(bookingRef: string): Date | null {
   if (!isValidPPTFormat(bookingRef)) return null;
-  
+
   const cleanRef = bookingRef.replace(/["\s]/g, '').trim();
   const match = cleanRef.match(/^PPT(\d{2})(\d{2})(\d{2})\d{3,}$/);
-  
+
   if (!match) return null;
-  
+
   const [, year, month, day] = match;
   const fullYear = 2000 + parseInt(year, 10);
-  
+
   return new Date(fullYear, parseInt(month, 10) - 1, parseInt(day, 10));
+}
+
+/**
+ * Generates a MANUAL booking reference specifically for admin-created bookings
+ * Uses MAN format to distinguish from frontend bookings
+ *
+ * Format: MANYYMMDDxxx
+ * - MAN: Prefix for manual/admin bookings
+ * - YYMMDD: Current date (2-digit year, month, day)
+ * - xxx: 3-digit unique identifier based on input
+ *
+ * @param identifier - Unique identifier (timestamp, admin ID, etc.)
+ * @returns Manual booking reference in MAN format
+ */
+export function generateManualBookingRef(identifier: string): string {
+  // Create a MAN format booking reference for admin-created bookings
+  const currentDate = new Date();
+  const year = currentDate.getFullYear().toString().slice(-2);
+  const month = (currentDate.getMonth() + 1).toString().padStart(2, '0');
+  const day = currentDate.getDate().toString().padStart(2, '0');
+
+  // Extract numeric part from identifier for uniqueness
+  const numericPart = identifier.replace(/\D/g, '').slice(-3).padStart(3, '0');
+
+  // Generate MAN format: MANYYMMDDxxx
+  const reference = `MAN${year}${month}${day}${numericPart}`;
+
+  console.log(`✅ Generated MAN format manual booking reference: ${reference} from identifier: ${identifier}`);
+  return reference;
+}
+
+/**
+ * Validates if a booking reference is in the correct MAN format
+ *
+ * @param bookingRef - Booking reference to validate
+ * @returns True if valid MAN format, false otherwise
+ */
+export function isValidMANFormat(bookingRef: string): boolean {
+  if (!bookingRef) return false;
+
+  const cleanRef = bookingRef.replace(/["\s]/g, '').trim();
+  const manPattern = /^MAN\d{6}\d{3,}$/;
+
+  return manPattern.test(cleanRef);
+}
+
+/**
+ * Determines if a booking reference is from a manual/admin booking
+ *
+ * @param bookingRef - Booking reference to check
+ * @returns True if manual booking, false if frontend booking
+ */
+export function isManualBooking(bookingRef: string): boolean {
+  if (!bookingRef) return false;
+
+  const cleanRef = bookingRef.replace(/["\s]/g, '').trim();
+  return cleanRef.startsWith('MAN');
 }
