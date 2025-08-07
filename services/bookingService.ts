@@ -542,11 +542,41 @@ export function convertBookingRefFormat(ref: string, targetFormat: 'B' | 'PPT' =
         return fallbackResult;
       }
     }
+  } else if (cleanRef.startsWith('MAN')) {
+    // Handle MAN format (MANYYMMDDxxx) - manual booking references
+    console.log(`Converting MAN reference: ${cleanRef}`);
+
+    const manMatch = cleanRef.match(/^MAN(\d{6})(\d+)$/);
+    if (manMatch) {
+      const dateStr = manMatch[1]; // YYMMDD part
+      const idPart = manMatch[2];  // xxx part (numeric ID)
+      console.log(`MAN matched - dateStr: ${dateStr}, idPart: ${idPart}`);
+
+      if (targetFormat === 'PPT') {
+        // Convert MAN -> PPT format, preserving the original date
+        const result = `PPT${dateStr}${idPart.padStart(3, '0')}`;
+        console.log(`MAN -> PPT conversion: ${cleanRef} -> ${result}`);
+        return result;
+      } else {
+        // Convert MAN -> B format
+        const result = `B${idPart.padStart(7, '0')}`;
+        console.log(`MAN -> B conversion: ${cleanRef} -> ${result}`);
+        return result;
+      }
+    } else {
+      // Fallback for malformed MAN references
+      console.log(`MAN reference malformed, using fallback conversion`);
+      numericPart = cleanRef.replace(/\D/g, '');
+      return targetFormat === 'B' ?
+        `B${numericPart.slice(-7).padStart(7, '0')}` :
+        `PPT${year}${month}${day}${numericPart.slice(-3).padStart(3, '0')}`;
+    }
   } else {
     // Unknown format, extract any numeric parts
+    console.log(`Unknown booking reference format: ${cleanRef}, using fallback conversion`);
     numericPart = cleanRef.replace(/\D/g, '');
-    return targetFormat === 'B' ? 
-      `B${numericPart.slice(-7).padStart(7, '0')}` : 
+    return targetFormat === 'B' ?
+      `B${numericPart.slice(-7).padStart(7, '0')}` :
       `PPT${year}${month}${day}${numericPart.slice(-3).padStart(3, '0')}`;
   }
 }
@@ -556,14 +586,20 @@ export async function getTicketDetails(bookingRef: string): Promise<TicketDetail
   try {
     console.log('Fetching ticket details with booking reference:', bookingRef);
     
-    // API expects booking_ref_id in PPT format for this specific endpoint
-    // If already in PPT format, use as-is. Otherwise convert from B format.
+    // Use booking reference as-is - DO NOT convert MAN references
+    // The API should handle different reference formats directly
     let formattedRef = bookingRef;
-    if (!bookingRef.startsWith('PPT')) {
+
+    if (bookingRef.startsWith('MAN')) {
+      console.log(`Using MAN booking reference as-is: ${bookingRef}`);
+      // Keep MAN references unchanged
+    } else if (bookingRef.startsWith('PPT')) {
+      console.log(`Using PPT booking reference as-is: ${bookingRef}`);
+      // Keep PPT references unchanged
+    } else if (!bookingRef.startsWith('PPT') && !bookingRef.startsWith('MAN')) {
+      // Only convert B format references to PPT
       formattedRef = convertBookingRefFormat(bookingRef, 'PPT');
-      console.log(`Converted booking reference to API format: ${bookingRef} -> ${formattedRef}`);
-    } else {
-      console.log(`Booking reference already in PPT format: ${bookingRef}`);
+      console.log(`Converted B format booking reference: ${bookingRef} -> ${formattedRef}`);
     }
     
     // Strip any JSON formatting if it was stored as JSON string

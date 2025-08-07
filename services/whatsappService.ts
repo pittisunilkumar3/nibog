@@ -42,6 +42,55 @@ export interface WhatsAppResponse {
 }
 
 /**
+ * Validates WhatsApp booking data to prevent parameter mismatch errors
+ * @param bookingData - The booking data to validate
+ * @returns Validation result with any issues found
+ */
+export function validateWhatsAppBookingData(bookingData: WhatsAppBookingData): {
+  isValid: boolean;
+  issues: string[];
+  warnings: string[];
+} {
+  const issues: string[] = [];
+  const warnings: string[] = [];
+
+  // Check required fields
+  const requiredFields = [
+    'bookingId', 'parentName', 'parentPhone',
+    'childName', 'eventTitle', 'eventDate', 'eventVenue',
+    'totalAmount', 'paymentMethod', 'transactionId'
+  ];
+
+  for (const field of requiredFields) {
+    const value = bookingData[field as keyof WhatsAppBookingData];
+    if (value === undefined || value === null) {
+      issues.push(`Required field '${field}' is undefined or null`);
+    } else if (typeof value === 'string' && value.trim() === '') {
+      warnings.push(`Field '${field}' is empty string - will use fallback value`);
+    }
+  }
+
+  // Check phone number format
+  if (bookingData.parentPhone && !bookingData.parentPhone.startsWith('+')) {
+    warnings.push('Phone number should start with + for international format');
+  }
+
+  // Check data types
+  if (typeof bookingData.bookingId !== 'number') {
+    issues.push('bookingId must be a number');
+  }
+  if (typeof bookingData.totalAmount !== 'number') {
+    issues.push('totalAmount must be a number');
+  }
+
+  return {
+    isValid: issues.length === 0,
+    issues,
+    warnings
+  };
+}
+
+/**
  * Validate and format phone number for WhatsApp
  */
 function formatPhoneNumber(phone: string): string | null {
@@ -136,13 +185,34 @@ async function sendWhatsAppMessageSafe(
           phone: phone,
           template_name: messageData.templateName,
           template_language: 'en_US', // Correct language for booking_confirmation_latest template
-          components: messageData.templateData // Use 'components' instead of 'template_data'
+          template_data: messageData.templateData // Use simple array format that works with Zaptra
         }
       : {
           token: settings.apiToken,
           phone: phone,
           message: messageData
         };
+
+    console.log(`📱 Sending request to: ${settings.apiUrl}${endpoint}`);
+    console.log(`📱 Request body:`, JSON.stringify(requestBody, null, 2));
+
+    // Additional debugging for template requests
+    if (isTemplate) {
+      console.log('📱 Template debugging:');
+      console.log(`  Template name: ${requestBody.template_name}`);
+      console.log(`  Template language: ${requestBody.template_language}`);
+      console.log(`  Template data array length: ${requestBody.template_data.length}`);
+      console.log('  Template data contents:');
+      requestBody.template_data.forEach((param, index) => {
+        console.log(`    [${index}]: "${param}" (${typeof param})`);
+      });
+
+      if (requestBody.template_data.length !== 8) {
+        console.error('🚨 CRITICAL: Template data array length is not 8!');
+        console.error(`Expected: 8, Got: ${requestBody.template_data.length}`);
+        console.error('This will cause Zaptra error #132000');
+      }
+    }
 
     const response = await fetch(`${settings.apiUrl}${endpoint}`, {
       method: 'POST',
@@ -155,21 +225,37 @@ async function sendWhatsAppMessageSafe(
 
     clearTimeout(timeoutId);
 
+    console.log(`📱 Response status: ${response.status}`);
     const responseData = await response.json();
-    if (settings.debugMode) {
-      console.log(`📱 Zaptra API response:`, responseData);
-    }
+    console.log(`📱 Zaptra API response:`, JSON.stringify(responseData, null, 2));
 
+    // Enhanced response handling with message_wamid analysis
     if (response.ok && responseData.status === 'success') {
+      console.log(`✅ WhatsApp message sent successfully - Message ID: ${responseData.message_id}`);
+
+      // Analyze message_wamid for delivery insights
+      if (responseData.message_wamid) {
+        console.log(`📱 WhatsApp Message WAMID: ${responseData.message_wamid} (Message delivered to WhatsApp servers)`);
+      } else {
+        console.log(`⚠️ WhatsApp Message WAMID is null - Message queued but may not be delivered yet`);
+        console.log(`📋 This can happen when:`);
+        console.log(`   - Phone number is not opted-in to WhatsApp Business`);
+        console.log(`   - Template message has issues`);
+        console.log(`   - Message is still being processed by WhatsApp servers`);
+        console.log(`   - Phone number format is incorrect`);
+      }
+
       return {
         success: true,
-        messageId: responseData.message_id,
-        zaptraResponse: responseData
+        messageId: responseData.message_id || 'unknown',
+        zaptraResponse: responseData,
+        deliveryStatus: responseData.message_wamid ? 'delivered_to_whatsapp' : 'queued_pending_delivery'
       };
     } else {
+      console.error(`❌ WhatsApp message failed - Status: ${response.status}, Response:`, responseData);
       return {
         success: false,
-        error: responseData.message || `API returned status: ${response.status}`,
+        error: responseData.message || responseData.error || `API returned status: ${response.status}`,
         zaptraResponse: responseData
       };
     }
@@ -200,7 +286,7 @@ export async function getWhatsAppTemplates(): Promise<{
       };
     }
 
-    const response = await fetch(`${settings.apiUrl}/getTemplates`, {
+    const response = await fetch(`${settings.apiUrl}/getTemplates?token=${settings.apiToken}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -247,6 +333,26 @@ export async function sendBookingConfirmationWhatsApp(
     console.log(`📱 Customer: ${bookingData.parentName}`);
     console.log(`📱 Phone: ${bookingData.parentPhone}`);
 
+    // Validate booking data to prevent parameter mismatch errors
+    const validation = validateWhatsAppBookingData(bookingData);
+
+    if (!validation.isValid) {
+      console.error('🚨 WhatsApp booking data validation failed!');
+      console.error('🚨 Issues found:', validation.issues);
+      logWhatsAppEvent('validation_failed', {
+        bookingId: bookingData.bookingId,
+        issues: validation.issues
+      });
+      return {
+        success: false,
+        error: `Data validation failed: ${validation.issues.join(', ')}`
+      };
+    }
+
+    if (validation.warnings.length > 0) {
+      console.warn('⚠️ WhatsApp booking data warnings:', validation.warnings);
+    }
+
     // Get configuration with safety checks
     const settings = getWhatsAppSettings();
 
@@ -273,20 +379,53 @@ export async function sendBookingConfirmationWhatsApp(
       };
     }
 
-    // Format and validate phone number
+    // Enhanced phone number formatting and validation
+    console.log(`📱 Original phone number: ${bookingData.parentPhone}`);
     const formattedPhone = formatPhoneNumber(bookingData.parentPhone);
+    console.log(`📱 Formatted phone number: ${formattedPhone}`);
+
+    // Enhanced phone number validation with detailed feedback
     if (!formattedPhone) {
+      console.error(`📱 Invalid phone number format: ${bookingData.parentPhone}`);
+      console.error('📱 Phone number requirements:');
+      console.error('   - Must include country code (e.g., +91 for India)');
+      console.error('   - Must be 10-15 digits after country code');
+      console.error('   - Examples: +916303727148, +919876543210');
+      console.error('📱 This may cause message_wamid to be null in response');
+
       logWhatsAppEvent('failure', {
         bookingId: bookingData.bookingId,
         phone: bookingData.parentPhone,
         error: 'Invalid phone number format'
       });
-      console.error(`📱 Invalid phone number: ${bookingData.parentPhone}`);
+
       return {
         success: false,
-        error: `Invalid phone number: ${bookingData.parentPhone}`
+        error: `Invalid phone number format: ${bookingData.parentPhone}. Please include country code (e.g., +91 for India)`
       };
     }
+
+    // Additional phone number quality checks for better WhatsApp delivery
+    const phoneDigits = formattedPhone.replace(/[^0-9]/g, '');
+    if (phoneDigits.length < 10 || phoneDigits.length > 15) {
+      console.error('📱 Phone number length invalid:', {
+        phone: formattedPhone,
+        digitCount: phoneDigits.length,
+        expected: '10-15 digits'
+      });
+      console.error('📱 This may cause message_wamid to be null in response');
+
+      return {
+        success: false,
+        error: `Phone number must be 10-15 digits long. Got ${phoneDigits.length} digits.`
+      };
+    }
+
+    console.log('✅ Phone number validation passed:', {
+      original: bookingData.parentPhone,
+      formatted: formattedPhone,
+      digitCount: phoneDigits.length
+    });
 
     // Try to use template first, fallback to text message
     let messageData: string | { templateName: string; templateData: any };
@@ -299,23 +438,46 @@ export async function sendBookingConfirmationWhatsApp(
       // Based on the template structure you created in demo.zaptra.in
       const bookingRef = bookingData.bookingRef || `B${String(bookingData.bookingId).padStart(7, '0')}`;
 
+      // Validate and sanitize template data to prevent parameter mismatch errors
+      const templateData = [
+        bookingData.parentName || 'Customer',                    // {{1}} - customer_name
+        bookingData.eventTitle || 'NIBOG Event',                 // {{2}} - event_title
+        bookingData.eventDate || new Date().toLocaleDateString(), // {{3}} - event_date
+        bookingData.eventVenue || 'Event Venue',                 // {{4}} - venue_name
+        bookingData.childName || 'Child',                        // {{5}} - child_name
+        bookingRef || 'N/A',                                     // {{6}} - booking_ref
+        `₹${bookingData.totalAmount || 0}`,                      // {{7}} - total_amount with currency
+        bookingData.paymentMethod || 'Payment'                   // {{8}} - payment_method
+      ];
+
+      // Ensure all parameters are strings and not null/undefined
+      const sanitizedTemplateData = templateData.map(param =>
+        param !== null && param !== undefined ? String(param) : 'N/A'
+      );
+
+      console.log('📱 Template data validation:', {
+        originalCount: templateData.length,
+        sanitizedCount: sanitizedTemplateData.length,
+        hasNullUndefined: templateData.some(param => param === null || param === undefined),
+        sanitizedData: sanitizedTemplateData
+      });
+
+      // Additional debugging for parameter mismatch issues
+      console.log('📱 Detailed parameter mapping:');
+      sanitizedTemplateData.forEach((param, index) => {
+        console.log(`  {{${index + 1}}}: "${param}" (type: ${typeof param}, length: ${param.length})`);
+      });
+
+      // Validate parameter count matches template expectation
+      if (sanitizedTemplateData.length !== 8) {
+        console.error('🚨 PARAMETER COUNT MISMATCH!');
+        console.error(`Expected: 8 parameters, Got: ${sanitizedTemplateData.length} parameters`);
+        console.error('This will cause Zaptra error #132000');
+      }
+
       messageData = {
         templateName: 'booking_confirmation_latest', // Template name in Zaptra
-        templateData: [
-          {
-            type: "body",
-            parameters: [
-              { type: "text", text: bookingData.parentName },     // {{1}} - customer_name
-              { type: "text", text: bookingData.eventTitle },     // {{2}} - event_title
-              { type: "text", text: bookingData.eventDate },      // {{3}} - event_date
-              { type: "text", text: bookingData.eventVenue },     // {{4}} - venue_name
-              { type: "text", text: bookingData.childName },      // {{5}} - child_name
-              { type: "text", text: bookingRef },                 // {{6}} - booking_ref
-              { type: "text", text: bookingData.totalAmount.toString() }, // {{7}} - total_amount
-              { type: "text", text: bookingData.paymentMethod }   // {{8}} - payment_method
-            ]
-          }
-        ]
+        templateData: sanitizedTemplateData
       };
 
       if (settings.debugMode) {
@@ -329,14 +491,43 @@ export async function sendBookingConfirmationWhatsApp(
       }
     }
 
-    // Send WhatsApp message with circuit breaker protection
-    const result = await safeWhatsAppCall(
+    // Send WhatsApp message with circuit breaker protection and template fallback
+    console.log(`📱 Sending WhatsApp message to: ${formattedPhone}`);
+    console.log(`📱 Message type: ${typeof messageData === 'string' ? 'text' : 'template'}`);
+
+    let result = await safeWhatsAppCall(
       () => sendWhatsAppMessageSafe(formattedPhone, messageData, settings),
       settings.fallbackEnabled ? () => Promise.resolve({
         success: false,
         error: 'WhatsApp service unavailable, fallback triggered'
       }) : undefined
     );
+
+    // If template message failed with #132000 error, fallback to text message
+    if (!result.success && typeof messageData === 'object' && result.error && result.error.includes('132000')) {
+      console.log('🔄 Template failed with #132000 error, falling back to text message...');
+
+      try {
+        const textMessage = generateWhatsAppMessage(bookingData);
+        console.log('📱 Generated fallback text message (first 100 chars):', textMessage.substring(0, 100) + '...');
+
+        result = await safeWhatsAppCall(
+          () => sendWhatsAppMessageSafe(formattedPhone, textMessage, settings),
+          settings.fallbackEnabled ? () => Promise.resolve({
+            success: false,
+            error: 'WhatsApp service unavailable, text fallback triggered'
+          }) : undefined
+        );
+
+        if (result.success) {
+          console.log('✅ Text message fallback successful after template failure');
+        }
+      } catch (fallbackError) {
+        console.error('❌ Text message fallback also failed:', fallbackError);
+      }
+    }
+
+    console.log(`📱 WhatsApp send result:`, result);
 
     const duration = Date.now() - startTime;
 

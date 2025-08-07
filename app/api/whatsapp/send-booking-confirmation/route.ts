@@ -31,7 +31,8 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         messageId: result.messageId,
-        message: 'WhatsApp notification sent successfully'
+        message: 'WhatsApp notification sent successfully',
+        zaptraResponse: result.zaptraResponse // Include Zaptra response for debugging
       });
     } else {
       console.error(`❌ WhatsApp API route: Failed to send message for booking ${bookingData.bookingId}: ${result.error}`);

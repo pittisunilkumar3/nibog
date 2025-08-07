@@ -89,12 +89,12 @@ export function ManualPaymentDialog({
       if (result.success) {
         toast({
           title: "Success",
-          description: result.message,
+          description: `${result.message}. WhatsApp confirmation will be sent automatically.`,
         })
 
         // Close the dialog and call callback
         handleOpenChange(false)
-        
+
         // Call the callback if provided
         if (onPaymentRecorded) {
           onPaymentRecorded()

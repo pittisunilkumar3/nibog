@@ -9,7 +9,7 @@ async function testWhatsAppTemplate() {
   // Environment variables (hardcoded for testing)
   const ZAPTRA_API_URL = 'https://demo.zaptra.in/api/wpbox';
   const ZAPTRA_API_TOKEN = 'QqfIcXJtovwgUSGMtX1a3PY0XbXQCETeqFMlfjYi5c0aa036';
-  const TEST_PHONE = '+919346015886';
+  const TEST_PHONE = '+916303727148';
 
   // Sample booking data for template variables
   const templateData = [
@@ -19,7 +19,7 @@ async function testWhatsAppTemplate() {
     'NIBOG Party Hall, Bangalore',   // {{4}} - venue_name
     'Test Child',                    // {{5}} - child_name
     'B0012345',                      // {{6}} - booking_ref
-    '2500',                          // {{7}} - total_amount
+    '₹2500',                         // {{7}} - total_amount with currency
     'PhonePe'                        // {{8}} - payment_method
   ];
 

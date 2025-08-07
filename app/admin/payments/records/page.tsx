@@ -152,7 +152,7 @@ export default function RecordPaymentPage() {
       if (result.success) {
         toast({
           title: "Success",
-          description: result.message,
+          description: `${result.message}. WhatsApp confirmation will be sent automatically.`,
         })
 
         // Redirect to payments page after successful recording

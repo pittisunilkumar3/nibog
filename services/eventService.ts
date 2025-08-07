@@ -707,7 +707,7 @@ export async function getEventsByCityId(cityId: number): Promise<EventListItem[]
       city_created_at: new Date().toISOString(),
       city_updated_at: new Date().toISOString(),
       venue_id: event.venue_id || 0,
-      venue_name: '', // Will be filled in if needed by UI
+      venue_name: event.venue_name || 'Event Venue', // Use actual venue name from API or fallback
       venue_address: '',
       venue_capacity: 0,
       venue_is_active: true,

@@ -7,7 +7,7 @@ async function testTemplateFormats() {
   
   const ZAPTRA_API_URL = 'https://zaptra.in/api/wpbox';
   const ZAPTRA_API_TOKEN = 'ub94jy7OiCmCiggguxLZ2ETkbYkh5OtpNX3ZYISD737595b9';
-  const TEST_PHONE = '+919346015886';
+  const TEST_PHONE = '+916303727148';
   
   // Test data
   const testData = [

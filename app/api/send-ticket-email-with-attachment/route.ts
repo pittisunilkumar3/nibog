@@ -50,7 +50,14 @@ export async function POST(request: Request) {
       });
     }
 
-    // Create transporter using the email settings
+    // Enhanced SMTP configuration with better error handling and fallbacks
+    console.log('🔧 SMTP Configuration:', {
+      host: settings.smtp_host,
+      port: settings.smtp_port,
+      secure: settings.smtp_port === 465,
+      user: settings.smtp_username ? '***SET***' : 'NOT_SET'
+    });
+
     const transporter = nodemailer.createTransport({
       host: settings.smtp_host,
       port: settings.smtp_port,
@@ -61,16 +68,60 @@ export async function POST(request: Request) {
       },
       tls: {
         rejectUnauthorized: false // Allow self-signed certificates
+      },
+      // Add connection timeout and retry settings
+      connectionTimeout: 30000, // 30 seconds
+      greetingTimeout: 30000,
+      socketTimeout: 30000,
+      // Add pool settings for better connection management
+      pool: true,
+      maxConnections: 5,
+      maxMessages: 100,
+      // Add retry settings
+      retry: {
+        delay: 1000,
+        max: 3
       }
     })
 
-    // Verify transporter configuration
+    // Enhanced SMTP verification with detailed error reporting
     try {
+      console.log('🔍 Verifying SMTP connection...');
       await transporter.verify()
-    } catch (verifyError) {
-      console.error('SMTP verification failed:', verifyError)
+      console.log('✅ SMTP verification successful');
+    } catch (verifyError: any) {
+      console.error('❌ SMTP verification failed:', {
+        error: verifyError.message,
+        code: verifyError.code,
+        errno: verifyError.errno,
+        syscall: verifyError.syscall,
+        address: verifyError.address,
+        port: verifyError.port
+      });
+
+      // Provide specific error messages based on error type
+      let errorMessage = 'Email server configuration error';
+
+      if (verifyError.code === 'ETIMEDOUT') {
+        errorMessage = 'Email server connection timeout. Please check SMTP host and port settings.';
+      } else if (verifyError.code === 'ECONNREFUSED') {
+        errorMessage = 'Email server refused connection. Please verify SMTP host and port.';
+      } else if (verifyError.code === 'EAUTH') {
+        errorMessage = 'Email authentication failed. Please check username and password.';
+      } else if (verifyError.code === 'ESOCKET') {
+        errorMessage = 'Email server socket error. The SMTP server may be down or unreachable.';
+      }
+
       return NextResponse.json(
-        { error: 'Email server configuration error' },
+        {
+          error: errorMessage,
+          details: {
+            code: verifyError.code,
+            message: verifyError.message,
+            host: settings.smtp_host,
+            port: settings.smtp_port
+          }
+        },
         { status: 500 }
       )
     }
@@ -81,16 +132,30 @@ export async function POST(request: Request) {
     // Generate PDF ticket and add as attachment
     try {
       console.log('📄 Generating PDF ticket for booking:', bookingRef);
+      console.log('📄 PDF generation inputs:', {
+        bookingRef,
+        qrCodeBufferSize: qrCodeBuffer?.length || 0,
+        ticketDetailsCount: ticketDetails?.length || 0,
+        htmlContentLength: html?.length || 0
+      });
+
       const pdfBuffer = await generateTicketPDF(html, bookingRef, qrCodeBuffer, ticketDetails);
+
+      if (!pdfBuffer || pdfBuffer.length === 0) {
+        throw new Error('PDF generation returned empty buffer');
+      }
+
       attachments.push({
         filename: `NIBOG_Ticket_${bookingRef || 'ticket'}.pdf`,
         content: pdfBuffer,
         contentType: 'application/pdf'
       });
-      console.log('📄 PDF ticket attachment added, size:', pdfBuffer.length, 'bytes');
+      console.log('✅ PDF ticket attachment added successfully, size:', pdfBuffer.length, 'bytes');
     } catch (pdfError) {
       console.error('❌ Error generating PDF ticket:', pdfError);
+      console.error('❌ PDF error details:', pdfError instanceof Error ? pdfError.stack : pdfError);
       // Continue without PDF attachment - at least send email with QR code
+      console.log('⚠️ Continuing without PDF attachment - email will still be sent with QR code');
     }
     
     // Add QR code as attachment if provided
@@ -152,15 +217,30 @@ export async function POST(request: Request) {
  */
 async function generateTicketPDF(htmlContent: string, bookingRef: string, qrCodeBuffer?: number[], ticketDetails?: any[]): Promise<Buffer> {
   try {
+    console.log('📄 Starting PDF generation process...');
+    console.log('📄 Input validation:', {
+      htmlContentLength: htmlContent?.length || 0,
+      bookingRef,
+      qrCodeBufferLength: qrCodeBuffer?.length || 0,
+      ticketDetailsCount: ticketDetails?.length || 0
+    });
+
     const ticketData = validateAndExtractTicketData(ticketDetails, bookingRef);
+    console.log('📄 Ticket data validated:', {
+      hasCompleteData: ticketData.hasCompleteData,
+      missingFields: ticketData.missingFields
+    });
+
     const ticket = ticketDetails && ticketDetails[0] ? ticketDetails[0] : {};
 
     // PDF setup - using A4 dimensions (595.28 x 841.89 points)
+    console.log('📄 Initializing jsPDF...');
     const pdf = new jsPDF({
       orientation: 'portrait',
       unit: 'pt',
       format: 'a4'
     });
+    console.log('📄 jsPDF initialized successfully');
     
     const pageWidth = pdf.internal.pageSize.getWidth();
     const pageHeight = pdf.internal.pageSize.getHeight();
@@ -399,7 +479,7 @@ function validateAndExtractTicketData(ticketDetails?: any[], bookingRef?: string
     parentName: 'Valued Customer',
     eventVenue: 'Event Venue',
     venueAddress: '',
-    gameName: 'Event Games',
+    gameName: 'NIBOG Event', // Use event title as fallback for game name
     gameDescription: '',
     gamePrice: 0,
     formattedPrice: 'Rs. 0.00',
@@ -420,10 +500,14 @@ function validateAndExtractTicketData(ticketDetails?: any[], bookingRef?: string
   const ticket = ticketDetails[0];
   console.log('📄 Raw ticket data received:', ticket);
 
-  // Extract and validate all fields
+  // Extract and validate all fields with fallbacks
   if (ticket.event_title?.trim()) {
     result.eventTitle = ticket.event_title.trim();
+  } else if (ticket.custom_title?.trim()) {
+    result.eventTitle = ticket.custom_title.trim();
+    console.log('📄 Using custom_title as event_title fallback:', result.eventTitle);
   } else {
+    result.eventTitle = 'NIBOG Event'; // Keep default
     missingFields.push('event_title');
   }
 

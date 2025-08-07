@@ -754,6 +754,17 @@ export async function createManualPayment(paymentData: ManualPaymentData): Promi
       // The payment record was created successfully
     }
 
+    // Send WhatsApp notification for successful payments
+    if (paymentData.payment_status === 'successful') {
+      try {
+        console.log('📱 Sending WhatsApp notification for successful manual payment...');
+        await sendWhatsAppNotificationForManualPayment(paymentData.booking_id, transactionId);
+      } catch (whatsappError) {
+        console.error('⚠️ Failed to send WhatsApp notification for manual payment:', whatsappError);
+        // Don't fail the entire operation if WhatsApp fails
+      }
+    }
+
     return {
       success: true,
       payment_id: paymentId,
@@ -767,6 +778,149 @@ export async function createManualPayment(paymentData: ManualPaymentData): Promi
       message: 'Failed to create manual payment record',
       error: error instanceof Error ? error.message : 'Unknown error occurred'
     };
+  }
+}
+
+/**
+ * Send WhatsApp notification for manual payment confirmation
+ * @param bookingId Booking ID to send notification for
+ * @param transactionId Transaction ID for the payment
+ */
+async function sendWhatsAppNotificationForManualPayment(bookingId: number, transactionId: string): Promise<void> {
+  try {
+    console.log(`📱 Fetching booking details for WhatsApp notification: ${bookingId}`);
+
+    // Fetch booking details from the API
+    const bookingResponse = await fetch(`https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get/${bookingId}`);
+
+    if (!bookingResponse.ok) {
+      throw new Error(`Failed to fetch booking details: ${bookingResponse.status}`);
+    }
+
+    const bookingResult = await bookingResponse.json();
+    const booking = bookingResult.booking;
+
+    if (!booking) {
+      throw new Error('Booking not found');
+    }
+
+    console.log(`📱 Booking details fetched for ID: ${bookingId}`);
+
+    // Format phone number for WhatsApp
+    const formattedPhone = booking.phone?.startsWith('+') ? booking.phone : `+91${booking.phone}`;
+
+    // Prepare game details
+    const gameDetails = booking.booking_games?.map((game: any) => ({
+      gameName: game.game_name || 'Game',
+      gameTime: game.game_time || 'TBD',
+      gamePrice: game.game_price || 0
+    })) || [];
+
+    // Prepare add-on details
+    const addOnDetails = booking.booking_addons?.map((addon: any) => ({
+      name: addon.addon_name || 'Add-on',
+      quantity: addon.quantity || 1,
+      price: addon.addon_price || 0
+    })) || [];
+
+    // Prepare WhatsApp message data with enhanced validation
+    const whatsappData = {
+      bookingId: booking.booking_id,
+      bookingRef: booking.booking_ref || `B${String(booking.booking_id).padStart(7, '0')}`,
+      parentName: booking.parent_name || 'Valued Customer',
+      parentPhone: formattedPhone,
+      childName: booking.child_name || 'Child',
+      eventTitle: booking.event_title || 'NIBOG Event',
+      eventDate: booking.event_date || new Date().toLocaleDateString(),
+      eventVenue: booking.venue_name || 'Event Venue',
+      totalAmount: booking.total_amount || 0,
+      paymentMethod: 'Manual Payment',
+      transactionId: transactionId,
+      gameDetails: gameDetails,
+      addOns: addOnDetails
+    };
+
+    // Enhanced validation for WhatsApp template parameters
+    console.log('📱 WhatsApp data validation for manual payment:');
+    console.log('   bookingId:', whatsappData.bookingId, '(type:', typeof whatsappData.bookingId, ')');
+    console.log('   bookingRef:', whatsappData.bookingRef, '(length:', whatsappData.bookingRef.length, ')');
+    console.log('   parentName:', whatsappData.parentName, '(length:', whatsappData.parentName.length, ')');
+    console.log('   parentPhone:', whatsappData.parentPhone, '(length:', whatsappData.parentPhone.length, ')');
+    console.log('   childName:', whatsappData.childName, '(length:', whatsappData.childName.length, ')');
+    console.log('   eventTitle:', whatsappData.eventTitle, '(length:', whatsappData.eventTitle.length, ')');
+    console.log('   eventDate:', whatsappData.eventDate, '(length:', whatsappData.eventDate.length, ')');
+    console.log('   eventVenue:', whatsappData.eventVenue, '(length:', whatsappData.eventVenue.length, ')');
+    console.log('   totalAmount:', whatsappData.totalAmount, '(type:', typeof whatsappData.totalAmount, ')');
+    console.log('   paymentMethod:', whatsappData.paymentMethod, '(length:', whatsappData.paymentMethod.length, ')');
+    console.log('   transactionId:', whatsappData.transactionId, '(length:', whatsappData.transactionId.length, ')');
+    console.log('   gameDetails:', whatsappData.gameDetails.length, 'items');
+    console.log('   addOns:', whatsappData.addOns.length, 'items');
+
+    // Validate required fields for WhatsApp template
+    const requiredFields = ['bookingId', 'parentName', 'parentPhone', 'childName', 'eventTitle'];
+    const missingFields = requiredFields.filter(field => !whatsappData[field as keyof typeof whatsappData]);
+
+    if (missingFields.length > 0) {
+      throw new Error(`Missing required WhatsApp fields: ${missingFields.join(', ')}`);
+    }
+
+    console.log(`📱 Sending WhatsApp notification for manual payment:`, {
+      bookingId: whatsappData.bookingId,
+      parentName: whatsappData.parentName,
+      parentPhone: whatsappData.parentPhone,
+      eventTitle: whatsappData.eventTitle
+    });
+
+    // Send WhatsApp notification via API endpoint with enhanced error handling
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000';
+    console.log(`📱 Using base URL for WhatsApp API: ${baseUrl}`);
+
+    const whatsappResponse = await fetch(`${baseUrl}/api/whatsapp/send-booking-confirmation`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(whatsappData),
+    });
+
+    console.log(`📱 WhatsApp API response status: ${whatsappResponse.status}`);
+
+    if (!whatsappResponse.ok) {
+      const errorData = await whatsappResponse.json().catch(() => ({ error: 'Unknown error' }));
+      console.error(`❌ WhatsApp API request failed:`, {
+        status: whatsappResponse.status,
+        statusText: whatsappResponse.statusText,
+        error: errorData.error,
+        zaptraResponse: errorData.zaptraResponse
+      });
+      throw new Error(`WhatsApp API failed: ${errorData.error || whatsappResponse.status}`);
+    }
+
+    const whatsappResult = await whatsappResponse.json();
+    console.log(`📱 WhatsApp API result:`, whatsappResult);
+
+    if (whatsappResult.success) {
+      console.log(`✅ WhatsApp notification sent successfully for manual payment. Message ID: ${whatsappResult.messageId}`);
+    } else {
+      console.error(`❌ WhatsApp service failed:`, {
+        error: whatsappResult.error,
+        zaptraResponse: whatsappResult.zaptraResponse
+      });
+
+      // Check for specific #132000 parameter mismatch error
+      if (whatsappResult.error && whatsappResult.error.includes('132000')) {
+        console.error('🚨 PARAMETER MISMATCH ERROR (#132000) DETECTED!');
+        console.error('📋 This error occurs when template parameter count doesn\'t match');
+        console.error('📋 WhatsApp data that caused the error:', JSON.stringify(whatsappData, null, 2));
+        console.error('📋 Check if WHATSAPP_USE_TEMPLATES=true and template structure is correct');
+      }
+
+      throw new Error(`WhatsApp service failed: ${whatsappResult.error}`);
+    }
+
+  } catch (error) {
+    console.error(`❌ Error sending WhatsApp notification for manual payment:`, error);
+    throw error; // Re-throw to let caller handle
   }
 }
 

@@ -20,13 +20,38 @@ export async function POST(request: Request) {
 
     console.log(`🎫 Manual ticket email request for booking: ${bookingRef || bookingId}`);
 
-    // Get ticket details using existing service
+    // Get ticket details using existing service with retry mechanism
     let ticketDetails;
+    let retryCount = 0;
+    const maxRetries = 3;
+    const retryDelay = 2000; // 2 seconds
+
     if (bookingRef) {
-      ticketDetails = await getTicketDetails(bookingRef);
+      // Retry mechanism to handle database timing issues
+      while (retryCount < maxRetries) {
+        try {
+          console.log(`🎫 Attempting to fetch ticket details (attempt ${retryCount + 1}/${maxRetries})`);
+          ticketDetails = await getTicketDetails(bookingRef);
+
+          if (ticketDetails && ticketDetails.length > 0) {
+            console.log(`🎫 Successfully retrieved ${ticketDetails.length} ticket details`);
+            break;
+          }
+
+          if (retryCount < maxRetries - 1) {
+            console.log(`🎫 No ticket details found, waiting ${retryDelay}ms before retry...`);
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+          }
+        } catch (error) {
+          console.error(`🎫 Error fetching ticket details (attempt ${retryCount + 1}):`, error);
+          if (retryCount < maxRetries - 1) {
+            await new Promise(resolve => setTimeout(resolve, retryDelay));
+          }
+        }
+        retryCount++;
+      }
     } else {
       // If only bookingId provided, we need to fetch booking details first
-      // This would require additional API calls to get the booking reference
       return NextResponse.json(
         { error: 'bookingRef is required for ticket email' },
         { status: 400 }
@@ -34,8 +59,9 @@ export async function POST(request: Request) {
     }
 
     if (!ticketDetails || ticketDetails.length === 0) {
+      console.error(`🎫 Failed to retrieve ticket details after ${maxRetries} attempts for booking: ${bookingRef}`);
       return NextResponse.json(
-        { error: 'No ticket details found for the provided booking reference' },
+        { error: 'No ticket details found for the provided booking reference after multiple attempts' },
         { status: 404 }
       );
     }

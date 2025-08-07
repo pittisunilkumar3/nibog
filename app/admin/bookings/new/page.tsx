@@ -21,7 +21,7 @@ import { getAllAddOns, AddOn, AddOnVariant } from "@/services/addOnService"
 import { generateConsistentBookingRef, generateManualBookingRef } from "@/utils/bookingReference"
 import { sendBookingConfirmationFromServer, BookingConfirmationData } from "@/services/emailNotificationService"
 import { sendTicketEmail, TicketEmailData } from "@/services/ticketEmailService"
-import { sendBookingConfirmationWhatsApp, WhatsAppBookingData } from "@/services/whatsappService"
+// Removed direct import of WhatsApp service to avoid browser environment issues - using API endpoint instead
 // Promo code functionality simplified for admin panel
 import { getEventsByCityId, getGamesByAgeAndEvent } from "@/services/eventService"
 import { differenceInMonths } from "date-fns"
@@ -1040,19 +1040,15 @@ export default function NewBookingPage() {
           : "Manual booking created successfully! You can now generate a payment link.",
       })
 
-      // Send booking confirmation email
-      try {
-        console.log("📧 Sending booking confirmation email for manual booking...");
+      // Prepare game details for email (matching frontend structure) - moved outside try block
+      const gameDetails = selectedGamesObj.map(game => ({
+        gameName: game.custom_title || game.title || `Game ${game.game_id}`,
+        gameTime: game.start_time && game.end_time ? `${game.start_time} - ${game.end_time}` : 'Time TBD',
+        gamePrice: game.slot_price || game.price || 0
+      }));
 
-        // Prepare game details for email (matching frontend structure)
-        const gameDetails = selectedGamesObj.map(game => ({
-          gameName: game.custom_title || game.title || `Game ${game.game_id}`,
-          gameTime: game.start_time && game.end_time ? `${game.start_time} - ${game.end_time}` : 'Time TBD',
-          gamePrice: game.slot_price || game.price || 0
-        }));
-
-        // Prepare add-on details for email
-        const addOnDetails = selectedAddOns.map(item => {
+      // Prepare add-on details for email - moved outside try block
+      const addOnDetails = selectedAddOns.map(item => {
           let price = parseFloat(item.addOn.price.toString()) || 0;
           if (item.variantId && item.addOn.variants) {
             const variant = item.addOn.variants.find(v => v.id?.toString() === item.variantId);
@@ -1066,6 +1062,10 @@ export default function NewBookingPage() {
             price: price * item.quantity
           };
         });
+
+      // Send booking confirmation email
+      try {
+        console.log("📧 Sending booking confirmation email for manual booking...");
 
         const confirmationData: BookingConfirmationData = {
           bookingId: bookingId,
@@ -1120,43 +1120,77 @@ export default function NewBookingPage() {
           const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
 
           // Prepare WhatsApp message data (matching frontend structure exactly)
-          const whatsappData: WhatsAppBookingData = {
+          const whatsappData = {
             bookingId: bookingId,
             bookingRef: bookingData.booking.booking_ref,
             parentName: parentName,
             parentPhone: formattedPhone, // Customer's WhatsApp number (formatted)
             childName: childName,
-            eventTitle: selectedApiEvent.event_title,
+            eventTitle: selectedApiEvent.event_title || 'NIBOG Event',
             eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
             eventVenue: selectedApiEvent.venue_name || 'Event Venue',
             totalAmount: totalAmount,
             paymentMethod: paymentMethod,
             transactionId: paymentData.transaction_id,
             gameDetails: gameDetails,
-            addOns: addOnDetails.length > 0 ? addOnDetails : undefined
+            // Always include addOns as an array, never undefined
+            addOns: addOnDetails.length > 0 ? addOnDetails : []
           };
 
           console.log("📱 WhatsApp data prepared:", {
             bookingId: whatsappData.bookingId,
             parentName: whatsappData.parentName,
             parentPhone: whatsappData.parentPhone,
-            eventTitle: whatsappData.eventTitle
+            eventTitle: whatsappData.eventTitle,
+            eventDate: whatsappData.eventDate,
+            eventVenue: whatsappData.eventVenue,
+            totalAmount: whatsappData.totalAmount,
+            paymentMethod: whatsappData.paymentMethod,
+            transactionId: whatsappData.transactionId
           });
 
-          const whatsappResult = await sendBookingConfirmationWhatsApp(whatsappData);
+          // Debug: Log the complete WhatsApp data structure
+          console.log("📱 Complete WhatsApp data structure:", JSON.stringify(whatsappData, null, 2));
+
+          // Debug: Check for any undefined or null values
+          const undefinedFields = Object.entries(whatsappData).filter(([key, value]) => value === undefined || value === null);
+          if (undefinedFields.length > 0) {
+            console.warn("⚠️ WhatsApp data contains undefined/null fields:", undefinedFields);
+          }
+
+          // Send WhatsApp via API endpoint instead of direct service call (to avoid browser environment issues)
+          const whatsappResponse = await fetch('/api/whatsapp/send-booking-confirmation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(whatsappData),
+          });
+
+          const whatsappResult = await whatsappResponse.json();
 
           if (whatsappResult.success) {
             console.log("✅ WhatsApp booking confirmation sent successfully");
             console.log(`📱 Message ID: ${whatsappResult.messageId}`);
+            console.log(`📱 Zaptra response:`, whatsappResult.zaptraResponse);
             toast({
               title: "WhatsApp Sent",
-              description: "Booking confirmation sent via WhatsApp",
+              description: `Booking confirmation sent via WhatsApp (ID: ${whatsappResult.messageId})`,
             });
           } else {
             console.error("❌ Failed to send WhatsApp booking confirmation:", whatsappResult.error);
+            console.error("❌ Zaptra response:", whatsappResult.zaptraResponse);
+
+            // Check if it's the parameter mismatch error
+            if (whatsappResult.error && whatsappResult.error.includes('132000')) {
+              console.error("🔍 PARAMETER MISMATCH ERROR DETECTED!");
+              console.error("📋 This is the #132000 error - parameter count mismatch");
+              console.error("📋 WhatsApp data that caused the error:", JSON.stringify(whatsappData, null, 2));
+            }
+
             toast({
               title: "WhatsApp Warning",
-              description: "Booking created but WhatsApp message failed to send.",
+              description: `WhatsApp failed: ${whatsappResult.error}`,
               variant: "destructive",
             });
           }
@@ -1170,40 +1204,62 @@ export default function NewBookingPage() {
         });
       }
 
-      // For cash payments, send tickets immediately since payment is completed
-      if (paymentMethod === "Cash payment") {
-        try {
-          console.log("🎫 Sending tickets for cash payment booking...");
+      // Send tickets for all manual bookings (consistent with frontend behavior)
+      try {
+        console.log("🎫 Starting ticket email process for manual booking...");
 
-          // Prepare ticket details (matching frontend structure exactly)
-          const ticketDetails = selectedGamesObj.map((game, index) => ({
-            booking_id: bookingId,
-            booking_game_id: index + 1,
-            game_id: game.game_id,
-            game_name: game.title,
-            custom_title: game.custom_title || game.title,
-            custom_description: game.custom_description || game.description,
-            custom_price: game.slot_price || game.price,
-            slot_price: game.slot_price || game.price,
-            start_time: game.start_time,
-            end_time: game.end_time,
-            event_title: selectedApiEvent.event_title,
-            event_date: selectedApiEvent.event_date,
-            parent_name: parentName,
-            parent_email: email,
-            child_name: childName,
-            event_game_slot_id: game.slot_id || game.id
-          }));
+        // Add a delay to ensure booking is fully processed in the database
+        console.log("🎫 Waiting 5 seconds for booking to be fully processed...");
+        await new Promise(resolve => setTimeout(resolve, 5000));
 
-          // Prepare QR code data
+        // Fetch ticket details from database with retry logic (same as frontend approach)
+        const { getTicketDetails } = await import('@/services/bookingService');
+        let ticketDetails = null;
+        let retryCount = 0;
+        const maxRetries = 3;
+
+        // Retry logic to handle database timing issues
+        while (retryCount < maxRetries && (!ticketDetails || ticketDetails.length === 0)) {
+          try {
+            console.log(`🎫 Attempting to fetch ticket details (attempt ${retryCount + 1}/${maxRetries})`);
+            console.log(`🎫 Booking reference: ${bookingData.booking.booking_ref}`);
+            console.log(`🎫 Reference format: ${bookingData.booking.booking_ref.startsWith('MAN') ? 'MAN (Manual)' : 'Other'}`);
+            ticketDetails = await getTicketDetails(bookingData.booking.booking_ref);
+
+            if (ticketDetails && ticketDetails.length > 0) {
+              console.log(`🎫 Successfully retrieved ${ticketDetails.length} ticket details`);
+              break;
+            }
+
+            if (retryCount < maxRetries - 1) {
+              console.log(`🎫 No ticket details found, waiting 3 seconds before retry...`);
+              await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+          } catch (error) {
+            console.error(`🎫 Error fetching ticket details (attempt ${retryCount + 1}):`, error);
+            if (retryCount < maxRetries - 1) {
+              await new Promise(resolve => setTimeout(resolve, 3000));
+            }
+          }
+          retryCount++;
+        }
+
+        if (ticketDetails && ticketDetails.length > 0) {
+          console.log(`🎫 Retrieved ${ticketDetails.length} ticket details from database`);
+
+          // Prepare QR code data (matching frontend format exactly)
+          const firstTicket = ticketDetails[0];
           const qrCodeData = JSON.stringify({
             ref: bookingData.booking.booking_ref,
             id: bookingId,
-            name: childName,
-            game: selectedApiEvent.event_title,
-            slot_id: ticketDetails[0]?.event_game_slot_id || 1
+            name: firstTicket.child_name || childName,
+            game: firstTicket.custom_title || firstTicket.event_title || firstTicket.game_name || selectedApiEvent.event_title,
+            slot_id: firstTicket.event_game_slot_id || firstTicket.booking_game_id || 0
           });
 
+          console.log("🎫 QR code data prepared:", qrCodeData);
+
+          // Prepare ticket email data (matching frontend structure exactly)
           const ticketEmailData: TicketEmailData = {
             bookingId: bookingId,
             bookingRef: bookingData.booking.booking_ref,
@@ -1212,29 +1268,118 @@ export default function NewBookingPage() {
             childName: childName,
             eventTitle: selectedApiEvent.event_title,
             eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
-            eventVenue: selectedApiEvent.venue_name || 'Event Venue',
-            eventCity: selectedApiEvent.city_name || '',
+            eventVenue: 'Event Venue', // Use generic venue name for manual bookings
+            eventCity: '',
             ticketDetails: ticketDetails,
             qrCodeData: qrCodeData
           };
 
+          console.log("🎫 Sending ticket email with data:", {
+            bookingId: ticketEmailData.bookingId,
+            bookingRef: ticketEmailData.bookingRef,
+            parentEmail: ticketEmailData.parentEmail,
+            ticketDetailsCount: ticketEmailData.ticketDetails.length,
+            qrCodeDataLength: ticketEmailData.qrCodeData.length
+          });
+
+          // Send ticket email using direct service call (same as frontend)
           const ticketResult = await sendTicketEmail(ticketEmailData);
 
           if (ticketResult.success) {
             console.log("✅ Tickets sent successfully for cash payment");
             toast({
               title: "Tickets Sent",
-              description: "Event tickets have been sent to the customer's email",
+              description: "Event tickets with QR codes have been sent to the customer's email",
             });
           } else {
             console.error("❌ Failed to send tickets:", ticketResult.error);
             toast({
               title: "Ticket Warning",
-              description: "Booking created but tickets failed to send. You can resend them later.",
+              description: `Tickets failed to send: ${ticketResult.error}`,
               variant: "destructive",
             });
           }
-        } catch (ticketError) {
+        } else {
+          console.log(`🎫 No ticket details found for booking reference: ${bookingData.booking.booking_ref}`);
+          console.log(`🎫 Creating fallback ticket details from booking data...`);
+
+          // Create fallback ticket details from the booking data
+          const fallbackTicketDetails = selectedGamesObj.map((game, index) => ({
+            booking_id: bookingId,
+            booking_game_id: index + 1,
+            game_id: game.game_id,
+            game_name: game.title,
+            custom_title: game.custom_title || game.title || selectedApiEvent.event_title || 'NIBOG Event',
+            custom_description: game.custom_description || game.description,
+            custom_price: game.slot_price || game.price,
+            slot_price: game.slot_price || game.price,
+            start_time: game.start_time,
+            end_time: game.end_time,
+            event_title: selectedApiEvent.event_title || 'NIBOG Event',
+            event_date: selectedApiEvent.event_date,
+            parent_name: parentName,
+            parent_email: email,
+            child_name: childName,
+            event_game_slot_id: game.slot_id || game.id,
+            booking_ref: bookingData.booking.booking_ref,
+            booking_created_at: new Date().toISOString(),
+            booking_status: 'Confirmed'
+          }));
+
+          // Prepare QR code data using fallback ticket details
+          const firstTicket = fallbackTicketDetails[0];
+          const qrCodeData = JSON.stringify({
+            ref: bookingData.booking.booking_ref,
+            id: bookingId,
+            name: firstTicket.child_name,
+            game: firstTicket.custom_title || firstTicket.event_title || firstTicket.game_name,
+            slot_id: firstTicket.event_game_slot_id || 0
+          });
+
+          console.log("🎫 Fallback QR code data prepared:", qrCodeData);
+
+          // Prepare ticket email data using fallback details
+          const ticketEmailData: TicketEmailData = {
+            bookingId: bookingId,
+            bookingRef: bookingData.booking.booking_ref,
+            parentName: parentName,
+            parentEmail: email,
+            childName: childName,
+            eventTitle: selectedApiEvent.event_title,
+            eventDate: selectedApiEvent.event_date || new Date().toLocaleDateString(),
+            eventVenue: 'Event Venue',
+            eventCity: '',
+            ticketDetails: fallbackTicketDetails as any, // Cast as any for fallback scenario
+            qrCodeData: qrCodeData
+          };
+
+          console.log("🎫 Sending ticket email with fallback data:", {
+            bookingId: ticketEmailData.bookingId,
+            bookingRef: ticketEmailData.bookingRef,
+            parentEmail: ticketEmailData.parentEmail,
+            ticketDetailsCount: ticketEmailData.ticketDetails.length,
+            qrCodeDataLength: ticketEmailData.qrCodeData.length
+          });
+
+          // Send ticket email using fallback data
+          const ticketResult = await sendTicketEmail(ticketEmailData);
+
+          if (ticketResult.success) {
+            console.log("✅ Tickets sent successfully using fallback data");
+            toast({
+              title: "Tickets Sent",
+              description: "Event tickets with QR codes have been sent to the customer's email (using fallback data)",
+            });
+          } else {
+            console.error("❌ Failed to send tickets using fallback data:", ticketResult.error);
+            toast({
+              title: "Ticket Warning",
+              description: `Tickets failed to send even with fallback data: ${ticketResult.error}`,
+              variant: "destructive",
+            });
+          }
+        }
+      } catch (ticketError) {
           console.error("❌ Error sending tickets:", ticketError);
           toast({
             title: "Ticket Warning",
@@ -1244,11 +1389,9 @@ export default function NewBookingPage() {
         }
 
         setTimeout(() => {
-          // Optionally redirect to bookings list for cash payments
+          // Optionally redirect to bookings list
           // router.push("/admin/bookings")
         }, 3000)
-      }
-
 
     } catch (error: any) {
       console.error("Error creating booking:", error)

@@ -78,7 +78,7 @@ export default function ManualPaymentPage() {
       if (result.success) {
         toast({
           title: "Success",
-          description: result.message,
+          description: `${result.message}. WhatsApp confirmation will be sent automatically.`,
         })
 
         // Redirect back to booking detail page with success parameter

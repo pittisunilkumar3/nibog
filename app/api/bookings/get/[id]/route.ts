@@ -2,10 +2,10 @@ import { NextResponse } from 'next/server';
 
 export async function GET(
   request: Request,
-  context: { params: { id: string } }
+  context: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { params } = await Promise.resolve(context);
+    const params = await context.params;
     const bookingId = params.id;
 
     if (!bookingId) {

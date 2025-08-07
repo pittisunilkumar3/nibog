@@ -60,8 +60,14 @@ export async function sendTicketEmail(ticketData: TicketEmailData): Promise<{ su
     console.log(`🎫 HTML content generated successfully`);
 
     // Generate QR code as buffer for attachment
+    console.log('🎫 Generating QR code buffer for data:', ticketData.qrCodeData);
     const qrCodeBuffer = await generateQRCodeBuffer(ticketData.qrCodeData);
-    console.log('🎫 QR code buffer generated, size:', qrCodeBuffer.length, 'bytes');
+    console.log('🎫 QR code buffer generated successfully, size:', qrCodeBuffer.length, 'bytes');
+
+    // Validate QR code buffer
+    if (!qrCodeBuffer || qrCodeBuffer.length === 0) {
+      throw new Error('QR code buffer generation failed - buffer is empty');
+    }
 
     // Debug: Log ticket details being sent to API
     console.log('🎫 Ticket details summary:', {
@@ -347,17 +353,42 @@ async function generateTicketHTML(ticketData: TicketEmailData): Promise<string> 
 async function generateQRCodeBuffer(data: string): Promise<Buffer> {
   try {
     console.log('🎫 Generating QR code buffer for data:', data);
-    const qrCodeBuffer = await QRCode.toBuffer(data, {
-      width: 200,
-      margin: 2,
-      color: {
-        dark: '#000000',
-        light: '#FFFFFF'
-      },
-      errorCorrectionLevel: 'M'
-    });
-    console.log('🎫 QR code buffer generated successfully, size:', qrCodeBuffer.length);
-    return qrCodeBuffer;
+
+    // Check if we're in a browser environment
+    if (typeof window !== 'undefined') {
+      console.log('🎫 Browser environment detected, using data URL approach');
+
+      // In browser, generate as data URL first, then convert to buffer
+      const qrCodeDataURL = await QRCode.toDataURL(data, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+
+      // Convert data URL to buffer
+      const base64Data = qrCodeDataURL.replace(/^data:image\/png;base64,/, '');
+      const buffer = Buffer.from(base64Data, 'base64');
+      console.log('🎫 QR code buffer generated successfully from data URL, size:', buffer.length);
+      return buffer;
+    } else {
+      // In Node.js environment, use toBuffer directly
+      console.log('🎫 Node.js environment detected, using toBuffer');
+      const qrCodeBuffer = await QRCode.toBuffer(data, {
+        width: 200,
+        margin: 2,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        },
+        errorCorrectionLevel: 'M'
+      });
+      console.log('🎫 QR code buffer generated successfully, size:', qrCodeBuffer.length);
+      return qrCodeBuffer;
+    }
   } catch (error) {
     console.error('🎫 Error generating QR code buffer:', error);
     console.error('🎫 QR code error details:', error instanceof Error ? error.message : error);
@@ -367,13 +398,28 @@ async function generateQRCodeBuffer(data: string): Promise<Buffer> {
     try {
       console.log('🎫 Attempting QR code buffer generation with simpler data...');
       const simpleData = `NIBOG-${Date.now()}`;
-      const fallbackBuffer = await QRCode.toBuffer(simpleData, {
-        width: 200,
-        margin: 2,
-        errorCorrectionLevel: 'L'
-      });
-      console.log('🎫 Fallback QR code buffer generated successfully');
-      return fallbackBuffer;
+
+      if (typeof window !== 'undefined') {
+        // Browser fallback
+        const fallbackDataURL = await QRCode.toDataURL(simpleData, {
+          width: 200,
+          margin: 2,
+          errorCorrectionLevel: 'L'
+        });
+        const base64Data = fallbackDataURL.replace(/^data:image\/png;base64,/, '');
+        const fallbackBuffer = Buffer.from(base64Data, 'base64');
+        console.log('🎫 Fallback QR code buffer generated successfully (browser)');
+        return fallbackBuffer;
+      } else {
+        // Node.js fallback
+        const fallbackBuffer = await QRCode.toBuffer(simpleData, {
+          width: 200,
+          margin: 2,
+          errorCorrectionLevel: 'L'
+        });
+        console.log('🎫 Fallback QR code buffer generated successfully (Node.js)');
+        return fallbackBuffer;
+      }
     } catch (fallbackError) {
       console.error('🎫 Fallback QR code buffer also failed:', fallbackError);
 
