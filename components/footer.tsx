@@ -18,7 +18,7 @@ export default function Footer() {
         const data = await getFooterSettingWithFallback()
         setFooterData(data)
       } catch (error) {
-        console.error('Failed to fetch footer data:', error)
+        console.error('❌ Failed to fetch footer data:', error)
       } finally {
         setIsLoading(false)
       }
@@ -40,12 +40,35 @@ export default function Footer() {
   const twitterUrl = footerData?.twitter_url || "https://twitter.com"
   const youtubeUrl = footerData?.youtube_url || "https://youtube.com"
 
+  // Debug logging (only in development)
+  if (process.env.NODE_ENV === 'development') {
+    console.log('🏢 Footer Component State:', {
+      isLoading,
+      footerData,
+      companyName,
+      companyDescription: companyDescription.substring(0, 50) + '...'
+    })
+  }
+
+  // Show loading state for debugging
+  if (isLoading) {
+    return (
+      <footer className="border-t bg-background">
+        <div className="container py-8 md:py-12">
+          <div className="flex items-center justify-center">
+            <div className="text-muted-foreground">Loading footer...</div>
+          </div>
+        </div>
+      </footer>
+    )
+  }
+
   return (
     <footer className="border-t bg-background">
       <div className="container py-8 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4 lg:grid-cols-5">
           <div className="space-y-3 lg:col-span-2">
-            <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h3 className="text-lg font-semibold text-purple-600 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">
               {companyName}
             </h3>
             <p className="text-sm text-muted-foreground">
