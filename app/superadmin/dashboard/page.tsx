@@ -102,6 +102,13 @@ export default function SuperAdminDashboard() {
                 <Button variant="outline" className="w-full justify-start">
                   System Settings
                 </Button>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start"
+                  onClick={() => router.push('/superadmin/footer-settings')}
+                >
+                  Footer Settings
+                </Button>
                 <Button variant="outline" className="w-full justify-start">
                   View Audit Logs
                 </Button>

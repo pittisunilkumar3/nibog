@@ -614,3 +614,15 @@ CREATE TABLE email_templates (
 
 
 
+
+
+CREATE TABLE footer_settings (
+    id SERIAL PRIMARY KEY,
+    company_name VARCHAR(255) NOT NULL,
+    company_description TEXT,
+    address TEXT,
+    phone VARCHAR(20),
+    email VARCHAR(100),
+    newsletter_enabled BOOLEAN DEFAULT TRUE,
+    copyright_text TEXT
+);

@@ -12,10 +12,10 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import {
-  Save,
-  RefreshCw,
+  Check as Save,
+  RotateCcw as RefreshCw,
   Plus,
-  Trash2,
+  Trash,
   ExternalLink,
   Facebook,
   Instagram,
@@ -29,6 +29,7 @@ import {
   FileText
 } from "lucide-react"
 import { PageTransition, FadeIn } from "@/components/ui/animated-components"
+import { getFooterSetting, saveFooterSetting, type FooterSetting, type FooterSettingPayload } from "@/services/footerSettingService"
 
 // Types for footer content
 interface SocialMediaLink {
@@ -117,10 +118,34 @@ export default function FooterManagement() {
   const loadFooterContent = async () => {
     setIsLoading(true)
     try {
-      // TODO: Replace with actual API call when backend is ready
-      // For now, use default content
-      await new Promise(resolve => setTimeout(resolve, 500)) // Simulate API call
-      setFooterContent(defaultFooterContent)
+      const footerSettings = await getFooterSetting()
+
+      if (footerSettings) {
+        // Convert API data to FooterContent format
+        const convertedContent: FooterContent = {
+          companyName: footerSettings.company_name,
+          companyDescription: footerSettings.company_description,
+          socialMediaLinks: [
+            { id: "1", platform: "Facebook", url: footerSettings.facebook_url || "", enabled: !!footerSettings.facebook_url },
+            { id: "2", platform: "Instagram", url: footerSettings.instagram_url || "", enabled: !!footerSettings.instagram_url },
+            { id: "3", platform: "Twitter", url: footerSettings.twitter_url || "", enabled: !!footerSettings.twitter_url },
+            { id: "4", platform: "YouTube", url: footerSettings.youtube_url || "", enabled: !!footerSettings.youtube_url },
+          ],
+          quickLinks: defaultFooterContent.quickLinks, // Keep existing quick links
+          legalLinks: defaultFooterContent.legalLinks, // Keep existing legal links
+          contactInfo: {
+            address: footerSettings.address,
+            phone: footerSettings.phone,
+            email: footerSettings.email
+          },
+          newsletterEnabled: footerSettings.newsletter_enabled,
+          copyrightText: footerSettings.copyright_text
+        }
+        setFooterContent(convertedContent)
+      } else {
+        // Use default content if no settings found
+        setFooterContent(defaultFooterContent)
+      }
       setHasChanges(false)
     } catch (error) {
       console.error("Failed to load footer content:", error)
@@ -129,6 +154,7 @@ export default function FooterManagement() {
         description: "Failed to load footer content. Using default values.",
         variant: "destructive",
       })
+      setFooterContent(defaultFooterContent)
     } finally {
       setIsLoading(false)
     }
@@ -233,8 +259,22 @@ export default function FooterManagement() {
 
     setIsSaving(true)
     try {
-      // TODO: Replace with actual API call when backend is ready
-      await new Promise(resolve => setTimeout(resolve, 1000)) // Simulate API call
+      // Convert FooterContent to FooterSettingPayload format
+      const payload: FooterSettingPayload = {
+        company_name: footerContent.companyName,
+        company_description: footerContent.companyDescription,
+        address: footerContent.contactInfo.address,
+        phone: footerContent.contactInfo.phone,
+        email: footerContent.contactInfo.email,
+        newsletter_enabled: footerContent.newsletterEnabled,
+        copyright_text: footerContent.copyrightText,
+        facebook_url: footerContent.socialMediaLinks.find(link => link.platform === 'Facebook')?.url || "",
+        instagram_url: footerContent.socialMediaLinks.find(link => link.platform === 'Instagram')?.url || "",
+        twitter_url: footerContent.socialMediaLinks.find(link => link.platform === 'Twitter')?.url || "",
+        youtube_url: footerContent.socialMediaLinks.find(link => link.platform === 'YouTube')?.url || ""
+      }
+
+      await saveFooterSetting(payload)
 
       toast({
         title: "Success",
