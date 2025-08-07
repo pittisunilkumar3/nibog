@@ -68,7 +68,7 @@ export default function Footer() {
       <div className="container py-8 md:py-12">
         <div className="grid grid-cols-1 gap-8 md:grid-cols-4 lg:grid-cols-5">
           <div className="space-y-3 lg:col-span-2">
-            <h3 className="text-lg font-semibold text-purple-600 bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text [-webkit-background-clip:text] [-webkit-text-fill-color:transparent] [background-clip:text]">
+            <h3 className="text-lg font-semibold text-purple-600 hover:bg-gradient-to-r hover:from-purple-600 hover:to-pink-600 hover:bg-clip-text hover:text-transparent transition-all duration-300">
               {companyName}
             </h3>
             <p className="text-sm text-muted-foreground">
