@@ -7,32 +7,195 @@ import { useState, useEffect } from "react"
 // Dynamic Home Hero Slider
 function HomeHeroSlider() {
   const [sliderImages, setSliderImages] = useState<string[]>([])
+  const [lastFetch, setLastFetch] = useState<number>(0)
 
-  useEffect(() => {
-    fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/get")
-      .then(res => res.json())
-      .then((data) => {
-        const imgs = Array.isArray(data)
-          ? data
-              .filter((img: any) => img.status === "active")
-              .map((img: any) => {
-                const rel = img.image_path.replace(/^public/, "")
-                return rel.startsWith("/") ? rel : "/" + rel
-              })
-          : []
-        setSliderImages(imgs)
+  const fetchSliderImages = async (forceRefresh = false) => {
+    try {
+      console.log("Frontend: Fetching slider images...", forceRefresh ? "(forced refresh)" : "")
+
+      // Add timestamp and cache-busting parameters
+      const timestamp = Date.now()
+      const cacheBust = Math.random().toString(36).substring(7)
+      const url = `/api/home-slider/get?t=${timestamp}&cb=${cacheBust}${forceRefresh ? '&refresh=true&force=true' : ''}`
+
+      const response = await fetch(url, {
+        method: "GET",
+        cache: "no-store", // Disable caching
+        headers: {
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          "Pragma": "no-cache",
+          "Expires": "0",
+          "X-Cache-Bust": cacheBust
+        }
       })
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`)
+      }
+
+      const data = await response.json()
+      console.log("Frontend: API response:", data)
+      console.log("Frontend: Response headers:", {
+        timestamp: response.headers.get('X-Timestamp'),
+        count: response.headers.get('X-Count')
+      })
+
+      // Data is already processed by our API endpoint
+      const imgs = Array.isArray(data)
+        ? data.map((img: any) => {
+            const rel = img.image_path.replace(/^public/, "")
+            return rel.startsWith("/") ? rel : "/" + rel
+          })
+        : []
+
+      console.log("Frontend: Final slider images:", imgs)
+      setSliderImages(imgs)
+      setLastFetch(timestamp)
+
+    } catch (error) {
+      console.error("Failed to fetch slider images:", error)
+      setSliderImages([])
+    }
+  }
+
+  // Initial fetch
+  useEffect(() => {
+    fetchSliderImages()
   }, [])
 
-  // Duplicate images for seamless loop
-  const loopImages = sliderImages.length > 0
-    ? [...sliderImages, sliderImages[0]]
-    : []
+  // Periodic refresh every 30 seconds to catch updates
+  useEffect(() => {
+    const interval = setInterval(() => {
+      console.log("Frontend: Periodic refresh of slider images")
+      fetchSliderImages()
+    }, 30000) // 30 seconds
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Listen for focus events to refresh when user returns to tab
+  useEffect(() => {
+    const handleFocus = () => {
+      const now = Date.now()
+      // Only refresh if it's been more than 10 seconds since last fetch
+      if (now - lastFetch > 10000) {
+        console.log("Frontend: Refreshing slider images on focus")
+        fetchSliderImages()
+      }
+    }
+
+    window.addEventListener('focus', handleFocus)
+    return () => window.removeEventListener('focus', handleFocus)
+  }, [lastFetch])
+
+  // Listen for localStorage changes (notifications from admin panel)
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'homeSliderUpdate' || e.key === 'homeSliderClearCache' || e.key === 'homeSliderDeleteComplete') {
+        console.log("Frontend: Received cache update notification from admin panel:", e.key)
+        
+        // Force clear any cached image references
+        if (e.key === 'homeSliderClearCache' || e.key === 'homeSliderDeleteComplete') {
+          console.log("Frontend: Performing aggressive cache clear")
+          setSliderImages([]) // Clear current images immediately
+          
+          // Clear any browser image cache by forcing reload with cache busting
+          setTimeout(() => {
+            fetchSliderImages(true) // Force refresh after clearing
+          }, 100)
+        } else {
+          fetchSliderImages(true) // Force refresh
+        }
+        
+        // Clear all related notifications
+        localStorage.removeItem('homeSliderUpdate')
+        localStorage.removeItem('homeSliderClearCache')
+        localStorage.removeItem('homeSliderDeleteComplete')
+        localStorage.removeItem('homeSlideCacheBust')
+      }
+    }
+
+    window.addEventListener('storage', handleStorageChange)
+
+    // Also check for updates on component mount
+    const checkForUpdates = () => {
+      const updateFlag = localStorage.getItem('homeSliderUpdate')
+      const clearCacheFlag = localStorage.getItem('homeSliderClearCache')
+      const deleteCompleteFlag = localStorage.getItem('homeSliderDeleteComplete')
+      const cacheBustFlag = localStorage.getItem('homeSlideCacheBust')
+      
+      if (updateFlag || clearCacheFlag || deleteCompleteFlag || cacheBustFlag) {
+        console.log("Frontend: Found pending notifications", {
+          update: !!updateFlag,
+          clearCache: !!clearCacheFlag,
+          deleteComplete: !!deleteCompleteFlag,
+          cacheBust: !!cacheBustFlag
+        })
+        
+        // If cache clear or delete complete, clear images first
+        if (clearCacheFlag || deleteCompleteFlag) {
+          console.log("Frontend: Clearing cached images before refresh")
+          setSliderImages([])
+        }
+        
+        fetchSliderImages(true) // Force refresh
+        
+        // Clear all notifications
+        localStorage.removeItem('homeSliderUpdate')
+        localStorage.removeItem('homeSliderClearCache')
+        localStorage.removeItem('homeSliderDeleteComplete')
+        localStorage.removeItem('homeSlideCacheBust')
+      }
+    }
+
+    checkForUpdates()
+
+    return () => window.removeEventListener('storage', handleStorageChange)
+  }, [])
+
+  // If no images, show default background
+  if (sliderImages.length === 0) {
+    return (
+      <div className="absolute inset-0 bg-gradient-to-br from-blue-300 via-purple-300 to-pink-300 dark:from-blue-700 dark:via-purple-700 dark:to-pink-700 opacity-40 dark:opacity-25">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_120%,rgba(120,190,255,0.6),rgba(255,182,193,0.6))]"></div>
+      </div>
+    )
+  }
+
+  // For single image, don't duplicate
+  const loopImages = sliderImages.length === 1
+    ? sliderImages
+    : [...sliderImages, sliderImages[0]]
+
+  // Calculate dynamic width and animation class
+  const totalImages = loopImages.length
+  const containerWidth = totalImages * 100 // Each image is 100% of container width
+  const imageWidth = 100 / totalImages // Each image takes equal portion
+
+  // Determine animation class based on number of original images
+  const getAnimationClass = (count: number) => {
+    if (count === 1) return "animate-slide-slow-1"
+    if (count === 2) return "animate-slide-slow-2"
+    if (count === 3) return "animate-slide-slow-3"
+    if (count === 4) return "animate-slide-slow-4"
+    if (count === 5) return "animate-slide-slow-5"
+    if (count === 6) return "animate-slide-slow-6"
+    return "animate-slide-slow" // fallback for more than 6
+  }
+
+  const animationClass = getAnimationClass(sliderImages.length)
 
   return (
-    <div className="absolute inset-y-0 left-0 flex w-[400%] animate-slide-slow">
+    <div
+      className={`absolute inset-y-0 left-0 flex ${animationClass}`}
+      style={{ width: `${containerWidth}%` }}
+    >
       {loopImages.map((src, i) => (
-        <div key={`heroimg-${i}`} className="flex-none w-[25%] h-full">
+        <div
+          key={`heroimg-${i}`}
+          className="flex-none h-full"
+          style={{ width: `${imageWidth}%` }}
+        >
           <img
             src={src}
             alt="Home Hero"
@@ -51,7 +214,7 @@ import { Badge } from "@/components/ui/badge"
 import CitySelector from "@/components/city-selector"
 import AgeSelector from "@/components/age-selector"
 import { AnimatedTestimonials } from "@/components/animated-testimonials"
-import { ArrowRight, Star, Shield, Award, Sparkles, MapPin, Plus, Minus } from "lucide-react"
+import { Star, Award, MapPin } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
 
 export default function Home() {
@@ -126,7 +289,7 @@ export default function Home() {
               <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Upcoming NIBOG Events</h2>
               <Button variant="link" asChild className="gap-1">
                 <Link href="/events">
-                  View All <ArrowRight className="h-4 w-4" />
+                  View All →
                 </Link>
               </Button>
             </div>
@@ -216,7 +379,7 @@ export default function Home() {
               <Card>
                 <CardContent className="flex flex-col items-center gap-4 pt-6">
                   <div className="rounded-full bg-primary/10 p-3">
-                    <Shield className="h-6 w-6 text-primary" />
+                    <span className="text-2xl">🛡️</span>
                   </div>
                   <h3 className="text-xl font-semibold">Physical Development</h3>
                   <p className="text-center text-muted-foreground">
@@ -238,7 +401,7 @@ export default function Home() {
               <Card>
                 <CardContent className="flex flex-col items-center gap-4 pt-6">
                   <div className="rounded-full bg-primary/10 p-3">
-                    <Sparkles className="h-6 w-6 text-primary" />
+                    <span className="text-2xl">✨</span>
                   </div>
                   <h3 className="text-xl font-semibold">Creativity & Imagination</h3>
                   <p className="text-center text-muted-foreground">
@@ -398,9 +561,9 @@ export default function Home() {
                           <CardContent className="flex flex-col items-center justify-center p-4 text-center">
                             <div className="w-8 h-8 mb-2 flex items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 dark:bg-primary/20 dark:group-hover:bg-primary/30">
                               {showAllCities ? (
-                                <Minus className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                                <span className="text-primary font-bold text-lg">−</span>
                               ) : (
-                                <Plus className="h-5 w-5 text-primary group-hover:scale-110 transition-transform" />
+                                <span className="text-primary font-bold text-lg">+</span>
                               )}
                             </div>
                             <span className="font-medium text-primary">

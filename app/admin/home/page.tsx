@@ -8,7 +8,7 @@ import { Textarea } from "@/components/ui/textarea"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { ArrowUp, ArrowDown, Trash2 } from "lucide-react"
+import { Trash } from "lucide-react"
 
 export default function HomeSection() {
   const { toast } = useToast()
@@ -18,26 +18,75 @@ export default function HomeSection() {
   const [imageMeta, setImageMeta] = useState<any[]>([])
   
   
+  // Function to refresh image data from server
+  const refreshImages = async () => {
+    try {
+      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/get")
+      const data = await res.json()
+      const safeData = Array.isArray(data) ? data.slice(0, 50) : []
+
+      // Filter out items with invalid image_path and keep arrays synchronized
+      const validItems = safeData.filter((img: any) => img?.image_path)
+
+      setImageMeta(validItems)
+      setImageUrls(
+        validItems.map((img: any) => {
+          // Convert "public/images/blog/home/filename" to "/images/blog/home/filename"
+          const rel = img.image_path.replace(/^public/, "")
+          return rel.startsWith("/") ? rel : "/" + rel
+        })
+      )
+
+      console.log("Refreshed images:", validItems.length, "Meta array length:", validItems.length)
+    } catch (error) {
+      console.error("Failed to fetch images:", error)
+      setImageMeta([])
+      setImageUrls([])
+    }
+  }
+
+  // Comprehensive cache cleanup and frontend notification function
+  const performCacheCleanupAndNotification = async (deleteResult: any) => {
+    console.log("Starting comprehensive cache cleanup...")
+    
+    // 1. Refresh data from server to ensure arrays stay synchronized
+    await refreshImages()
+    
+    // 2. Clear any cached image data from localStorage
+    try {
+      const keysToRemove = []
+      for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i)
+        if (key && (key.includes('image') || key.includes('slider') || key.includes('cache'))) {
+          keysToRemove.push(key)
+        }
+      }
+      keysToRemove.forEach(key => {
+        console.log(`Clearing localStorage key: ${key}`)
+        localStorage.removeItem(key)
+      })
+    } catch (error) {
+      console.warn("Could not clear localStorage cache:", error)
+    }
+    
+    // 3. Send multiple notification signals to frontend
+    const timestamp = Date.now()
+    localStorage.setItem('homeSliderUpdate', timestamp.toString())
+    localStorage.setItem('homeSliderClearCache', timestamp.toString())
+    localStorage.setItem('homeSliderDeleteComplete', JSON.stringify({
+      timestamp,
+      deletedPath: deleteResult?.deletedImagePath,
+      force: true
+    }))
+    
+    // 4. Trigger browser cache invalidation by setting cache-busting flags
+    localStorage.setItem('homeSlideCacheBust', timestamp.toString())
+    
+    console.log("Cache cleanup and notification complete")
+  }
+
   useEffect(() => {
-    // Fetch all uploaded images from external API, limit to 50 for safety
-    fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/get")
-      .then(res => res.json())
-      .then((data) => {
-        const safeData = Array.isArray(data) ? data.slice(0, 50) : []
-        setImageMeta(safeData)
-        setImageUrls(
-          safeData.map((img: any) => {
-            if (!img?.image_path) return ""
-            // Convert "public/images/blog/home/filename" to "/images/blog/home/filename"
-            const rel = img.image_path.replace(/^public/, "")
-            return rel.startsWith("/") ? rel : "/" + rel
-          }).filter(Boolean)
-        )
-      })
-      .catch(() => {
-        setImageMeta([])
-        setImageUrls([])
-      })
+    refreshImages()
   }, [])
   
     // Handle file input change
@@ -48,47 +97,123 @@ export default function HomeSection() {
       setSelectedFiles((prev) => [...prev, ...fileArr])
     }
   
-    // Remove image by index (removes from preview list, not server)
+    // Remove image by index (removes from preview list and server)
     const handleDelete = async (idx: number) => {
+      // Validate index bounds
+      if (idx < 0 || idx >= imageMeta.length) {
+        console.error("Invalid index:", idx, "Array length:", imageMeta.length)
+        toast({
+          title: "Error",
+          description: "Invalid image index.",
+          variant: "destructive",
+        })
+        return
+      }
+
       const meta = imageMeta[idx]
-      if (!meta?.id) return
+      if (!meta?.id) {
+        console.error("No image metadata or ID found for index:", idx, "Meta:", meta)
+        console.error("ImageMeta array:", imageMeta)
+        console.error("ImageUrls array:", imageUrls)
+        toast({
+          title: "Error",
+          description: "Cannot delete image: missing ID.",
+          variant: "destructive",
+        })
+        return
+      }
+
       if (!window.confirm("Delete this image from the slider?")) return
+
       try {
-        const resp = await fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/delete", {
+        console.log("Deleting image with ID:", meta.id)
+        const resp = await fetch("/api/home-hero/delete-image", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: meta.id })
         })
+
+        console.log("Delete response status:", resp.status)
+
+        if (!resp.ok) {
+          throw new Error(`HTTP error! status: ${resp.status}`)
+        }
+
         const result = await resp.json()
-        if (Array.isArray(result) && result[0]?.success) {
-          setImageMeta((prev) => prev.filter((_, i) => i !== idx))
-          setImageUrls((prev) => prev.filter((_, i) => i !== idx))
+        console.log("Delete response data:", result)
+
+        // Check for success in the response - handle various formats
+        let isSuccess = false;
+        let successResult = result;
+        
+        if (Array.isArray(result) && result.length > 0 && result[0]?.success) {
+          isSuccess = true;
+          successResult = result[0];
+        } else if (result?.success === true) {
+          isSuccess = true;
+          successResult = result;
+        } else if (Object.keys(result).length === 0) {
+          // Empty object {} - treat as success
+          console.log("Received empty object from API, treating as successful deletion");
+          isSuccess = true;
+          successResult = { success: true };
+        } else if (result?.timestamp || result?.deletedImagePath) {
+          // Has our custom success indicators
+          isSuccess = true;
+          successResult = result;
+        } else if (result?.["0"]?.success) {
+          // Handle format like {"0":{"success":true},...}
+          console.log("Received success in nested format");
+          isSuccess = true;
+          successResult = result;
+        }
+        
+        if (isSuccess) {
+          // Comprehensive cache cleanup and frontend notification
+          await performCacheCleanupAndNotification(successResult)
+
+          const warning = successResult?.warning;
+          const description = warning ?
+            `Image deleted successfully. ${warning}` :
+            "Image deleted successfully (including local file).";
+
           toast({
             title: "Deleted",
-            description: "Image deleted successfully.",
+            description: description,
           })
         } else {
-          throw new Error("Delete failed")
+          console.error("Delete failed - unexpected response format:", result)
+          throw new Error(`Delete failed - unexpected response format: ${JSON.stringify(result)}`)
         }
       } catch (err) {
+        console.error("Delete error:", err)
         toast({
           title: "Error",
-          description: "Failed to delete image.",
+          description: `Failed to delete image: ${err instanceof Error ? err.message : 'Unknown error'}`,
           variant: "destructive",
         })
       }
     }
 
-  // Drag and drop reordering
+  // Drag and drop reordering - keep both arrays synchronized
   const handleDragStart = (idx: number) => {
     setDraggingIdx(idx)
   }
   const handleDragOver = (idx: number) => {
     if (draggingIdx === null || draggingIdx === idx) return
+
+    // Update both arrays to keep them synchronized
     const newUrls = [...imageUrls]
+    const newMeta = [...imageMeta]
+
     const [draggedUrl] = newUrls.splice(draggingIdx, 1)
+    const [draggedMeta] = newMeta.splice(draggingIdx, 1)
+
     newUrls.splice(idx, 0, draggedUrl)
+    newMeta.splice(idx, 0, draggedMeta)
+
     setImageUrls(newUrls)
+    setImageMeta(newMeta)
     setDraggingIdx(idx)
   }
   const [draggingIdx, setDraggingIdx] = useState<number | null>(null)
@@ -107,7 +232,6 @@ export default function HomeSection() {
       })
       const data = await res.json()
       if (data.success && data.files) {
-        setImageUrls((prev) => [...prev, ...data.files.map((f: any) => f.url)])
         setSelectedFiles([])
 
         // Send each uploaded image to external API
@@ -136,6 +260,12 @@ export default function HomeSection() {
             }
           })
         );
+
+        // Refresh data from server to ensure arrays stay synchronized
+        await refreshImages()
+
+        // Notify frontend about the update
+        localStorage.setItem('homeSliderUpdate', Date.now().toString())
 
         toast({
           title: "Success!",
@@ -182,7 +312,35 @@ export default function HomeSection() {
               >
                 {isLoading ? "Uploading..." : "Upload"}
               </Button>
+              <Button
+                onClick={refreshImages}
+                variant="outline"
+                className="w-full md:w-auto"
+              >
+                Refresh
+              </Button>
+              <Button
+                onClick={() => {
+                  localStorage.setItem('homeSliderUpdate', Date.now().toString())
+                  toast({
+                    title: "Notification Sent",
+                    description: "Frontend will refresh slider images.",
+                  })
+                }}
+                variant="secondary"
+                className="w-full md:w-auto"
+              >
+                Notify Frontend
+              </Button>
             </div>
+            {/* Debug info */}
+            <div className="mb-4 p-3 bg-gray-100 rounded text-sm">
+              <strong>Debug:</strong> ImageUrls: {imageUrls.length}, ImageMeta: {imageMeta.length}
+              {imageUrls.length !== imageMeta.length && (
+                <span className="text-red-600 font-bold"> ⚠️ ARRAYS OUT OF SYNC!</span>
+              )}
+            </div>
+
             <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white w-full">
               <table className="min-w-full w-full divide-y divide-gray-200 text-sm">
                 <thead className="bg-blue-50">
@@ -244,7 +402,7 @@ export default function HomeSection() {
                                 }}
                                 title="Move Up"
                               >
-                                <ArrowUp className="h-5 w-5 text-blue-600" />
+                                <span className="text-blue-600 font-bold">↑</span>
                               </Button>
                               <Button
                                 size="icon"
@@ -262,7 +420,7 @@ export default function HomeSection() {
                                 }}
                                 title="Move Down"
                               >
-                                <ArrowDown className="h-5 w-5 text-blue-600" />
+                                <span className="text-blue-600 font-bold">↓</span>
                               </Button>
                             </div>
                           </td>
@@ -271,12 +429,10 @@ export default function HomeSection() {
                               size="icon"
                               variant="destructive"
                               className="p-1"
-                              onClick={() => {
-                                if (window.confirm("Delete this image from the slider?")) handleDelete(idx)
-                              }}
+                              onClick={() => handleDelete(idx)}
                               title="Delete"
                             >
-                              <Trash2 className="h-5 w-5" />
+                              <Trash className="h-5 w-5" />
                             </Button>
                           </td>
                         </tr>

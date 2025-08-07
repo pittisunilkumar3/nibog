@@ -2,17 +2,79 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Smooth continuous horizontal scroll for 4 images */
-@keyframes slide-slow {
+/* Dynamic smooth continuous horizontal scroll for any number of images */
+@keyframes slide-slow-1 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(0); } /* Single image - no movement */
+}
+
+@keyframes slide-slow-2 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); /* Move left by 1 image width */ }
+}
+
+@keyframes slide-slow-3 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-66.67%); /* Move left by 2 image widths */ }
+}
+
+@keyframes slide-slow-4 {
   0% { transform: translateX(0); }
   100% { transform: translateX(-75%); /* Move left by 3 image widths */ }
 }
 
-.animate-slide-slow {
-  animation: slide-slow 40s linear infinite;
-  width: 400%; /* 4 images at 100% width each */
+@keyframes slide-slow-5 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-80%); /* Move left by 4 image widths */ }
+}
+
+@keyframes slide-slow-6 {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-83.33%); /* Move left by 5 image widths */ }
+}
+
+/* Dynamic animation classes */
+.animate-slide-slow-1 {
+  animation: slide-slow-1 20s linear infinite;
   display: flex;
-  will-change: transform; /* Optimize for animation */
+  will-change: transform;
+}
+
+.animate-slide-slow-2 {
+  animation: slide-slow-2 30s linear infinite;
+  display: flex;
+  will-change: transform;
+}
+
+.animate-slide-slow-3 {
+  animation: slide-slow-3 35s linear infinite;
+  display: flex;
+  will-change: transform;
+}
+
+.animate-slide-slow-4 {
+  animation: slide-slow-4 40s linear infinite;
+  display: flex;
+  will-change: transform;
+}
+
+.animate-slide-slow-5 {
+  animation: slide-slow-5 45s linear infinite;
+  display: flex;
+  will-change: transform;
+}
+
+.animate-slide-slow-6 {
+  animation: slide-slow-6 50s linear infinite;
+  display: flex;
+  will-change: transform;
+}
+
+/* Fallback for more than 6 images */
+.animate-slide-slow {
+  animation: slide-slow-4 40s linear infinite;
+  display: flex;
+  will-change: transform;
 }
 
 /* Gradient animation */
@@ -27,8 +89,14 @@
   background-size: 200% 200%;
 }
 
-/* Pause animation on hover */
-.animate-slide-slow:hover {
+/* Pause animation on hover for all slider variants */
+.animate-slide-slow:hover,
+.animate-slide-slow-1:hover,
+.animate-slide-slow-2:hover,
+.animate-slide-slow-3:hover,
+.animate-slide-slow-4:hover,
+.animate-slide-slow-5:hover,
+.animate-slide-slow-6:hover {
   animation-play-state: paused;
 }
 
