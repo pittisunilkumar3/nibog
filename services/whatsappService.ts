@@ -39,6 +39,7 @@ export interface WhatsAppResponse {
   messageId?: string;
   error?: string;
   zaptraResponse?: any;
+  deliveryStatus?: string;
 }
 
 /**
@@ -184,8 +185,16 @@ async function sendWhatsAppMessageSafe(
           token: settings.apiToken,
           phone: phone,
           template_name: messageData.templateName,
-          template_language: 'en_US', // Correct language for booking_confirmation_latest template
-          template_data: messageData.templateData // Use simple array format that works with Zaptra
+          template_language: 'en_US', // Correct language for booking_confirmation_nibog template
+          components: [
+            {
+              type: "body",
+              parameters: messageData.templateData.map((text: string) => ({
+                type: "text",
+                text: text
+              }))
+            }
+          ]
         }
       : {
           token: settings.apiToken,
@@ -197,19 +206,20 @@ async function sendWhatsAppMessageSafe(
     console.log(`📱 Request body:`, JSON.stringify(requestBody, null, 2));
 
     // Additional debugging for template requests
-    if (isTemplate) {
+    if (isTemplate && 'components' in requestBody && requestBody.components) {
       console.log('📱 Template debugging:');
       console.log(`  Template name: ${requestBody.template_name}`);
       console.log(`  Template language: ${requestBody.template_language}`);
-      console.log(`  Template data array length: ${requestBody.template_data.length}`);
-      console.log('  Template data contents:');
-      requestBody.template_data.forEach((param, index) => {
-        console.log(`    [${index}]: "${param}" (${typeof param})`);
+      const templateParams = requestBody.components[0].parameters;
+      console.log(`  Template parameters count: ${templateParams.length}`);
+      console.log('  Template parameters contents:');
+      templateParams.forEach((param: any, index: number) => {
+        console.log(`    [${index}]: "${param.text}" (${typeof param.text})`);
       });
 
-      if (requestBody.template_data.length !== 8) {
-        console.error('🚨 CRITICAL: Template data array length is not 8!');
-        console.error(`Expected: 8, Got: ${requestBody.template_data.length}`);
+      if (templateParams.length !== 8) {
+        console.error('🚨 CRITICAL: Template parameters count is not 8!');
+        console.error(`Expected: 8, Got: ${templateParams.length}`);
         console.error('This will cause Zaptra error #132000');
       }
     }
@@ -339,9 +349,9 @@ export async function sendBookingConfirmationWhatsApp(
     if (!validation.isValid) {
       console.error('🚨 WhatsApp booking data validation failed!');
       console.error('🚨 Issues found:', validation.issues);
-      logWhatsAppEvent('validation_failed', {
+      logWhatsAppEvent('failure', {
         bookingId: bookingData.bookingId,
-        issues: validation.issues
+        error: `Validation failed: ${validation.issues.join(', ')}`
       });
       return {
         success: false,
@@ -476,7 +486,7 @@ export async function sendBookingConfirmationWhatsApp(
       }
 
       messageData = {
-        templateName: 'booking_confirmation_latest', // Template name in Zaptra
+        templateName: 'booking_confirmation_nibog', // Template name in Zaptra
         templateData: sanitizedTemplateData
       };
 
