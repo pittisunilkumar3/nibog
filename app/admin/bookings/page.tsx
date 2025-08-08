@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit, Check, X, AlertTriangle, Loader2, RefreshCw, CheckCircle, Mail, Phone } from "lucide-react"
+import { Eye, Edit, Check, X, AlertTriangle, Loader2, RefreshCw, CheckCircle, Mail, Phone, Filter, XCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getAllBookings, getPaginatedBookings, updateBookingStatus, Booking, PaginatedBookingsResponse } from "@/services/bookingService"
 import {
@@ -23,6 +23,9 @@ import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components
 import { createBookingExportColumns } from "@/lib/export-utils"
 import { EmptyBookings, EmptyError } from "@/components/ui/empty-state"
 import { SkeletonTable } from "@/components/ui/skeleton-loader"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { getAllEvents } from "@/services/eventService"
+import { getAllBabyGames, type BabyGame } from "@/services/babyGameService"
 
 // Booking statuses for filtering
 const statusOptions = [
@@ -74,6 +77,13 @@ export default function BookingsPage() {
   const [fromDate, setFromDate] = useState<string>("")
   const [toDate, setToDate] = useState<string>("")
 
+  // Event and Game filter state
+  const [events, setEvents] = useState<Array<{ id: number; event_title: string }>>([])
+  const [games, setGames] = useState<BabyGame[]>([])
+  const [selectedEventId, setSelectedEventId] = useState<string>("all")
+  const [selectedGameId, setSelectedGameId] = useState<string>("all")
+  const [isLoadingFilters, setIsLoadingFilters] = useState(false)
+
   // Fetch bookings from API
   const fetchBookings = async () => {
     try {
@@ -104,14 +114,52 @@ export default function BookingsPage() {
     fetchBookings()
   }, [])
 
-  // Filter bookings by date
+  // Load events and games for filters
+  useEffect(() => {
+    const loadFilters = async () => {
+      try {
+        setIsLoadingFilters(true)
+        const [eventsData, gamesData] = await Promise.all([
+          getAllEvents(true),
+          getAllBabyGames()
+        ])
+        // Normalize events minimal structure
+        setEvents(eventsData.map((e: any) => ({ id: e.event_id ?? e.id, event_title: e.event_title ?? e.title })))
+        setGames(Array.isArray(gamesData) ? gamesData : [])
+      } catch (err) {
+        console.error('Failed to load filter data:', err)
+      } finally {
+        setIsLoadingFilters(false)
+      }
+    }
+    loadFilters()
+  }, [])
+
+  // Filter bookings by date, then by event/game
   const filteredBookings = bookings.filter(b => {
-    if (!fromDate && !toDate) return true;
-    const bookingDate = new Date(b.booking_created_at);
-    if (fromDate && bookingDate < new Date(fromDate)) return false;
-    if (toDate && bookingDate > new Date(toDate)) return false;
-    return true;
-  });
+    // Date filter
+    if (fromDate || toDate) {
+      const bookingDate = new Date(b.booking_created_at)
+      if (fromDate && bookingDate < new Date(fromDate)) return false
+      if (toDate && bookingDate > new Date(toDate)) return false
+    }
+    // Event filter (match by event_id or event_title fallback)
+    if (selectedEventId !== 'all') {
+      const evId = Number(selectedEventId)
+      const matchesEventId = (b as any).event_id ? (b as any).event_id === evId : false
+      const eventFromTitle = events.find(e => e.event_title === b.event_title)
+      const matchesEventTitleId = eventFromTitle ? eventFromTitle.id === evId : false
+      if (!(matchesEventId || matchesEventTitleId)) return false
+    }
+    // Game filter (match by game_id or by name)
+    if (selectedGameId !== 'all') {
+      const gId = Number(selectedGameId)
+      const matchesGameId = (b as any).game_id ? (b as any).game_id === gId : false
+      const matchesGameName = b.game_name ? games.some(g => (g.id === gId) && g.game_name === b.game_name) : false
+      if (!(matchesGameId || matchesGameName)) return false
+    }
+    return true
+  })
 
   // Define table columns
   const columns: Column<Booking>[] = [
@@ -387,6 +435,52 @@ export default function BookingsPage() {
               className="border rounded px-2 py-1 text-sm"
             />
           </div>
+
+          {/* Event Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Event</label>
+            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder={isLoadingFilters ? "Loading events..." : "All Events"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Events</SelectItem>
+                {events.map((e) => (
+                  <SelectItem key={e.id} value={String(e.id)}>
+                    {e.event_title}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Game Filter */}
+          <div className="flex items-center gap-2">
+            <label className="text-sm text-muted-foreground">Game</label>
+            <Select value={selectedGameId} onValueChange={setSelectedGameId}>
+              <SelectTrigger className="w-[220px]">
+                <SelectValue placeholder={isLoadingFilters ? "Loading games..." : "All Games"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Games</SelectItem>
+                {games.map((g) => (
+                  <SelectItem key={g.id ?? g.game_name} value={String(g.id)}>
+                    {g.game_name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Clear Filters */}
+          <Button
+            variant="ghost"
+            onClick={() => { setSelectedEventId('all'); setSelectedGameId('all'); setFromDate(''); setToDate(''); }}
+          >
+            <XCircle className="mr-2 h-4 w-4" />
+            Clear Filters
+          </Button>
+
           <Button
             variant="outline"
             onClick={fetchBookings}
