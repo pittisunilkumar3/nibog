@@ -10,11 +10,23 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Checkbox } from "@/components/ui/checkbox"
+import * as XLSX from "xlsx"
+import { Progress } from "@/components/ui/progress"
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 export default function EmailSendingPage() {
   const { toast } = useToast()
   const [isLoading, setIsLoading] = useState(false)
-  
+
   // Email state
   type RecipientType =
     | "all-users"
@@ -42,7 +54,7 @@ export default function EmailSendingPage() {
     eventId: "",
     singleUserEmail: "",
   })
-  
+
   // Template state
   const [templateData, setTemplateData] = useState({
     id: null as number | null,
@@ -255,6 +267,7 @@ export default function EmailSendingPage() {
           <TabsList className="mb-4 w-full flex flex-wrap gap-2">
             <TabsTrigger value="send" className="flex-1">Send Email</TabsTrigger>
             <TabsTrigger value="templates" className="flex-1">Email Templates</TabsTrigger>
+            <TabsTrigger value="bulk" className="flex-1">Bulk Email</TabsTrigger>
           </TabsList>
           <TabsContent value="send">
             <Card className="w-full shadow border-blue-100">
@@ -618,8 +631,239 @@ export default function EmailSendingPage() {
                   </CardContent>
                 </Card>
               </TabsContent>
-        </Tabs>
+
+              {/* Bulk Email Tab */}
+              <TabsContent value="bulk">
+                <Card className="w-full shadow border-blue-100">
+                  <CardHeader className="bg-blue-50 rounded-t-lg border-b border-blue-100 w-full">
+                    <CardTitle className="text-xl font-semibold text-blue-800">Bulk Email (CSV/XLSX)</CardTitle>
+                    <CardDescription>Upload a CSV/XLSX of recipients, preview, personalize, and send</CardDescription>
+                  </CardHeader>
+                  <CardContent>
+                    <BulkEmailUploader />
+                  </CardContent>
+                </Card>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      )
+    }
+
+    // -------- Bulk Email Uploader Component --------
+    function BulkEmailUploader() {
+  const { toast } = useToast()
+  const [fileName, setFileName] = React.useState<string>("")
+  const [rawData, setRawData] = React.useState<any[]>([])
+  const [columns, setColumns] = React.useState<string[]>([])
+  const [previewRows, setPreviewRows] = React.useState<any[]>([])
+  const [invalidEmails, setInvalidEmails] = React.useState<number[]>([])
+  const [progress, setProgress] = React.useState<number>(0)
+  const [isParsing, setIsParsing] = React.useState<boolean>(false)
+  const [isSending, setIsSending] = React.useState<boolean>(false)
+  const [subject, setSubject] = React.useState<string>("Welcome to NIBOG ✨")
+  const [body, setBody] = React.useState<string>(
+    "Hi {{name}},\n\nWe're excited to have you!\n\nRegards,\nNIBOG Team"
+  )
+  const [sendResult, setSendResult] = React.useState<{success: number; failure: number}>({ success: 0, failure: 0 })
+  const [confirmOpen, setConfirmOpen] = React.useState(false)
+
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  function validateEmails(rows: any[]): number[] {
+    const invalidIdx: number[] = []
+    rows.forEach((row, idx) => {
+      const email = row.email || row.Email || row.EMAIL || row.user_email
+      if (!email || !emailRegex.test(String(email).trim())) {
+        invalidIdx.push(idx)
+      }
+    })
+    return invalidIdx
+  }
+
+  async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setIsParsing(true)
+    setProgress(5)
+    setFileName(file.name)
+
+    try {
+      const buf = await file.arrayBuffer()
+      setProgress(20)
+      const wb = XLSX.read(buf, { type: 'array' })
+      setProgress(40)
+      const firstSheet = wb.SheetNames[0]
+      const ws = wb.Sheets[firstSheet]
+      const json = XLSX.utils.sheet_to_json(ws, { defval: "" }) as any[]
+      setProgress(60)
+
+      const cols = json.length > 0 ? Object.keys(json[0]) : []
+      setColumns(cols)
+      setRawData(json)
+      setPreviewRows(json.slice(0, 10))
+
+      const invalid = validateEmails(json)
+      setInvalidEmails(invalid)
+
+      setProgress(100)
+      toast({ title: "File parsed", description: `Found ${json.length} rows. Invalid emails: ${invalid.length}` })
+    } catch (err) {
+      console.error(err)
+      toast({ title: "Error", description: "Failed to parse the file. Please upload a valid CSV/XLSX.", variant: "destructive" })
+    } finally {
+      setIsParsing(false)
+      setTimeout(() => setProgress(0), 800)
+    }
+  }
+
+  function renderTemplate(str: string, row: any): string {
+    return str.replace(/{{\s*([a-zA-Z0-9_]+)\s*}}/g, (_, key) => String(row[key] ?? ''))
+  }
+
+  async function handleSend() {
+    if (rawData.length === 0) {
+      toast({ title: "No data", description: "Please upload a CSV/XLSX file first.", variant: "destructive" })
+      return
+    }
+    if (invalidEmails.length > 0) {
+      toast({ title: "Invalid emails", description: `Please fix ${invalidEmails.length} invalid email(s) before sending.`, variant: "destructive" })
+      return
+    }
+    setConfirmOpen(true)
+  }
+
+  async function confirmSend() {
+    setConfirmOpen(false)
+    setIsSending(true)
+    setSendResult({ success: 0, failure: 0 })
+
+    // Fetch email settings from existing API
+    let settings: any = null
+    try {
+      const res = await fetch('/api/emailsetting/get', { cache: 'no-store' })
+      const data = await res.json()
+      settings = Array.isArray(data) ? data[0] : data
+    } catch (e) {
+      // continue; settings may be null leading to API error
+    }
+
+    for (let i = 0; i < rawData.length; i++) {
+      const row = rawData[i]
+      const to = String(row.email || row.Email || row.EMAIL || row.user_email || '').trim()
+      const renderedSubject = renderTemplate(subject, row)
+      const renderedBody = renderTemplate(body, row).replace(/\n/g, '<br/>')
+
+      try {
+        const resp = await fetch('/api/send-receipt-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ to, subject: renderedSubject, html: renderedBody, settings })
+        })
+        if (resp.ok) {
+          setSendResult(s => ({ ...s, success: s.success + 1 }))
+        } else {
+          setSendResult(s => ({ ...s, failure: s.failure + 1 }))
+        }
+      } catch (err) {
+        setSendResult(s => ({ ...s, failure: s.failure + 1 }))
+      }
+      const pct = Math.round(((i + 1) / rawData.length) * 100)
+      setProgress(pct)
+      await new Promise(r => setTimeout(r, 50))
+    }
+
+    setIsSending(false)
+
+    // Log activity
+    try {
+      await fetch('/api/bulk-email/log', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          total: rawData.length,
+          success: sendResult.success,
+          failure: sendResult.failure,
+          sample: rawData.slice(0, 3)
+        })
+      })
+    } catch {}
+
+    toast({ title: "Bulk email completed", description: `Success: ${sendResult.success}, Failed: ${sendResult.failure}` })
+  }
+
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="space-y-2">
+          <Label>Upload CSV/XLSX</Label>
+          <Input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={handleFileChange} />
+          {fileName && <p className="text-sm text-muted-foreground">Selected: {fileName}</p>}
+          {progress > 0 && <Progress value={progress} />}
+          {invalidEmails.length > 0 && (
+            <p className="text-sm text-destructive">Invalid emails detected: {invalidEmails.length}</p>
+          )}
+        </div>
+        <div className="space-y-2">
+          <Label>Subject</Label>
+          <Input value={subject} onChange={e => setSubject(e.target.value)} placeholder="Email subject" />
+          <Label>Body</Label>
+          <Textarea value={body} onChange={e => setBody(e.target.value)} rows={8} placeholder="Use placeholders like {{name}}, {{email}}" />
+          <p className="text-xs text-muted-foreground">Placeholders available: {"{{name}}"}, {"{{email}}"}, plus any column from your file.</p>
+        </div>
       </div>
+
+      {/* Preview Table */}
+      <div className="space-y-2">
+        <Label>Preview (first 10 rows)</Label>
+        <div className="overflow-x-auto rounded-lg border border-gray-200 bg-white w-full">
+          <table className="min-w-full w-full divide-y divide-gray-200 text-sm">
+            <thead className="bg-blue-50">
+              <tr>
+                {columns.map(col => (<th key={col} className="px-4 py-2 text-left text-blue-900 font-semibold">{col}</th>))}
+              </tr>
+            </thead>
+            <tbody>
+              {previewRows.length === 0 ? (
+                <tr><td className="px-4 py-3" colSpan={columns.length}>No data loaded</td></tr>
+              ) : previewRows.map((row, idx) => (
+                <tr key={idx} className={invalidEmails.includes(idx) ? 'bg-red-50' : ''}>
+                  {columns.map(col => (<td key={col} className="px-4 py-2">{String(row[col])}</td>))}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      {/* Summary and Actions */}
+      <div className="flex flex-wrap items-center gap-4">
+        <div className="text-sm text-muted-foreground">
+          Total rows: <b>{rawData.length}</b> • Invalid emails: <b className={invalidEmails.length ? 'text-destructive' : ''}>{invalidEmails.length}</b>
+        </div>
+        <Button onClick={handleSend} disabled={isParsing || isSending || rawData.length === 0 || invalidEmails.length > 0}>
+          {isSending ? 'Sending...' : 'Send Bulk Emails'}
+        </Button>
+        {isSending && <div className="min-w-[200px]"><Progress value={progress} /></div>}
+        <div className="text-sm">Success: {sendResult.success} • Failed: {sendResult.failure}</div>
+      </div>
+
+      {/* Confirm Dialog */}
+      <AlertDialog open={confirmOpen} onOpenChange={setConfirmOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Send bulk emails?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You are about to send emails to {rawData.length} recipients. Please confirm to proceed.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction onClick={confirmSend}>Confirm & Send</AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   )
 }
+
