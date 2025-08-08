@@ -18,7 +18,7 @@ async function testCorrectFormat() {
     'NIBOG Party Hall, Bangalore',   // {{4}} - venue_name
     'Test Child',                    // {{5}} - child_name
     'B0012345',                      // {{6}} - booking_ref
-    '2500',                          // {{7}} - total_amount
+    '2500',                          // {{7}} - total_amount (no ₹ symbol)
     'PhonePe'                        // {{8}} - payment_method
   ];
 

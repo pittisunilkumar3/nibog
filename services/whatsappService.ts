@@ -456,7 +456,7 @@ export async function sendBookingConfirmationWhatsApp(
         bookingData.eventVenue || 'Event Venue',                 // {{4}} - venue_name
         bookingData.childName || 'Child',                        // {{5}} - child_name
         bookingRef || 'N/A',                                     // {{6}} - booking_ref
-        `₹${bookingData.totalAmount || 0}`,                      // {{7}} - total_amount with currency
+        `${bookingData.totalAmount || 0}`,                       // {{7}} - total_amount (no currency symbol)
         bookingData.paymentMethod || 'Payment'                   // {{8}} - payment_method
       ];
 
