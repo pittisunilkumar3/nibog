@@ -658,6 +658,7 @@ export default function EmailSendingPage() {
   const [columns, setColumns] = React.useState<string[]>([])
   const [previewRows, setPreviewRows] = React.useState<any[]>([])
   const [invalidEmails, setInvalidEmails] = React.useState<number[]>([])
+  const [validationErrors, setValidationErrors] = React.useState<string[]>([])
   const [progress, setProgress] = React.useState<number>(0)
   const [isParsing, setIsParsing] = React.useState<boolean>(false)
   const [isSending, setIsSending] = React.useState<boolean>(false)
@@ -681,9 +682,50 @@ export default function EmailSendingPage() {
     return invalidIdx
   }
 
+  function validateFileStructure(rows: any[]): { isValid: boolean; errors: string[] } {
+    const errors: string[] = []
+    
+    if (rows.length === 0) {
+      errors.push("File is empty or has no data rows")
+      return { isValid: false, errors }
+    }
+
+    // Check for required email column
+    const firstRow = rows[0]
+    const hasEmailColumn = firstRow.hasOwnProperty('email') ||
+                          firstRow.hasOwnProperty('Email') ||
+                          firstRow.hasOwnProperty('EMAIL') ||
+                          firstRow.hasOwnProperty('user_email')
+    
+    if (!hasEmailColumn) {
+      errors.push("Required 'email' column not found. Please ensure your file has an 'email' column.")
+    }
+
+    // Check for name column (optional but recommended)
+    const hasNameColumn = firstRow.hasOwnProperty('name') ||
+                         firstRow.hasOwnProperty('Name') ||
+                         firstRow.hasOwnProperty('NAME')
+    
+    if (!hasNameColumn) {
+      errors.push("Recommended 'name' column not found. Add a 'name' column for personalized emails.")
+    }
+
+    // Check for minimum required data
+    if (rows.length > 100) {
+      errors.push("File contains more than 100 rows. Please split into smaller batches for better performance.")
+    }
+
+    return { isValid: errors.length === 0, errors }
+  }
+
   async function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0]
     if (!file) return
+    
+    // Reset validation state
+    setValidationErrors([])
+    setInvalidEmails([])
+    
     setIsParsing(true)
     setProgress(5)
     setFileName(file.name)
@@ -698,6 +740,17 @@ export default function EmailSendingPage() {
       const json = XLSX.utils.sheet_to_json(ws, { defval: "" }) as any[]
       setProgress(60)
 
+      // Validate file structure
+      const structureValidation = validateFileStructure(json)
+      if (!structureValidation.isValid) {
+        setValidationErrors(structureValidation.errors)
+        toast({
+          title: "File validation failed",
+          description: `${structureValidation.errors.length} issues found. Check the validation messages below.`,
+          variant: "destructive"
+        })
+      }
+
       const cols = json.length > 0 ? Object.keys(json[0]) : []
       setColumns(cols)
       setRawData(json)
@@ -707,7 +760,16 @@ export default function EmailSendingPage() {
       setInvalidEmails(invalid)
 
       setProgress(100)
-      toast({ title: "File parsed", description: `Found ${json.length} rows. Invalid emails: ${invalid.length}` })
+      
+      const successMessage = structureValidation.isValid
+        ? `Found ${json.length} rows. Invalid emails: ${invalid.length}`
+        : `Found ${json.length} rows. ${structureValidation.errors.length} validation issues and ${invalid.length} invalid emails.`
+      
+      toast({
+        title: structureValidation.isValid ? "File parsed successfully" : "File parsed with warnings",
+        description: successMessage,
+        variant: structureValidation.isValid ? "default" : "destructive"
+      })
     } catch (err) {
       console.error(err)
       toast({ title: "Error", description: "Failed to parse the file. Please upload a valid CSV/XLSX.", variant: "destructive" })
@@ -763,14 +825,18 @@ export default function EmailSendingPage() {
         if (resp.ok) {
           setSendResult(s => ({ ...s, success: s.success + 1 }))
         } else {
+          console.error(`Failed to send email to ${to}:`, await resp.text())
           setSendResult(s => ({ ...s, failure: s.failure + 1 }))
         }
       } catch (err) {
+        console.error(`Error sending email to ${to}:`, err)
         setSendResult(s => ({ ...s, failure: s.failure + 1 }))
       }
       const pct = Math.round(((i + 1) / rawData.length) * 100)
       setProgress(pct)
-      await new Promise(r => setTimeout(r, 50))
+      
+      // Add a small delay to prevent overwhelming the server
+      await new Promise(r => setTimeout(r, 100))
     }
 
     setIsSending(false)
@@ -794,14 +860,134 @@ export default function EmailSendingPage() {
 
   return (
     <div className="space-y-6">
+      {/* Sample Template Download Section */}
+      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+        <div className="flex items-start gap-3">
+          <svg className="w-5 h-5 text-blue-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          <div className="flex-1">
+            <h3 className="font-semibold text-blue-900 mb-2">Download Sample Template</h3>
+            <p className="text-sm text-blue-700 mb-3">
+              Download our sample CSV template to see the required format for bulk email uploads.
+              The template includes columns for recipient emails, names, and custom fields that can be used with placeholders.
+            </p>
+            <div className="flex gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/bulk-email/sample-template')
+                    if (response.ok) {
+                      const blob = await response.blob()
+                      const url = window.URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = 'bulk-email-template.csv'
+                      document.body.appendChild(a)
+                      a.click()
+                      window.URL.revokeObjectURL(url)
+                      document.body.removeChild(a)
+                      toast({ title: "Downloaded", description: "CSV template downloaded successfully!" })
+                    } else {
+                      throw new Error('Download failed')
+                    }
+                  } catch (error) {
+                    toast({ title: "Error", description: "Failed to download CSV template", variant: "destructive" })
+                  }
+                }}
+                className="text-blue-700 border-blue-300 hover:bg-blue-100"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download CSV
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={async () => {
+                  try {
+                    const response = await fetch('/api/bulk-email/sample-template/excel')
+                    if (response.ok) {
+                      const blob = await response.blob()
+                      const url = window.URL.createObjectURL(blob)
+                      const a = document.createElement('a')
+                      a.href = url
+                      a.download = 'bulk-email-template.xlsx'
+                      document.body.appendChild(a)
+                      a.click()
+                      window.URL.revokeObjectURL(url)
+                      document.body.removeChild(a)
+                      toast({ title: "Downloaded", description: "Excel template downloaded successfully!" })
+                    } else {
+                      throw new Error('Download failed')
+                    }
+                  } catch (error) {
+                    toast({ title: "Error", description: "Failed to download Excel template", variant: "destructive" })
+                  }
+                }}
+                className="text-green-700 border-green-300 hover:bg-green-100"
+              >
+                <svg className="w-4 h-4 mr-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                </svg>
+                Download Excel
+              </Button>
+            </div>
+          </div>
+        </div>
+      </div>
+
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div className="space-y-2">
           <Label>Upload CSV/XLSX</Label>
           <Input type="file" accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" onChange={handleFileChange} />
           {fileName && <p className="text-sm text-muted-foreground">Selected: {fileName}</p>}
-          {progress > 0 && <Progress value={progress} />}
+          {progress > 0 && (
+            <div className="space-y-2">
+              <Progress value={progress} />
+              <p className="text-xs text-muted-foreground">
+                {isParsing ? "Processing file..." : "File processed"}
+              </p>
+            </div>
+          )}
+          
+          {/* Validation Errors */}
+          {validationErrors.length > 0 && (
+            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mt-2">
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 text-yellow-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L4.268 19.5c-.77.833.192 2.5 1.732 2.5z" />
+                </svg>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-yellow-800 mb-1">File Validation Issues:</h4>
+                  <ul className="text-xs text-yellow-700 space-y-1">
+                    {validationErrors.map((error, idx) => (
+                      <li key={idx}>• {error}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+            </div>
+          )}
+          
+          {/* Invalid Emails */}
           {invalidEmails.length > 0 && (
-            <p className="text-sm text-destructive">Invalid emails detected: {invalidEmails.length}</p>
+            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+              <div className="flex items-start gap-2">
+                <svg className="w-4 h-4 text-red-600 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                <div className="flex-1">
+                  <h4 className="text-sm font-semibold text-red-800 mb-1">Invalid Email Addresses:</h4>
+                  <p className="text-xs text-red-700">
+                    {invalidEmails.length} invalid email address(es) detected. These rows will be highlighted in red in the preview below.
+                  </p>
+                </div>
+              </div>
+            </div>
           )}
         </div>
         <div className="space-y-2">
