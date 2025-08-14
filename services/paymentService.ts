@@ -2,7 +2,6 @@
 
 import { BOOKING_API } from '@/config/api';
 import {
-  PHONEPE_API,
   PHONEPE_CONFIG,
   PhonePePaymentRequest,
   PhonePePaymentResponse,

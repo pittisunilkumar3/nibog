@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { PHONEPE_API, PHONEPE_CONFIG, generateSHA256Hash } from '@/config/phonepe';
+import { PHONEPE_CONFIG, generateSHA256Hash, logPhonePeConfig } from '@/config/phonepe';
 import { BOOKING_API } from '@/config/api';
 import { validateGameData, formatGamesForAPI, createFallbackGame } from '@/utils/gameIdValidation';
 import { generateConsistentBookingRef } from '@/utils/bookingReference';
@@ -72,17 +72,17 @@ function mapGenderToAllowedValue(gender?: string): string {
 export async function POST(request: Request) {
   try {
     console.log("Server API route: Starting PhonePe payment status check request");
-    console.log(`PhonePe Environment: ${PHONEPE_CONFIG.ENVIRONMENT}`);
+
+    // Log and validate configuration
+    logPhonePeConfig();
 
     // Parse the request body
     const { transactionId, bookingData } = await request.json();
     console.log("Server API route: Received booking data:", bookingData ? "Yes" : "No");
     console.log(`Server API route: Checking status for transaction ID: ${transactionId}`);
 
-    // Determine the API URL based on environment (production vs sandbox)
-    const apiUrl = PHONEPE_CONFIG.IS_TEST_MODE
-      ? `${PHONEPE_API.TEST.STATUS}/${PHONEPE_CONFIG.MERCHANT_ID}/${transactionId}`
-      : `${PHONEPE_API.PROD.STATUS}/${PHONEPE_CONFIG.MERCHANT_ID}/${transactionId}`;
+    // Use the API endpoints from the configuration
+    const apiUrl = `${PHONEPE_CONFIG.API_ENDPOINTS.STATUS}/${PHONEPE_CONFIG.MERCHANT_ID}/${transactionId}`;
 
     console.log(`Server API route: Using ${PHONEPE_CONFIG.ENVIRONMENT} environment`);
     console.log("Server API route: Calling PhonePe API URL:", apiUrl);

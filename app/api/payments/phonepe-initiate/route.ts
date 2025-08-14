@@ -1,16 +1,14 @@
 import { NextResponse } from 'next/server';
-import { PHONEPE_API, PHONEPE_CONFIG } from '@/config/phonepe';
+import { PHONEPE_CONFIG, logPhonePeConfig } from '@/config/phonepe';
 
 export async function POST(request: Request) {
   try {
     console.log("=== SERVER API ROUTE: PHONEPE PAYMENT INITIATION ===");
+
+    // Log and validate configuration
+    logPhonePeConfig();
+
     console.log("Server API route: Starting PhonePe payment initiation request");
-    console.log(`PhonePe Environment: ${PHONEPE_CONFIG.ENVIRONMENT}`);
-    console.log(`PhonePe Merchant ID: ${PHONEPE_CONFIG.MERCHANT_ID}`);
-    console.log(`PhonePe Test Mode: ${PHONEPE_CONFIG.IS_TEST_MODE}`);
-    console.log(`PhonePe Salt Key: ${PHONEPE_CONFIG.SALT_KEY ? 'Set' : 'Missing'}`);
-    console.log(`PhonePe Salt Index: ${PHONEPE_CONFIG.SALT_INDEX}`);
-    console.log(`PhonePe App URL: ${PHONEPE_CONFIG.APP_URL}`);
 
     // Environment debugging
     console.log('Environment Variables Debug:', {
@@ -72,10 +70,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // Determine the API URL based on environment (production vs sandbox)
-    const apiUrl = PHONEPE_CONFIG.IS_TEST_MODE
-      ? PHONEPE_API.TEST.INITIATE
-      : PHONEPE_API.PROD.INITIATE;
+    // Use the API endpoints from the configuration
+    const apiUrl = PHONEPE_CONFIG.API_ENDPOINTS.INITIATE;
 
     console.log(`Server API route: Using ${PHONEPE_CONFIG.ENVIRONMENT} environment`);
     console.log("Server API route: Calling PhonePe API URL:", apiUrl);

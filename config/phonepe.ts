@@ -1,7 +1,7 @@
 ﻿// PhonePe configuration file
 // This centralizes all PhonePe-related configuration
 
-// PhonePe API endpoints
+// PhonePe API endpoints - Updated to current official endpoints
 export const PHONEPE_API = {
   TEST: {
     INITIATE: 'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay',
@@ -9,7 +9,7 @@ export const PHONEPE_API = {
     REFUND: 'https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/refund',
   },
   PROD: {
-    // Correct production endpoints for PhonePe Hermes API
+    // Current production endpoints as per PhonePe documentation
     INITIATE: 'https://api.phonepe.com/apis/hermes/pg/v1/pay',
     STATUS: 'https://api.phonepe.com/apis/hermes/pg/v1/status',
     REFUND: 'https://api.phonepe.com/apis/hermes/pg/v1/refund',
@@ -89,25 +89,31 @@ console.log('All Environment Variables:', {
 console.log('Resolved APP_URL:', getAppUrl());
 const isProduction = phonepeEnv === 'production';
 
+// Environment-specific API endpoints
+export const getPhonePeEndpoints = () => {
+  return isProduction ? PHONEPE_API.PROD : PHONEPE_API.TEST;
+};
+
 // PhonePe merchant configuration from environment variables
-// For production, prioritize NEXT_PUBLIC_ variables since they're accessible everywhere
+// Removed hardcoded production credentials to prevent misuse
 export const PHONEPE_CONFIG = {
   MERCHANT_ID: isProduction
-    ? (process.env.PHONEPE_PROD_MERCHANT_ID || process.env.NEXT_PUBLIC_MERCHANT_ID || 'M11BWXEAW0AJ')
-    : (process.env.NEXT_PUBLIC_MERCHANT_ID || process.env.PHONEPE_TEST_MERCHANT_ID || 'PGTESTPAYUAT86'),
+    ? (process.env.PHONEPE_PROD_MERCHANT_ID || process.env.NEXT_PUBLIC_MERCHANT_ID || '')
+    : (process.env.PHONEPE_TEST_MERCHANT_ID || process.env.NEXT_PUBLIC_TEST_MERCHANT_ID || 'PGTESTPAYUAT86'),
 
   SALT_KEY: isProduction
-    ? (process.env.PHONEPE_PROD_SALT_KEY || process.env.NEXT_PUBLIC_SALT_KEY || '63542457-2eb4-4ed4-83f2-da9eaed9fcca')
-    : (process.env.NEXT_PUBLIC_SALT_KEY || process.env.PHONEPE_TEST_SALT_KEY || '96434309-7796-489d-8924-ab56988a6076'),
+    ? (process.env.PHONEPE_PROD_SALT_KEY || process.env.NEXT_PUBLIC_SALT_KEY || '')
+    : (process.env.PHONEPE_TEST_SALT_KEY || process.env.NEXT_PUBLIC_TEST_SALT_KEY || '96434309-7796-489d-8924-ab56988a6076'),
 
   SALT_INDEX: isProduction
-    ? (process.env.PHONEPE_PROD_SALT_INDEX || process.env.NEXT_PUBLIC_SALT_INDEX || '2')
-    : (process.env.NEXT_PUBLIC_SALT_INDEX || process.env.PHONEPE_TEST_SALT_INDEX || '1'),
+    ? (process.env.PHONEPE_PROD_SALT_INDEX || process.env.NEXT_PUBLIC_SALT_INDEX || '1')
+    : (process.env.PHONEPE_TEST_SALT_INDEX || process.env.NEXT_PUBLIC_TEST_SALT_INDEX || '1'),
 
   IS_TEST_MODE: !isProduction,
   ENVIRONMENT: isProduction ? 'production' : 'sandbox',
   APP_URL: getAppUrl(),
-};
+  API_ENDPOINTS: getPhonePeEndpoints(),
+} as const;
 
 // Generate a SHA256 hash
 export async function generateSHA256Hash(data: string): Promise<string> {
@@ -182,7 +188,7 @@ export interface PhonePePaymentResponse {
   };
 }
 
-// Validate PhonePe configuration
+// Enhanced validation to prevent credential/endpoint mismatches
 export function validatePhonePeConfig(): { isValid: boolean; errors: string[] } {
   const errors: string[] = [];
 
@@ -202,26 +208,68 @@ export function validatePhonePeConfig(): { isValid: boolean; errors: string[] } 
     errors.push('APP_URL is missing');
   }
 
+  // Validate environment consistency
+  const isProdEndpoint = PHONEPE_CONFIG.API_ENDPOINTS.INITIATE.includes('api.phonepe.com/apis/hermes');
+  const isTestEndpoint = PHONEPE_CONFIG.API_ENDPOINTS.INITIATE.includes('api-preprod.phonepe.com');
+  const isProdMerchant = PHONEPE_CONFIG.MERCHANT_ID && !PHONEPE_CONFIG.MERCHANT_ID.startsWith('TEST-') && !PHONEPE_CONFIG.MERCHANT_ID.startsWith('PGTEST');
+
+  // Check for dangerous mismatches
+  if (isProduction && !isProdEndpoint) {
+    errors.push('CRITICAL: Production environment must use production endpoints');
+  }
+
+  if (!isProduction && isProdEndpoint) {
+    errors.push('CRITICAL: Test environment must use sandbox endpoints');
+  }
+
+  if (isProdEndpoint && !isProdMerchant) {
+    errors.push('CRITICAL: Production endpoints require production merchant ID');
+  }
+
+  if (isTestEndpoint && isProdMerchant && !isProduction) {
+    errors.push('WARNING: Using production merchant ID with test endpoints');
+  }
+
+  // Additional production safety checks
+  if (isProduction) {
+    if (!PHONEPE_CONFIG.MERCHANT_ID || PHONEPE_CONFIG.MERCHANT_ID.includes('TEST')) {
+      errors.push('CRITICAL: Production mode requires valid production merchant ID');
+    }
+    if (!PHONEPE_CONFIG.SALT_KEY || PHONEPE_CONFIG.SALT_KEY.includes('test')) {
+      errors.push('CRITICAL: Production mode requires valid production salt key');
+    }
+  }
+
   return {
     isValid: errors.length === 0,
     errors
   };
 }
 
-// Log PhonePe configuration status
+// Log PhonePe configuration status with detailed validation
 export function logPhonePeConfig(): void {
   const validation = validatePhonePeConfig();
 
   console.log('=== PhonePe Configuration ===');
   console.log(`Environment: ${PHONEPE_CONFIG.ENVIRONMENT}`);
-  console.log(`Merchant ID: ${PHONEPE_CONFIG.MERCHANT_ID ? '✓ Set' : '✗ Missing'}`);
+  console.log(`Merchant ID: ${PHONEPE_CONFIG.MERCHANT_ID ? `✓ Set (${PHONEPE_CONFIG.MERCHANT_ID.substring(0, 8)}...)` : '✗ Missing'}`);
   console.log(`Salt Key: ${PHONEPE_CONFIG.SALT_KEY ? '✓ Set' : '✗ Missing'}`);
-  console.log(`Salt Index: ${PHONEPE_CONFIG.SALT_INDEX ? '✓ Set' : '✗ Missing'}`);
+  console.log(`Salt Index: ${PHONEPE_CONFIG.SALT_INDEX ? `✓ Set (${PHONEPE_CONFIG.SALT_INDEX})` : '✗ Missing'}`);
   console.log(`App URL: ${PHONEPE_CONFIG.APP_URL}`);
   console.log(`Test Mode: ${PHONEPE_CONFIG.IS_TEST_MODE ? 'Enabled' : 'Disabled'}`);
+  console.log(`API Endpoint: ${PHONEPE_CONFIG.API_ENDPOINTS.INITIATE}`);
+
+  // Show endpoint type
+  const isProdEndpoint = PHONEPE_CONFIG.API_ENDPOINTS.INITIATE.includes('api.phonepe.com/apis/hermes');
+  console.log(`Endpoint Type: ${isProdEndpoint ? 'PRODUCTION' : 'SANDBOX'}`);
 
   if (!validation.isValid) {
     console.error('PhonePe Configuration Errors:', validation.errors);
+    // Throw error for critical mismatches
+    const criticalErrors = validation.errors.filter(error => error.includes('CRITICAL'));
+    if (criticalErrors.length > 0) {
+      throw new Error(`PhonePe Configuration Error: ${criticalErrors.join(', ')}`);
+    }
   } else {
     console.log('✓ PhonePe configuration is valid');
   }
