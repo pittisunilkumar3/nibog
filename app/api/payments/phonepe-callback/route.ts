@@ -144,6 +144,8 @@ async function getPendingBookingData(transactionId: string): Promise<PendingBook
     const merchantTransactionId = transactionId.includes('NIBOG_') ? transactionId : `NIBOG_${transactionId}`;
 
     console.log(`📋 Looking for pending booking with merchant transaction ID: ${merchantTransactionId}`);
+    console.log(`📋 Original transaction ID: ${transactionId}`);
+    console.log(`📋 Formatted merchant transaction ID: ${merchantTransactionId}`);
 
     const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/pending-bookings/get`, {
       method: 'POST',
@@ -172,14 +174,29 @@ async function getPendingBookingData(transactionId: string): Promise<PendingBook
     console.log(`✅ Retrieved pending booking data:`, JSON.stringify(result, null, 2));
 
     // Log DOB specifically for tracking
-    if (result && result.childDob) {
+    if (result && result.bookingData) {
       console.log("=== DOB TRACKING IN PENDING BOOKING RETRIEVAL ===");
-      console.log("Retrieved DOB:", result.childDob);
-      console.log("DOB type:", typeof result.childDob);
-      console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(result.childDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
+      console.log("Retrieved DOB:", result.bookingData.childDob);
+      console.log("DOB type:", typeof result.bookingData.childDob);
+      console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(result.bookingData.childDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
+
+      // Check if this looks like real user data vs fallback data
+      if (result.bookingData.childDob === "2015-01-01" ||
+          result.bookingData.childName?.includes("Child ") ||
+          result.bookingData.parentName === "PhonePe Customer") {
+        console.log(`⚠️ WARNING: Retrieved data appears to be fallback data, not actual user data!`);
+        console.log(`   - Child DOB: ${result.bookingData.childDob}`);
+        console.log(`   - Child Name: ${result.bookingData.childName}`);
+        console.log(`   - Parent Name: ${result.bookingData.parentName}`);
+      } else {
+        console.log(`✅ Retrieved data appears to be actual user data`);
+        console.log(`   - Child DOB: ${result.bookingData.childDob}`);
+        console.log(`   - Child Name: ${result.bookingData.childName}`);
+        console.log(`   - Parent Name: ${result.bookingData.parentName}`);
+      }
     }
 
-    return result;
+    return result.bookingData;
   } catch (error) {
     console.error(`❌ Error retrieving pending booking data:`, error);
     return null;
@@ -316,16 +333,20 @@ async function createBookingAndPaymentDirect(
     const formattedDate = currentDate.toISOString().split('T')[0]; // Format as YYYY-MM-DD
 
     // Create minimal booking data with user ID
+    // NOTE: This is a fallback - the actual user data should come from pending booking
+    console.log("⚠️ WARNING: Using fallback booking data - actual user data not found!");
+    console.log("This means the pending booking data was not properly saved or retrieved.");
+
     const finalBookingData = {
       user_id: userId,
       parent: {
-        parent_name: "PhonePe Customer", 
+        parent_name: "PhonePe Customer",
         email: `customer-${userId}@example.com`,
         additional_phone: "",
       },
       child: {
         full_name: `Child ${userId}`,
-        date_of_birth: "2015-01-01",
+        date_of_birth: new Date().toISOString().split('T')[0], // Use current date as fallback instead of hardcoded 2015-01-01
         school_name: "Unknown School",
         gender: "Other",
       },

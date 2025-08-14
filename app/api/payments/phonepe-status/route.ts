@@ -310,16 +310,20 @@ export async function POST(request: Request) {
             console.log("Server API route: Using fallback booking data");
             
             // Create fallback booking data with user ID
+            // NOTE: This is a fallback - the actual user data should come from pending booking
+            console.log("⚠️ WARNING: Using fallback booking data - actual user data not found!");
+            console.log("This means the pending booking data was not properly saved or retrieved.");
+
             finalBookingData = {
               user_id: userId,
               parent: {
-                parent_name: "PhonePe Customer", 
+                parent_name: "PhonePe Customer",
                 email: `customer-${userId}@example.com`,
                 additional_phone: "",
               },
               child: {
                 full_name: `Child ${userId}`,
-                date_of_birth: "2015-01-01",
+                date_of_birth: new Date().toISOString().split('T')[0], // Use current date as fallback instead of hardcoded 2015-01-01
                 school_name: "Unknown School",
                 gender: "Male", // Using 'Male' as fallback to match DB constraints
               },

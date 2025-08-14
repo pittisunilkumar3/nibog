@@ -291,7 +291,19 @@ export default function RegisterEventClientPage() {
     console.log("Date string:", date?.toString());
     console.log("Date ISO:", date?.toISOString());
 
+    // Additional validation and debugging
+    if (date) {
+      const isValidDate = date instanceof Date && !isNaN(date.getTime());
+      console.log("Is valid date:", isValidDate);
+      if (isValidDate) {
+        console.log("Formatted for API:", formatDateForAPI(date));
+      }
+    }
+
     setDob(date)
+
+    // Log the state after setting (this will show in the next render)
+    console.log("DOB state will be set to:", date);
 
     if (date) {
       // Calculate child's age in months based on the event date
@@ -897,6 +909,18 @@ export default function RegisterEventClientPage() {
       if (!childName.trim()) {
         throw new Error("Please enter your child's name to continue.")
       }
+
+      // Add DOB validation
+      if (!dob) {
+        throw new Error("Please select your child's date of birth to continue.")
+      }
+
+      console.log("=== DOB VALIDATION DEBUG ===");
+      console.log("DOB state:", dob);
+      console.log("DOB type:", typeof dob);
+      console.log("DOB toString:", dob?.toString());
+      console.log("DOB toISOString:", dob?.toISOString());
+      console.log("Formatted DOB:", formatDateForAPI(dob));
 
       if (!selectedGames || selectedGames.length === 0) {
         throw new Error("Please select at least one game for your child to participate in.")
