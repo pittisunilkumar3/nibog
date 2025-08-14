@@ -267,3 +267,41 @@
 
 /* Google Fonts import for Comic Neue and Poppins */
 @import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
+
+/* Enhanced responsive table styles */
+@layer utilities {
+  .table-responsive {
+    @apply overflow-x-auto;
+  }
+
+  .table-sticky-column {
+    @apply sticky left-0 bg-background z-10;
+  }
+
+  .table-sticky-actions {
+    @apply sticky right-0 bg-background z-10;
+  }
+
+  /* Ensure proper scrolling on mobile */
+  .mobile-scroll {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  .mobile-scroll::-webkit-scrollbar {
+    height: 4px;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-thumb {
+    background: hsl(var(--border));
+    border-radius: 2px;
+  }
+
+  .mobile-scroll::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground));
+  }
+}

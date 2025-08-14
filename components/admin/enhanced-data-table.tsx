@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useMemo } from "react"
+import { useState, useMemo, useEffect } from "react"
 import {
   Table,
   TableBody,
@@ -44,8 +44,10 @@ import {
   RefreshCw,
   FileDown,
   Settings2,
+  Columns,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useIsMobile } from "@/hooks/use-mobile"
 import ExportDialog from "./export-dialog"
 import { ExportColumn } from "@/lib/export-utils"
 
@@ -58,6 +60,8 @@ export interface Column<T> {
   width?: string
   align?: 'left' | 'center' | 'right'
   hidden?: boolean
+  hideOnMobile?: boolean
+  priority?: number // Lower numbers have higher priority (shown first on mobile)
 }
 
 export interface TableAction<T> {
@@ -114,6 +118,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
   exportTitle = "Data Export",
   exportFilename = "data-export",
 }: EnhancedDataTableProps<T>) {
+  const isMobile = useIsMobile()
   const [searchQuery, setSearchQuery] = useState("")
   const [sortConfig, setSortConfig] = useState<{
     key: keyof T | null
@@ -128,6 +133,39 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
   const [showExportDialog, setShowExportDialog] = useState(false)
   const [focusedRowIndex, setFocusedRowIndex] = useState<number>(-1)
   const [statusMessage, setStatusMessage] = useState<string>("")
+
+  // Responsive column management
+  const responsiveColumns = useMemo(() => {
+    if (!isMobile) return columns
+
+    // On mobile, prioritize columns and hide less important ones
+    const sortedColumns = [...columns].sort((a, b) => {
+      const aPriority = a.priority ?? 999
+      const bPriority = b.priority ?? 999
+      return aPriority - bPriority
+    })
+
+    // Show only the most important columns on mobile (max 3-4 columns)
+    const maxMobileColumns = 3
+    return sortedColumns.slice(0, maxMobileColumns).concat(
+      sortedColumns.slice(maxMobileColumns).filter(col => !col.hideOnMobile)
+    )
+  }, [columns, isMobile])
+
+  // Update visible columns when screen size changes
+  useEffect(() => {
+    if (isMobile) {
+      const mobileVisibleColumns = new Set(
+        responsiveColumns.filter(col => !col.hidden).map(col => col.key)
+      )
+      setVisibleColumns(mobileVisibleColumns)
+    } else {
+      const allVisibleColumns = new Set(
+        columns.filter(col => !col.hidden).map(col => col.key)
+      )
+      setVisibleColumns(allVisibleColumns)
+    }
+  }, [isMobile, responsiveColumns, columns])
 
   // Create export columns from table columns if not provided
   const finalExportColumns = exportColumns || columns.map(col => ({
@@ -259,6 +297,56 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
       <ArrowDown className="h-4 w-4" />
   }
 
+  // Mobile card view component
+  const MobileCardView = ({ data }: { data: T[] }) => (
+    <div className="space-y-3">
+      {data.map((row, index) => (
+        <div key={index} className="border rounded-lg p-4 space-y-3 bg-card">
+          {/* Show only priority columns in mobile card view */}
+          {responsiveColumns
+            .filter(col => visibleColumns.has(col.key) && col.priority && col.priority <= 4)
+            .map((column) => (
+              <div key={String(column.key)} className="flex justify-between items-start">
+                <span className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0 mr-2">
+                  {column.label}:
+                </span>
+                <div className="text-sm text-right min-w-0 flex-1">
+                  {column.render ? column.render(row[column.key], row) : String(row[column.key])}
+                </div>
+              </div>
+            ))}
+
+          {/* Actions for mobile */}
+          {actions.length > 0 && (
+            <div className="flex justify-end pt-2 border-t">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="outline" size="sm">
+                    <MoreHorizontal className="h-4 w-4 mr-2" />
+                    Actions
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  {actions.map((action, actionIndex) => (
+                    <DropdownMenuItem
+                      key={actionIndex}
+                      onClick={() => action.onClick(row)}
+                      disabled={action.disabled?.(row)}
+                      className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                    >
+                      {action.icon}
+                      {action.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          )}
+        </div>
+      ))}
+    </div>
+  )
+
   return (
     <div className={cn("space-y-4", className)}>
       {/* Screen Reader Status */}
@@ -272,16 +360,16 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
       </div>
 
       {/* Table Controls */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <div className="flex flex-1 items-center gap-2">
+      <div className="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
           {searchable && (
-            <div className="relative flex-1 max-w-sm">
+            <div className="relative flex-1 min-w-0 sm:max-w-sm">
               <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" aria-hidden="true" />
               <Input
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9"
+                className="pl-9 w-full"
                 aria-label="Search table data"
                 role="searchbox"
               />
@@ -289,16 +377,16 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
           )}
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" aria-label="Toggle column visibility">
-                <EyeOff className="h-4 w-4 mr-2" aria-hidden="true" />
-                Columns
+              <Button variant="outline" size="sm" aria-label="Toggle column visibility" className="flex-shrink-0">
+                <Columns className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+                <span className="hidden sm:inline">Columns</span>
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
+            <DropdownMenuContent align="end" className="w-56">
               <DropdownMenuLabel>Toggle columns</DropdownMenuLabel>
               <DropdownMenuSeparator />
               {columns.map((column) => (
@@ -315,7 +403,12 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
                     setVisibleColumns(newVisible)
                   }}
                 >
-                  {column.label}
+                  <div className="flex items-center justify-between w-full">
+                    <span>{column.label}</span>
+                    {column.hideOnMobile && (
+                      <Badge variant="outline" className="text-xs ml-2">Mobile Hidden</Badge>
+                    )}
+                  </div>
                 </DropdownMenuCheckboxItem>
               ))}
             </DropdownMenuContent>
@@ -328,15 +421,17 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
               onClick={() => setShowExportDialog(true)}
               disabled={sortedData.length === 0}
               aria-label="Export table data"
+              className="flex-shrink-0"
             >
-              <FileDown className="h-4 w-4 mr-2" aria-hidden="true" />
-              Export
+              <FileDown className="h-4 w-4 sm:mr-2" aria-hidden="true" />
+              <span className="hidden sm:inline">Export</span>
             </Button>
           )}
 
           {onRefresh && (
-            <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading}>
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="flex-shrink-0">
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
+              <span className="sr-only">Refresh</span>
             </Button>
           )}
         </div>
@@ -344,190 +439,238 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
 
       {/* Bulk Actions */}
       {selectable && selectedRows.size > 0 && bulkActions.length > 0 && (
-        <div className="flex items-center gap-2 p-3 bg-muted/50 rounded-lg">
-          <span className="text-sm font-medium">
+        <div className="flex flex-col gap-2 p-3 bg-muted/50 rounded-lg sm:flex-row sm:items-center">
+          <span className="text-sm font-medium flex-shrink-0">
             {selectedRows.size} row(s) selected
           </span>
-          {bulkActions.map((action, index) => (
-            <Button
-              key={index}
-              variant={action.variant === 'destructive' ? 'destructive' : 'outline'}
-              size="sm"
-              onClick={() => {
-                const selectedData = Array.from(selectedRows).map(index => paginatedData[index])
-                action.onClick(selectedData)
-                setSelectedRows(new Set())
-              }}
-            >
-              {action.icon}
-              {action.label}
-            </Button>
-          ))}
+          <div className="flex flex-wrap gap-2">
+            {bulkActions.map((action, index) => (
+              <Button
+                key={index}
+                variant={action.variant === 'destructive' ? 'destructive' : 'outline'}
+                size="sm"
+                onClick={() => {
+                  const selectedData = Array.from(selectedRows).map(index => paginatedData[index])
+                  action.onClick(selectedData)
+                  setSelectedRows(new Set())
+                }}
+                className="flex-shrink-0"
+              >
+                {action.icon}
+                <span className="ml-1">{action.label}</span>
+              </Button>
+            ))}
+          </div>
         </div>
       )}
 
-      {/* Table */}
-      <div className="rounded-md border">
-        <Table role="table" aria-label="Data table">
-          <TableHeader>
-            <TableRow>
-              {selectable && (
-                <TableHead className="w-12">
-                  <Checkbox
-                    checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
-                    onCheckedChange={handleSelectAll}
-                    aria-label="Select all rows"
-                  />
-                </TableHead>
-              )}
-              {columns
-                .filter(col => visibleColumns.has(col.key))
-                .map((column) => (
-                  <TableHead
-                    key={String(column.key)}
-                    className={cn(
-                      column.width && `w-[${column.width}]`,
-                      column.align === 'center' && 'text-center',
-                      column.align === 'right' && 'text-right',
-                      column.sortable && 'cursor-pointer hover:bg-muted/50'
-                    )}
-                    onClick={() => column.sortable && handleSort(column.key)}
-                  >
-                    <div className="flex items-center gap-2">
-                      {column.label}
-                      {column.sortable && getSortIcon(column.key)}
-                    </div>
+      {/* Table - Show card view on very small screens, table on larger screens */}
+      {isMobile ? (
+        loading ? (
+          <div className="flex items-center justify-center p-8">
+            <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+            Loading...
+          </div>
+        ) : paginatedData.length === 0 ? (
+          <div className="text-center p-8 text-muted-foreground">
+            {emptyMessage}
+          </div>
+        ) : (
+          <MobileCardView data={paginatedData} />
+        )
+      ) : (
+        <div className="rounded-md border overflow-hidden">
+          <div className="overflow-x-auto mobile-scroll">
+            <Table role="table" aria-label="Data table" className="min-w-full">
+            <TableHeader>
+              <TableRow>
+                {selectable && (
+                  <TableHead className="w-12 table-sticky-column">
+                    <Checkbox
+                      checked={selectedRows.size === paginatedData.length && paginatedData.length > 0}
+                      onCheckedChange={handleSelectAll}
+                      aria-label="Select all rows"
+                    />
                   </TableHead>
-                ))}
-              {actions.length > 0 && (
-                <TableHead className="w-12">Actions</TableHead>
-              )}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {loading ? (
-              <TableRow>
-                <TableCell 
-                  colSpan={columns.filter(col => visibleColumns.has(col.key)).length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
-                  className="h-24 text-center"
-                >
-                  <div className="flex items-center justify-center">
-                    <RefreshCw className="h-6 w-6 animate-spin mr-2" />
-                    Loading...
-                  </div>
-                </TableCell>
+                )}
+                {columns
+                  .filter(col => visibleColumns.has(col.key))
+                  .map((column, index) => (
+                    <TableHead
+                      key={String(column.key)}
+                      className={cn(
+                        column.width && `w-[${column.width}]`,
+                        column.align === 'center' && 'text-center',
+                        column.align === 'right' && 'text-right',
+                        column.sortable && 'cursor-pointer hover:bg-muted/50',
+                        // Make first column sticky on mobile for better UX
+                        isMobile && index === 0 && !selectable && 'sticky left-0 bg-background z-10',
+                        isMobile && index === 0 && selectable && 'sticky left-12 bg-background z-10',
+                        'whitespace-nowrap'
+                      )}
+                      onClick={() => column.sortable && handleSort(column.key)}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="truncate">{column.label}</span>
+                        {column.sortable && getSortIcon(column.key)}
+                      </div>
+                    </TableHead>
+                  ))}
+                {actions.length > 0 && (
+                  <TableHead className="w-12 text-right table-sticky-actions">
+                    <span className="sr-only">Actions</span>
+                  </TableHead>
+                )}
               </TableRow>
-            ) : paginatedData.length === 0 ? (
-              <TableRow>
-                <TableCell 
-                  colSpan={columns.filter(col => visibleColumns.has(col.key)).length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
-                  className="h-24 text-center text-muted-foreground"
-                >
-                  {emptyMessage}
-                </TableCell>
-              </TableRow>
-            ) : (
-              paginatedData.map((row, index) => (
-                <TableRow
-                  key={index}
-                  tabIndex={0}
-                  onKeyDown={(e) => handleKeyDown(e, index)}
-                  className={cn(
-                    "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
-                    focusedRowIndex === index && "bg-muted/50"
-                  )}
-                  aria-rowindex={index + 1}
-                >
-                  {selectable && (
-                    <TableCell>
-                      <Checkbox
-                        checked={selectedRows.has(index)}
-                        onCheckedChange={(checked) => handleSelectRow(index, checked as boolean)}
-                        aria-label={`Select row ${index + 1}`}
-                      />
-                    </TableCell>
-                  )}
-                  {columns
-                    .filter(col => visibleColumns.has(col.key))
-                    .map((column) => (
-                      <TableCell
-                        key={String(column.key)}
-                        className={cn(
-                          column.align === 'center' && 'text-center',
-                          column.align === 'right' && 'text-right'
-                        )}
-                      >
-                        {column.render ? column.render(row[column.key], row) : String(row[column.key])}
-                      </TableCell>
-                    ))}
-                  {actions.length > 0 && (
-                    <TableCell>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="icon" aria-label={`Actions for row ${index + 1}`}>
-                            <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          {actions.map((action, actionIndex) => (
-                            <DropdownMenuItem
-                              key={actionIndex}
-                              onClick={() => action.onClick(row)}
-                              disabled={action.disabled?.(row)}
-                              className={action.variant === 'destructive' ? 'text-destructive' : ''}
-                            >
-                              {action.icon}
-                              {action.label}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </TableCell>
-                  )}
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.filter(col => visibleColumns.has(col.key)).length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
+                    className="h-24 text-center"
+                  >
+                    <div className="flex items-center justify-center">
+                      <RefreshCw className="h-6 w-6 animate-spin mr-2" />
+                      Loading...
+                    </div>
+                  </TableCell>
                 </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+              ) : paginatedData.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={columns.filter(col => visibleColumns.has(col.key)).length + (selectable ? 1 : 0) + (actions.length > 0 ? 1 : 0)}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    {emptyMessage}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                paginatedData.map((row, index) => (
+                  <TableRow
+                    key={index}
+                    tabIndex={0}
+                    onKeyDown={(e) => handleKeyDown(e, index)}
+                    className={cn(
+                      "focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2",
+                      focusedRowIndex === index && "bg-muted/50"
+                    )}
+                    aria-rowindex={index + 1}
+                  >
+                    {selectable && (
+                      <TableCell className="table-sticky-column">
+                        <Checkbox
+                          checked={selectedRows.has(index)}
+                          onCheckedChange={(checked) => handleSelectRow(index, checked as boolean)}
+                          aria-label={`Select row ${index + 1}`}
+                        />
+                      </TableCell>
+                    )}
+                    {columns
+                      .filter(col => visibleColumns.has(col.key))
+                      .map((column, colIndex) => (
+                        <TableCell
+                          key={String(column.key)}
+                          className={cn(
+                            column.align === 'center' && 'text-center',
+                            column.align === 'right' && 'text-right',
+                            // Make first column sticky on mobile for better UX
+                            isMobile && colIndex === 0 && !selectable && 'sticky left-0 bg-background z-10',
+                            isMobile && colIndex === 0 && selectable && 'sticky left-12 bg-background z-10',
+                            'max-w-0 truncate'
+                          )}
+                          title={typeof row[column.key] === 'string' ? row[column.key] : undefined}
+                        >
+                          <div className="truncate">
+                            {column.render ? column.render(row[column.key], row) : String(row[column.key])}
+                          </div>
+                        </TableCell>
+                      ))}
+                    {actions.length > 0 && (
+                      <TableCell className="table-sticky-actions text-right">
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button variant="ghost" size="icon" aria-label={`Actions for row ${index + 1}`}>
+                              <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent align="end">
+                            {actions.map((action, actionIndex) => (
+                              <DropdownMenuItem
+                                key={actionIndex}
+                                onClick={() => action.onClick(row)}
+                                disabled={action.disabled?.(row)}
+                                className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                              >
+                                {action.icon}
+                                {action.label}
+                              </DropdownMenuItem>
+                            ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                      </TableCell>
+                    )}
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
       </div>
+      )}
 
       {/* Pagination */}
       {pagination && totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="text-sm text-muted-foreground order-2 sm:order-1">
             Showing {((currentPage - 1) * pageSize) + 1} to {Math.min(currentPage * pageSize, sortedData.length)} of {sortedData.length} entries
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center justify-center gap-2 order-1 sm:order-2">
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
               disabled={currentPage === 1}
+              className="flex-shrink-0"
             >
-              Previous
+              <span className="hidden sm:inline">Previous</span>
+              <span className="sm:hidden">Prev</span>
             </Button>
             <div className="flex items-center gap-1">
-              {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const page = i + 1
+              {Array.from({ length: Math.min(isMobile ? 3 : 5, totalPages) }, (_, i) => {
+                let page: number
+                if (totalPages <= (isMobile ? 3 : 5)) {
+                  page = i + 1
+                } else {
+                  // Smart pagination for mobile
+                  const start = Math.max(1, currentPage - Math.floor((isMobile ? 3 : 5) / 2))
+                  const end = Math.min(totalPages, start + (isMobile ? 3 : 5) - 1)
+                  page = start + i
+                  if (page > end) return null
+                }
+
                 return (
                   <Button
                     key={page}
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
+                    className="w-8 h-8 p-0 flex-shrink-0"
                   >
                     {page}
                   </Button>
                 )
-              })}
+              }).filter(Boolean)}
             </div>
             <Button
               variant="outline"
               size="sm"
               onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
               disabled={currentPage === totalPages}
+              className="flex-shrink-0"
             >
-              Next
+              <span className="hidden sm:inline">Next</span>
+              <span className="sm:hidden">Next</span>
             </Button>
           </div>
         </div>

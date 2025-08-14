@@ -30,7 +30,7 @@ export default function AdminLayout({
               <div className="flex-1 flex flex-col min-w-0">
                 <AdminHeader />
                 <main className="flex-1 overflow-auto">
-                  <div className="container mx-auto p-6 space-y-6">
+                  <div className="container mx-auto p-3 sm:p-4 lg:p-6 space-y-4 sm:space-y-6 max-w-full">
                     {children}
                   </div>
                 </main>

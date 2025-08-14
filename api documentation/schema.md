@@ -362,6 +362,7 @@ CREATE TABLE parents (
 );
 
 
+
 CREATE TABLE children (
     child_id SERIAL PRIMARY KEY,
     parent_id INTEGER NOT NULL REFERENCES parents(parent_id) ON DELETE CASCADE,

@@ -161,49 +161,63 @@ export default function BookingsPage() {
     return true
   })
 
-  // Define table columns
+  // Define table columns with responsive configuration
   const columns: Column<Booking>[] = [
     {
       key: 'booking_id',
-      label: 'Booking ID',
+      label: 'ID',
       sortable: true,
-      width: '100px',
+      width: '80px',
+      priority: 1, // Highest priority - always shown
       render: (value) => <span className="font-mono text-sm">#{value}</span>
-    },
-    {
-      key: 'parent_additional_phone',
-      label: 'Phone Number',
-      sortable: false,
-      render: (value, row) => (
-        <div>
-          {row.parent_additional_phone || "-"}
-        </div>
-      )
     },
     {
       key: 'parent_name',
       label: 'Parent',
       sortable: true,
+      priority: 2, // High priority
       render: (value, row) => (
-        <div>
-          <div className="font-medium">{value}</div>
-          <div className="text-xs text-muted-foreground">{row.parent_email}</div>
+        <div className="min-w-0">
+          <div className="font-medium truncate">{value}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.parent_email}</div>
           {row.parent_additional_phone && (
             <div className="text-xs text-muted-foreground flex items-center gap-1">
-              <Phone className="h-3 w-3" />
-              {row.parent_additional_phone}
+              <Phone className="h-3 w-3 flex-shrink-0" />
+              <span className="truncate">{row.parent_additional_phone}</span>
             </div>
           )}
         </div>
       )
     },
     {
+      key: 'event_title',
+      label: 'Event',
+      sortable: true,
+      priority: 3, // Medium-high priority
+      render: (value, row) => (
+        <div className="min-w-0">
+          <div className="font-medium truncate">{value}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.city_name}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.venue_name}</div>
+        </div>
+      )
+    },
+    {
+      key: 'booking_status',
+      label: 'Status',
+      sortable: true,
+      width: '100px',
+      priority: 4, // Medium priority
+      render: (value) => getStatusBadge(value)
+    },
+    {
       key: 'child_full_name',
       label: 'Child',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value, row) => (
-        <div>
-          <div className="font-medium">{value}</div>
+        <div className="min-w-0">
+          <div className="font-medium truncate">{value}</div>
           {row.child_age && (
             <div className="text-xs text-muted-foreground">Age: {row.child_age}</div>
           )}
@@ -212,23 +226,12 @@ export default function BookingsPage() {
     },
     {
       key: 'game_name',
-      label: 'Game Name',
+      label: 'Game',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile
       render: (value) => (
-        <div>
-          <div className="font-medium">{value}</div>
-        </div>
-      )
-    },
-    {
-      key: 'event_title',
-      label: 'Event',
-      sortable: true,
-      render: (value, row) => (
-        <div>
-          <div className="font-medium">{value}</div>
-          <div className="text-xs text-muted-foreground">{row.city_name}</div>
-          <div className="text-xs text-muted-foreground">{row.venue_name}</div>
+        <div className="min-w-0">
+          <div className="font-medium truncate">{value}</div>
         </div>
       )
     },
@@ -238,21 +241,31 @@ export default function BookingsPage() {
       sortable: true,
       align: 'right',
       width: '100px',
+      hideOnMobile: true, // Hide on mobile
       render: (value) => <span className="font-medium">₹{value}</span>
     },
     {
-      key: 'booking_status',
-      label: 'Status',
-      sortable: true,
-      width: '120px',
-      render: (value) => getStatusBadge(value)
+      key: 'parent_additional_phone',
+      label: 'Phone',
+      sortable: false,
+      hideOnMobile: true, // Hide on mobile since it's shown in parent column
+      render: (value, row) => (
+        <div className="min-w-0">
+          <span className="truncate">{row.parent_additional_phone || "-"}</span>
+        </div>
+      )
     },
     {
       key: 'booking_created_at',
-      label: 'Booking Date',
+      label: 'Date',
       sortable: true,
-      width: '120px',
-      render: (value) => new Date(value).toLocaleDateString()
+      width: '100px',
+      hideOnMobile: true, // Hide on mobile
+      render: (value) => (
+        <div className="text-sm">
+          {new Date(value).toLocaleDateString()}
+        </div>
+      )
     },
   ]
 
@@ -412,89 +425,110 @@ export default function BookingsPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Bookings</h1>
-          <p className="text-muted-foreground">Manage NIBOG event bookings</p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Bookings</h1>
+            <p className="text-muted-foreground">Manage NIBOG event bookings</p>
+          </div>
+          <div className="flex flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={fetchBookings}
+              disabled={isLoading}
+              className="flex-shrink-0"
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
+              Refresh
+            </Button>
+            <Button asChild className="flex-shrink-0">
+              <Link href="/admin/bookings/new">
+                <Eye className="mr-2 h-4 w-4" />
+                <span className="hidden sm:inline">Create New Booking</span>
+                <span className="sm:hidden">New Booking</span>
+              </Link>
+            </Button>
+          </div>
         </div>
-        <div className="flex flex-col md:flex-row gap-2 items-center">
-          {/* Date Filters */}
-          <div className="flex gap-2 items-center">
-            <label className="text-sm text-muted-foreground">From</label>
-            <input
-              type="date"
-              value={fromDate}
-              onChange={e => setFromDate(e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
-            />
-            <label className="text-sm text-muted-foreground">To</label>
-            <input
-              type="date"
-              value={toDate}
-              onChange={e => setToDate(e.target.value)}
-              className="border rounded px-2 py-1 text-sm"
-            />
-          </div>
 
-          {/* Event Filter */}
+        {/* Filters Section */}
+        <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-lg">
           <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Event</label>
-            <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder={isLoadingFilters ? "Loading events..." : "All Events"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Events</SelectItem>
-                {events.map((e) => (
-                  <SelectItem key={e.id} value={String(e.id)}>
-                    {e.event_title}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Filter className="h-4 w-4" />
+            <span className="text-sm font-medium">Filters</span>
           </div>
 
-          {/* Game Filter */}
-          <div className="flex items-center gap-2">
-            <label className="text-sm text-muted-foreground">Game</label>
-            <Select value={selectedGameId} onValueChange={setSelectedGameId}>
-              <SelectTrigger className="w-[220px]">
-                <SelectValue placeholder={isLoadingFilters ? "Loading games..." : "All Games"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Games</SelectItem>
-                {games.map((g) => (
-                  <SelectItem key={g.id ?? g.game_name} value={String(g.id)}>
-                    {g.game_name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* Date Filters */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-muted-foreground">Date Range</label>
+              <div className="flex gap-2">
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={e => setFromDate(e.target.value)}
+                  className="flex-1 border rounded px-2 py-1 text-sm"
+                  placeholder="From"
+                />
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={e => setToDate(e.target.value)}
+                  className="flex-1 border rounded px-2 py-1 text-sm"
+                  placeholder="To"
+                />
+              </div>
+            </div>
+
+            {/* Event Filter */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-muted-foreground">Event</label>
+              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={isLoadingFilters ? "Loading events..." : "All Events"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Events</SelectItem>
+                  {events.map((e) => (
+                    <SelectItem key={e.id} value={String(e.id)}>
+                      {e.event_title}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Game Filter */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-muted-foreground">Game</label>
+              <Select value={selectedGameId} onValueChange={setSelectedGameId}>
+                <SelectTrigger className="w-full">
+                  <SelectValue placeholder={isLoadingFilters ? "Loading games..." : "All Games"} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All Games</SelectItem>
+                  {games.map((g) => (
+                    <SelectItem key={g.id ?? g.game_name} value={String(g.id)}>
+                      {g.game_name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Clear Filters */}
+            <div className="flex flex-col gap-2">
+              <label className="text-sm font-medium text-muted-foreground opacity-0">Actions</label>
+              <Button
+                variant="ghost"
+                onClick={() => { setSelectedEventId('all'); setSelectedGameId('all'); setFromDate(''); setToDate(''); }}
+                className="w-full"
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                Clear Filters
+              </Button>
+            </div>
           </div>
-
-          {/* Clear Filters */}
-          <Button
-            variant="ghost"
-            onClick={() => { setSelectedEventId('all'); setSelectedGameId('all'); setFromDate(''); setToDate(''); }}
-          >
-            <XCircle className="mr-2 h-4 w-4" />
-            Clear Filters
-          </Button>
-
-          <Button
-            variant="outline"
-            onClick={fetchBookings}
-            disabled={isLoading}
-          >
-            <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh
-          </Button>
-          <Button asChild>
-            <Link href="/admin/bookings/new">
-              <Eye className="mr-2 h-4 w-4" />
-              Create New Booking
-            </Link>
-          </Button>
         </div>
       </div>
 
