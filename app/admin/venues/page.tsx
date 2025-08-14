@@ -147,19 +147,14 @@ export default function VenuesPage() {
   // Define table columns
   const columns: Column<VenueWithCity>[] = [
     {
-      key: 'venue_id',
-      label: 'ID',
-      sortable: true,
-      width: '80px'
-    },
-    {
       key: 'venue_name',
       label: 'Venue Name',
       sortable: true,
+      priority: 1, // Highest priority for mobile
       render: (value, row) => (
         <div>
           <div className="font-medium">{value}</div>
-          <div className="text-xs text-muted-foreground">{row.address}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.address}</div>
         </div>
       )
     },
@@ -167,6 +162,7 @@ export default function VenuesPage() {
       key: 'city_name',
       label: 'City',
       sortable: true,
+      priority: 2, // Second priority for mobile
       render: (value, row) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -175,10 +171,29 @@ export default function VenuesPage() {
       )
     },
     {
+      key: 'venue_is_active',
+      label: 'Status',
+      sortable: true,
+      priority: 3, // Third priority for mobile
+      render: (value) => (
+        <Badge className={value ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}>
+          {value ? 'Active' : 'Inactive'}
+        </Badge>
+      )
+    },
+    {
+      key: 'venue_id',
+      label: 'ID',
+      sortable: true,
+      width: '80px',
+      hideOnMobile: true // Hide on mobile to save space
+    },
+    {
       key: 'capacity',
       label: 'Capacity',
       sortable: true,
       align: 'right',
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => value || 'N/A'
     },
     {
@@ -186,6 +201,7 @@ export default function VenuesPage() {
       label: 'Events',
       sortable: true,
       align: 'right',
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => (
         <div className="text-center">
           <div className="font-semibold text-primary">{value || 0}</div>
@@ -194,19 +210,10 @@ export default function VenuesPage() {
       )
     },
     {
-      key: 'venue_is_active',
-      label: 'Status',
-      sortable: true,
-      render: (value) => (
-        <Badge className={value ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}>
-          {value ? 'Active' : 'Inactive'}
-        </Badge>
-      )
-    },
-    {
       key: 'venue_created_at',
       label: 'Created',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => new Date(value).toLocaleDateString()
     }
   ]
@@ -284,25 +291,27 @@ export default function VenuesPage() {
 
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">NIBOG Venues</h1>
-          <p className="text-muted-foreground">Manage venues where NIBOG events are held</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">NIBOG Venues</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage venues where NIBOG events are held</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={handleRefresh}
             disabled={isRefreshing}
+            className="touch-manipulation"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/venues/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New Venue
+              <span className="hidden sm:inline">Add New Venue</span>
+              <span className="sm:hidden">New Venue</span>
             </Link>
           </Button>
         </div>
@@ -369,25 +378,25 @@ export default function VenuesPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search venues..."
-                className="h-9 w-full md:w-[300px]"
+                className="pl-9 h-10 touch-manipulation"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex items-center gap-2">
-              <Filter className="h-4 w-4 text-muted-foreground" />
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
               <Select value={selectedCity} onValueChange={setSelectedCity} disabled={isLoading}>
-                <SelectTrigger className="h-9 w-full md:w-[180px]">
+                <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
                   <SelectValue placeholder="All Cities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Cities</SelectItem>
                   {cities.map((city) => (
-                    <SelectItem key={city.id} value={city.city_name}>
+                    <SelectItem key={city.id} value={city.city_name} className="touch-manipulation">
                       {city.city_name}
                     </SelectItem>
                   ))}

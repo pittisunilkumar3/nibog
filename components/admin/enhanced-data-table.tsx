@@ -374,7 +374,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
                 placeholder="Search..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-9 w-full"
+                className="pl-9 w-full touch-manipulation"
                 aria-label="Search table data"
                 role="searchbox"
               />
@@ -386,7 +386,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
           {/* Column Visibility */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" size="sm" aria-label="Toggle column visibility" className="flex-shrink-0">
+              <Button variant="outline" size="sm" aria-label="Toggle column visibility" className="flex-shrink-0 touch-manipulation">
                 <Columns className="h-4 w-4 sm:mr-2" aria-hidden="true" />
                 <span className="hidden sm:inline">Columns</span>
               </Button>
@@ -426,7 +426,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
               onClick={() => setShowExportDialog(true)}
               disabled={sortedData.length === 0}
               aria-label="Export table data"
-              className="flex-shrink-0"
+              className="flex-shrink-0 touch-manipulation"
             >
               <FileDown className="h-4 w-4 sm:mr-2" aria-hidden="true" />
               <span className="hidden sm:inline">Export</span>
@@ -434,7 +434,7 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
           )}
 
           {onRefresh && (
-            <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="flex-shrink-0">
+            <Button variant="outline" size="sm" onClick={onRefresh} disabled={loading} className="flex-shrink-0 touch-manipulation">
               <RefreshCw className={cn("h-4 w-4", loading && "animate-spin")} />
               <span className="sr-only">Refresh</span>
             </Button>

@@ -33,6 +33,8 @@ export default function UsersPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [searchQuery, setSearchQuery] = useState("")
+  const [selectedStatus, setSelectedStatus] = useState("all")
   const { toast } = useToast()
 
   // Fetch users from API
@@ -170,43 +172,31 @@ export default function UsersPage() {
   // Define table columns
   const columns: Column<User>[] = [
     {
-      key: 'user_id',
-      label: 'ID',
-      sortable: true,
-      width: '80px'
-    },
-    {
       key: 'full_name',
       label: 'Name',
       sortable: true,
+      priority: 1, // Highest priority for mobile
       render: (value, row) => (
         <div>
           <div className="font-medium">{value}</div>
-          <div className="text-xs text-muted-foreground">{row.email}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.email}</div>
         </div>
       )
     },
     {
       key: 'phone',
       label: 'Phone',
-      sortable: true
-    },
-    {
-      key: 'city_name',
-      label: 'City',
       sortable: true,
-      render: (value) => value || 'N/A'
-    },
-    {
-      key: 'state',
-      label: 'State',
-      sortable: true,
-      render: (value) => value || 'N/A'
+      priority: 2, // Second priority for mobile
+      render: (value) => (
+        <span className="text-sm">{value}</span>
+      )
     },
     {
       key: 'is_active',
       label: 'Status',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value, row) => {
         if (value) {
           return row.is_locked ? (
@@ -218,6 +208,27 @@ export default function UsersPage() {
           return <Badge variant="outline">Inactive</Badge>
         }
       }
+    },
+    {
+      key: 'user_id',
+      label: 'ID',
+      sortable: true,
+      width: '80px',
+      hideOnMobile: true // Hide on mobile to save space
+    },
+    {
+      key: 'city_name',
+      label: 'City',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => value || 'N/A'
+    },
+    {
+      key: 'state',
+      label: 'State',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => value || 'N/A'
     }
   ]
 
@@ -266,40 +277,99 @@ export default function UsersPage() {
     }
   ]
 
+  // Filter users based on search query and status
+  const filteredUsers = usersList.filter(user => {
+    // Search filter
+    if (searchQuery &&
+        !user.full_name.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !user.email.toLowerCase().includes(searchQuery.toLowerCase()) &&
+        !user.phone.toLowerCase().includes(searchQuery.toLowerCase())) {
+      return false
+    }
+
+    // Status filter
+    if (selectedStatus !== "all") {
+      if (selectedStatus === "active" && (!user.is_active || user.is_locked)) {
+        return false
+      }
+      if (selectedStatus === "inactive" && user.is_active) {
+        return false
+      }
+      if (selectedStatus === "locked" && !user.is_locked) {
+        return false
+      }
+    }
+
+    return true
+  })
+
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Users</h1>
-          <p className="text-muted-foreground">Manage NIBOG users and their accounts</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Users</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage NIBOG users and their accounts</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={handleRefresh}
             disabled={isRefreshing}
+            className="touch-manipulation"
           >
             <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
             Refresh
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/users/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New User
+              <span className="hidden sm:inline">Add New User</span>
+              <span className="sm:hidden">New User</span>
             </Link>
           </Button>
         </div>
       </div>
 
+      {/* Search and Filter Controls */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search users..."
+                className="pl-9 h-10 touch-manipulation"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <Select value={selectedStatus} onValueChange={setSelectedStatus} disabled={isLoading}>
+                <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
+                  <SelectValue placeholder="All Users" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="touch-manipulation">All Users</SelectItem>
+                  <SelectItem value="active" className="touch-manipulation">Active Users</SelectItem>
+                  <SelectItem value="inactive" className="touch-manipulation">Inactive Users</SelectItem>
+                  <SelectItem value="locked" className="touch-manipulation">Locked Users</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
       {/* Enhanced Data Table */}
       <EnhancedDataTable
-        data={usersList}
+        data={filteredUsers}
         columns={columns}
         actions={actions}
         bulkActions={bulkActions}
         loading={isLoading}
-        searchable={true}
-        filterable={true}
+        searchable={false} // We have custom search above
+        filterable={false} // We have custom filters above
         exportable={true}
         selectable={true}
         pagination={true}

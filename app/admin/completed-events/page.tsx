@@ -176,37 +176,26 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
       key: 'title',
       label: 'Event',
       sortable: true,
-    },
-    {
-      key: 'gameTemplate',
-      label: 'Game Template',
-      sortable: true,
-    },
-    {
-      key: 'venue',
-      label: 'Venue',
-      sortable: true,
+      priority: 1, // Highest priority for mobile
     },
     {
       key: 'city',
       label: 'City',
       sortable: true,
+      priority: 2, // Second priority for mobile
     },
     {
       key: 'date',
       label: 'Date',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value) => format(new Date(value), "MMM d, yyyy")
-    },
-    {
-      key: 'registrations',
-      label: 'Registrations',
-      sortable: true,
     },
     {
       key: 'attendance',
       label: 'Attendance',
       sortable: true,
+      priority: 4, // Fourth priority for mobile
       render: (value, row) => (
         <div className="flex items-center">
           <span className="mr-2">{value}</span>
@@ -217,9 +206,28 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
       )
     },
     {
+      key: 'gameTemplate',
+      label: 'Game Template',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+    },
+    {
+      key: 'venue',
+      label: 'Venue',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+    },
+    {
+      key: 'registrations',
+      label: 'Registrations',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+    },
+    {
       key: 'revenue',
       label: 'Revenue',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => formatCurrency(value)
     }
   ]
@@ -239,54 +247,69 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
   const bulkActions: BulkAction<CompletedEvent>[] = []
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {loading ? (
         <div className="flex h-[400px] items-center justify-center">
           <div className="text-muted-foreground">Loading events...</div>
         </div>
       ) : (
         <>
-          <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Completed Events</h1>
-          <p className="text-muted-foreground">View and analyze past NIBOG events</p>
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Completed Events</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">View and analyze past NIBOG events</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => setViewMode("list")}>
-            List View
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={() => setViewMode("list")}
+            className="touch-manipulation"
+          >
+            <span className="hidden sm:inline">List View</span>
+            <span className="sm:hidden">List</span>
           </Button>
-          <Button variant="outline" onClick={() => setViewMode("cities")}>
-            Cities View
+          <Button
+            variant="outline"
+            onClick={() => setViewMode("cities")}
+            className="touch-manipulation"
+          >
+            <span className="hidden sm:inline">Cities View</span>
+            <span className="sm:hidden">Cities</span>
           </Button>
-          <Button variant="outline" onClick={() => setViewMode("analytics")}>
+          <Button
+            variant="outline"
+            onClick={() => setViewMode("analytics")}
+            className="touch-manipulation"
+          >
             <BarChart className="mr-2 h-4 w-4" />
-            Analytics
+            <span className="hidden sm:inline">Analytics</span>
+            <span className="sm:hidden">Stats</span>
           </Button>
         </div>
       </div>
 
       <Card>
         <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row">
-            <div className="flex items-center gap-2 flex-1">
-              <Search className="h-4 w-4 text-muted-foreground" />
+          <div className="flex flex-col gap-4 sm:flex-row">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search events..."
-                className="h-9"
+                className="pl-9 h-10 touch-manipulation"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
 
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
               <Select value={selectedCity || "all"} onValueChange={(value) => setSelectedCity(value === "all" ? null : value)}>
-                <SelectTrigger className="w-[150px]">
+                <SelectTrigger className="w-full sm:w-[150px] touch-manipulation">
                   <SelectValue placeholder="All Cities" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Cities</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Cities</SelectItem>
                   {cities.map((city) => (
-                    <SelectItem key={city} value={city}>
+                    <SelectItem key={city} value={city} className="touch-manipulation">
                       {city}
                     </SelectItem>
                   ))}
@@ -294,13 +317,13 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
               </Select>
 
               <Select value={selectedVenue || "all"} onValueChange={(value) => setSelectedVenue(value === "all" ? null : value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px] touch-manipulation">
                   <SelectValue placeholder="All Venues" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Venues</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Venues</SelectItem>
                   {venues.map((venue) => (
-                    <SelectItem key={venue} value={venue}>
+                    <SelectItem key={venue} value={venue} className="touch-manipulation">
                       {venue}
                     </SelectItem>
                   ))}
@@ -308,14 +331,14 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
               </Select>
 
               <Select value={selectedDateRange || "all"} onValueChange={(value) => setSelectedDateRange(value === "all" ? null : value)}>
-                <SelectTrigger className="w-[180px]">
+                <SelectTrigger className="w-full sm:w-[180px] touch-manipulation">
                   <SelectValue placeholder="All Time" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="last-week">Last Week</SelectItem>
-                  <SelectItem value="last-month">Last Month</SelectItem>
-                  <SelectItem value="last-3-months">Last 3 Months</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Time</SelectItem>
+                  <SelectItem value="last-week" className="touch-manipulation">Last Week</SelectItem>
+                  <SelectItem value="last-month" className="touch-manipulation">Last Month</SelectItem>
+                  <SelectItem value="last-3-months" className="touch-manipulation">Last 3 Months</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -354,20 +377,20 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
               eventsByCity.map((cityData) => (
                 <Card key={cityData.city} className="overflow-hidden">
                   <div
-                    className="flex cursor-pointer items-center justify-between border-b p-4 hover:bg-muted/50"
+                    className="flex cursor-pointer items-center justify-between border-b p-3 sm:p-4 hover:bg-muted/50 touch-manipulation"
                     onClick={() => router.push(`/admin/completed-events/cities/${encodeURIComponent(cityData.city)}`)}
                   >
-                    <div className="flex items-center gap-2">
-                      <MapPin className="h-5 w-5 text-muted-foreground" />
-                      <div>
-                        <h3 className="font-semibold">{cityData.city}</h3>
-                        <p className="text-sm text-muted-foreground">
+                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                      <MapPin className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground flex-shrink-0" />
+                      <div className="min-w-0 flex-1">
+                        <h3 className="font-semibold text-sm sm:text-base truncate">{cityData.city}</h3>
+                        <p className="text-xs sm:text-sm text-muted-foreground truncate">
                           {cityData.totalEvents} events • {cityData.totalRegistrations} registrations
                         </p>
                       </div>
                     </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
+                    <div className="flex items-center gap-2 sm:gap-6 flex-shrink-0">
+                      <div className="text-right hidden sm:block">
                         <div className="text-sm font-medium">Attendance Rate</div>
                         <div className="flex items-center justify-end">
                           <Badge variant={cityData.averageAttendanceRate >= 90 ? "default" : "outline"}>
@@ -376,51 +399,83 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className="text-sm font-medium">Total Revenue</div>
-                        <div className="font-semibold">{formatCurrency(cityData.totalRevenue)}</div>
+                        <div className="text-xs sm:text-sm font-medium hidden sm:block">Total Revenue</div>
+                        <div className="font-semibold text-sm sm:text-base">{formatCurrency(cityData.totalRevenue)}</div>
                       </div>
-                      <ChevronRight className="h-5 w-5 text-muted-foreground" />
+                      <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground" />
                     </div>
                   </div>
 
+                  {/* Mobile-responsive table */}
                   <div className="max-h-[300px] overflow-y-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Event</TableHead>
-                          <TableHead>Venue</TableHead>
-                          <TableHead>Date</TableHead>
-                          <TableHead>Registrations</TableHead>
-                          <TableHead>Attendance</TableHead>
-                          <TableHead className="text-right">Actions</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {cityData.events.map((event) => (
-                          <TableRow key={event.id}>
-                            <TableCell className="font-medium">{event.title}</TableCell>
-                            <TableCell>{event.venue}</TableCell>
-                            <TableCell>{format(new Date(event.date), "MMM d, yyyy")}</TableCell>
-                            <TableCell>{event.registrations}</TableCell>
-                            <TableCell>
-                              <div className="flex items-center">
-                                <span className="mr-2">{event.attendance}</span>
-                                <Badge variant={event.attendanceRate >= 90 ? "default" : "outline"}>
-                                  {event.attendanceRate}%
-                                </Badge>
-                              </div>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <Button variant="ghost" size="sm" asChild>
-                                <Link href={`/admin/completed-events/${event.id}`}>
-                                  View Details
-                                </Link>
-                              </Button>
-                            </TableCell>
+                    <div className="hidden sm:block">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Event</TableHead>
+                            <TableHead>Venue</TableHead>
+                            <TableHead>Date</TableHead>
+                            <TableHead>Registrations</TableHead>
+                            <TableHead>Attendance</TableHead>
+                            <TableHead className="text-right">Actions</TableHead>
                           </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
+                        </TableHeader>
+                        <TableBody>
+                          {cityData.events.map((event) => (
+                            <TableRow key={event.id}>
+                              <TableCell className="font-medium">{event.title}</TableCell>
+                              <TableCell>{event.venue}</TableCell>
+                              <TableCell>{format(new Date(event.date), "MMM d, yyyy")}</TableCell>
+                              <TableCell>{event.registrations}</TableCell>
+                              <TableCell>
+                                <div className="flex items-center">
+                                  <span className="mr-2">{event.attendance}</span>
+                                  <Badge variant={event.attendanceRate >= 90 ? "default" : "outline"}>
+                                    {event.attendanceRate}%
+                                  </Badge>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <Button variant="ghost" size="sm" asChild className="touch-manipulation">
+                                  <Link href={`/admin/completed-events/${event.id}`}>
+                                    View Details
+                                  </Link>
+                                </Button>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </div>
+
+                    {/* Mobile card view */}
+                    <div className="sm:hidden space-y-3 p-3">
+                      {cityData.events.map((event) => (
+                        <div key={event.id} className="border rounded-lg p-3 space-y-2 bg-card shadow-sm hover:shadow-md transition-shadow touch-manipulation">
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h4 className="font-medium text-sm truncate">{event.title}</h4>
+                              <p className="text-xs text-muted-foreground truncate">{event.venue}</p>
+                            </div>
+                            <Badge variant={event.attendanceRate >= 90 ? "default" : "outline"} className="flex-shrink-0">
+                              {event.attendanceRate}%
+                            </Badge>
+                          </div>
+                          <div className="flex justify-between items-center text-xs text-muted-foreground">
+                            <span>{format(new Date(event.date), "MMM d, yyyy")}</span>
+                            <span>{event.attendance}/{event.registrations}</span>
+                          </div>
+                          <div className="flex justify-end">
+                            <Button variant="ghost" size="sm" asChild className="touch-manipulation h-8 px-3">
+                              <Link href={`/admin/completed-events/${event.id}`}>
+                                <Eye className="h-3 w-3 mr-1" />
+                                View
+                              </Link>
+                            </Button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
                 </Card>
               ))
@@ -433,29 +488,37 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
             <Card>
               <CardContent className="pt-6">
                 <Tabs defaultValue="attendance">
-                  <TabsList className="grid w-full grid-cols-3">
-                    <TabsTrigger value="attendance">Attendance</TabsTrigger>
-                    <TabsTrigger value="revenue">Revenue</TabsTrigger>
-                    <TabsTrigger value="comparison">City Comparison</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3 h-auto">
+                    <TabsTrigger value="attendance" className="text-xs sm:text-sm touch-manipulation">
+                      <span className="hidden sm:inline">Attendance</span>
+                      <span className="sm:hidden">Attend.</span>
+                    </TabsTrigger>
+                    <TabsTrigger value="revenue" className="text-xs sm:text-sm touch-manipulation">
+                      Revenue
+                    </TabsTrigger>
+                    <TabsTrigger value="comparison" className="text-xs sm:text-sm touch-manipulation">
+                      <span className="hidden sm:inline">City Comparison</span>
+                      <span className="sm:hidden">Compare</span>
+                    </TabsTrigger>
                   </TabsList>
 
                   <TabsContent value="attendance" className="mt-4 space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Total Registrations</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Total Registrations</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {filteredEvents.reduce((sum, event) => sum + event.registrations, 0)}
                         </p>
                       </div>
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Total Attendance</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Total Attendance</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {filteredEvents.reduce((sum, event) => sum + event.attendance, 0)}
                         </p>
                       </div>
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Average Attendance Rate</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation sm:col-span-2 md:col-span-1">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Average Attendance Rate</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {filteredEvents.length > 0
                             ? Math.round(filteredEvents.reduce((sum, event) => sum + event.attendanceRate, 0) / filteredEvents.length)
                             : 0}%
@@ -487,24 +550,24 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
                   </TabsContent>
 
                   <TabsContent value="revenue" className="mt-4 space-y-4">
-                    <div className="grid gap-4 md:grid-cols-3">
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Total Revenue</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                    <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 md:grid-cols-3">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Total Revenue</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {formatCurrency(filteredEvents.reduce((sum, event) => sum + event.revenue, 0))}
                         </p>
                       </div>
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Average Revenue per Event</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Average Revenue per Event</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {filteredEvents.length > 0
                             ? formatCurrency(Math.round(filteredEvents.reduce((sum, event) => sum + event.revenue, 0) / filteredEvents.length))
                             : formatCurrency(0)}
                         </p>
                       </div>
-                      <div className="rounded-lg border p-4">
-                        <h3 className="text-sm font-medium text-muted-foreground">Average Revenue per Attendee</h3>
-                        <p className="mt-2 text-2xl font-bold">
+                      <div className="rounded-lg border p-3 sm:p-4 touch-manipulation sm:col-span-2 md:col-span-1">
+                        <h3 className="text-xs sm:text-sm font-medium text-muted-foreground">Average Revenue per Attendee</h3>
+                        <p className="mt-1 sm:mt-2 text-xl sm:text-2xl font-bold">
                           {filteredEvents.reduce((sum, event) => sum + event.attendance, 0) > 0
                             ? formatCurrency(Math.round(filteredEvents.reduce((sum, event) => sum + event.revenue, 0) / filteredEvents.reduce((sum, event) => sum + event.attendance, 0)))
                             : formatCurrency(0)}
@@ -536,7 +599,8 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
                   </TabsContent>
 
                   <TabsContent value="comparison" className="mt-4">
-                    <div className="rounded-lg border">
+                    {/* Desktop table view */}
+                    <div className="rounded-lg border hidden sm:block">
                       <Table>
                         <TableHeader>
                           <TableRow>
@@ -569,6 +633,44 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
                           ))}
                         </TableBody>
                       </Table>
+                    </div>
+
+                    {/* Mobile card view */}
+                    <div className="sm:hidden space-y-3">
+                      {eventsByCity.map((cityData) => (
+                        <Card key={cityData.city} className="p-4 space-y-3 touch-manipulation">
+                          <div className="flex justify-between items-start gap-3">
+                            <div className="min-w-0 flex-1">
+                              <h3 className="font-semibold text-base">{cityData.city}</h3>
+                              <p className="text-sm text-muted-foreground">
+                                {cityData.totalEvents} events
+                              </p>
+                            </div>
+                            <Badge variant={cityData.averageAttendanceRate >= 90 ? "default" : "outline"}>
+                              {cityData.averageAttendanceRate}%
+                            </Badge>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-3 text-sm">
+                            <div>
+                              <span className="text-muted-foreground">Registrations:</span>
+                              <div className="font-medium">{cityData.totalRegistrations}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Attendance:</span>
+                              <div className="font-medium">{cityData.totalAttendance}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Revenue:</span>
+                              <div className="font-medium">{formatCurrency(cityData.totalRevenue)}</div>
+                            </div>
+                            <div>
+                              <span className="text-muted-foreground">Avg/Event:</span>
+                              <div className="font-medium">{formatCurrency(Math.round(cityData.totalRevenue / cityData.totalEvents))}</div>
+                            </div>
+                          </div>
+                        </Card>
+                      ))}
                     </div>
                   </TabsContent>
                 </Tabs>
