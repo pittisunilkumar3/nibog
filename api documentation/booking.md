@@ -58,6 +58,44 @@ Response
   booking_id: 31
 }
 
+
+---------------------------------------
+
+ 
+{
+  "user_id": 114,
+  "parent": {
+    "parent_name": "Pitti Sunil Kumar",
+    "email": "pittisunilkumar3@gmail.com",
+    "additional_phone": "6303727148"
+  },
+  "child": {
+    "full_name": "Pitti Sunil Kumar",
+    "date_of_birth": "2015-01-01",
+    "school_name": "hgfds",
+    "gender": "Male"
+  },
+  "booking": {
+    "event_id": 109,
+    "booking_date": "2025-08-14",
+    "total_amount": 1,
+    "payment_method": "PhonePe",
+    "payment_status": "Paid",
+    "terms_accepted": true,
+    "transaction_id": "OMO2508141555013643309314",
+    "merchant_transaction_id": "NIBOG_114_1755167101252",
+    "booking_ref": "PPT250814314",
+    "status": "Confirmed"
+  },
+  "booking_games": [
+    {
+      "slot_id": 339,
+      "game_id": 9,
+      "game_price": 1
+    }
+  ]
+}
+
 ## get all bookings
 
 GET https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all

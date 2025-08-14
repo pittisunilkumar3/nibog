@@ -174,6 +174,12 @@ export async function POST(request: Request) {
 
       console.log("✅ Pending booking retrieved successfully");
 
+      // Track DOB specifically in retrieval
+      console.log("=== DOB TRACKING IN PENDING BOOKING RETRIEVAL ===");
+      console.log("Retrieved childDob:", bookingData.childDob);
+      console.log("childDob type:", typeof bookingData.childDob);
+      console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(bookingData.childDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
+
       // Return success with complete booking data
       return NextResponse.json({
         success: true,

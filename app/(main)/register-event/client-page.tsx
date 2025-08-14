@@ -16,6 +16,7 @@ import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addMonths, differenceInMonths, differenceInDays } from "date-fns"
 import { cn, formatDateForAPI } from "@/lib/utils"
+import { createPendingBooking } from "@/services/pendingBookingServices"
 import { Calendar as CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
@@ -283,15 +284,23 @@ export default function RegisterEventClientPage() {
 
   // Handle DOB change
   const handleDobChange = (date: Date | undefined) => {
+    console.log("=== DOB CHANGE HANDLER CALLED ===");
+    console.log("Previous DOB:", dob);
+    console.log("New DOB:", date);
+    console.log("Date type:", typeof date);
+    console.log("Date string:", date?.toString());
+    console.log("Date ISO:", date?.toISOString());
+
     setDob(date)
-    
+
     if (date) {
       // Calculate child's age in months based on the event date
       const ageInMonths = calculateAge(date)
       setChildAgeMonths(ageInMonths)
-      
+
       console.log(`Child's age: ${ageInMonths} months`)
-      
+      console.log("Formatted DOB for API:", formatDateForAPI(date));
+
       // If an event is already selected, fetch games for this age
       if (selectedEventType) {
         const selectedApiEvent = apiEvents.find(event => event.event_title === selectedEventType);
@@ -302,6 +311,7 @@ export default function RegisterEventClientPage() {
     } else {
       // Reset age if DOB is cleared
       setChildAgeMonths(null)
+      console.log("DOB cleared, age reset to null");
     }
   }
 
@@ -622,13 +632,22 @@ export default function RegisterEventClientPage() {
   const handleRegistration = async () => {
     if (!isAuthenticated) {
       // Save complete registration data to sessionStorage including add-ons
+      console.log("=== SAVING REGISTRATION DATA TO SESSION STORAGE ===");
+      console.log("Current DOB state:", dob);
+      console.log("DOB type:", typeof dob);
+      console.log("DOB toString:", dob?.toString());
+      console.log("DOB toISOString:", dob?.toISOString());
+
+      const formattedDob = dob ? formatDateForAPI(dob) : undefined;
+      console.log("Formatted DOB for storage:", formattedDob);
+
       const registrationData = {
         parentName,
         email,
         phone,
         childName,
         schoolName,
-        dob: dob ? formatDateForAPI(dob) : undefined, // Store as YYYY-MM-DD format
+        dob: formattedDob, // Store as YYYY-MM-DD format
         gender,
         eventDate: eventDate.toISOString(),
         selectedCity,
@@ -1030,24 +1049,39 @@ export default function RegisterEventClientPage() {
         }))
       }
 
-      console.log("=== STORING BOOKING DATA IN LOCAL STORAGE ===")
+      console.log("=== CREATING PENDING BOOKING RECORD ===")
       console.log("Selected city:", selectedCity)
       console.log("Selected event details city:", selectedEventDetails?.city)
       console.log("Event venue:", selectedEventDetails?.venue)
-      console.log("Booking data for local storage:", JSON.stringify(bookingData, null, 2))
+      console.log("=== DOB TRACKING IN REGISTRATION ===")
+      console.log("Original DOB from form:", dob)
+      console.log("DOB type:", typeof dob)
+      console.log("DOB toString:", dob?.toString())
+      console.log("DOB toISOString:", dob?.toISOString())
+      console.log("Formatted DOB for booking:", bookingData.childDob)
+      console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(bookingData.childDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format")
+      console.log("DOB matches expected format:", bookingData.childDob === "2024-07-01" ? "✅ Matches expected" : "❌ Does not match expected")
+      console.log("Booking data for pending booking:", JSON.stringify(bookingData, null, 2))
 
-      // Generate a transaction ID with format NIBOG_<userId>_<timestamp>
-      const timestamp = new Date().getTime()
-      const transactionId = `NIBOG_${userId}_${timestamp}`
-      
-      // Store complete booking data in localStorage
+      // Create pending booking record in database
+      console.log("🔄 Creating pending booking record...")
+      const pendingBookingResult = await createPendingBooking(bookingData)
+
+      if (!pendingBookingResult.success || !pendingBookingResult.transactionId) {
+        throw new Error(`Failed to create pending booking: ${pendingBookingResult.error}`)
+      }
+
+      const transactionId = pendingBookingResult.transactionId
+      console.log("✅ Pending booking created with transaction ID:", transactionId)
+
+      // Also store in localStorage as backup
       localStorage.setItem('nibog_booking_data', JSON.stringify({
         ...bookingData,
         transactionId,
-        timestamp
+        timestamp: new Date().getTime()
       }))
 
-      console.log("✅ Booking data stored in localStorage with transaction ID:", transactionId)
+      console.log("✅ Booking data also stored in localStorage as backup")
 
       console.log("=== PHONEPE PAYMENT INITIATION ===")
       console.log("Transaction ID:", transactionId)
@@ -1163,13 +1197,29 @@ export default function RegisterEventClientPage() {
       try {
         const data = JSON.parse(savedData)
 
+        console.log("=== RESTORING REGISTRATION DATA FROM SESSION STORAGE ===");
+        console.log("Saved DOB data:", data.dob);
+        console.log("Saved DOB type:", typeof data.dob);
+
         // Restore all form data
         setParentName(data.parentName || '')
         setEmail(data.email || '')
         setPhone(data.phone || '')
         setChildName(data.childName || '')
         setSchoolName(data.schoolName || '')
-        setDob(data.dob ? new Date(data.dob) : undefined)
+
+        // Handle DOB restoration with debugging
+        if (data.dob) {
+          const restoredDob = new Date(data.dob);
+          console.log("Restored DOB object:", restoredDob);
+          console.log("Restored DOB ISO:", restoredDob.toISOString());
+          console.log("Restored DOB formatted:", formatDateForAPI(restoredDob));
+          setDob(restoredDob);
+        } else {
+          console.log("No saved DOB found, setting to undefined");
+          setDob(undefined);
+        }
+
         setGender(data.gender || 'female')
         setSelectedCity(data.selectedCity || cityParam || '')
         setSelectedEventType(data.selectedEventType || '')
@@ -1651,6 +1701,14 @@ export default function RegisterEventClientPage() {
                             "w-full justify-start text-left font-normal border-dashed transition-all duration-200",
                             !dob ? "text-muted-foreground border-muted-foreground/40" : "border-primary/40 bg-primary/5"
                           )}
+                          onClick={() => {
+                            console.log("=== DOB BUTTON CLICKED ===");
+                            console.log("Current DOB state:", dob);
+                            console.log("DOB type:", typeof dob);
+                            console.log("DOB toString:", dob?.toString());
+                            console.log("DOB toISOString:", dob?.toISOString());
+                            console.log("Formatted display:", dob ? format(dob, "PPP") : "Select date of birth");
+                          }}
                         >
                           <CalendarIcon className={cn("mr-2 h-4 w-4", dob ? "text-primary" : "text-muted-foreground")} />
                           {dob ? format(dob, "PPP") : "Select date of birth"}
@@ -1664,7 +1722,15 @@ export default function RegisterEventClientPage() {
                           <Calendar
                             mode="single"
                             selected={dob}
-                            onSelect={handleDobChange}
+                            onSelect={(date) => {
+                              console.log("=== CALENDAR COMPONENT onSelect CALLED ===");
+                              console.log("Calendar selected date:", date);
+                              console.log("Date type:", typeof date);
+                              console.log("Date toString:", date?.toString());
+                              console.log("Date toISOString:", date?.toISOString());
+                              console.log("Formatted date:", date ? formatDateForAPI(date) : 'undefined');
+                              handleDobChange(date);
+                            }}
                             disabled={(date) => {
                               const today = new Date();
                               today.setHours(0, 0, 0, 0);
@@ -1687,11 +1753,9 @@ export default function RegisterEventClientPage() {
                 <div className="space-y-2">
                   <Label htmlFor="school-name" className="flex items-center gap-1">
                     <span>School Name</span>
-                    {childAgeMonths && childAgeMonths >= 36 ? (
+                    
                       <span className="text-xs text-primary/70">(Required)</span>
-                    ) : (
-                      <span className="text-xs text-amber-500">(Optional)</span>
-                    )}
+                   
                   </Label>
                   <Input
                     id="school-name"

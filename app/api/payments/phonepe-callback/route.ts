@@ -134,12 +134,56 @@ interface PendingBookingData {
 }
 
 /**
- * This function is no longer used as we've decoupled post-payment flow from pending booking data.
- * The functionality has been replaced by createBookingAndPaymentDirect which doesn't rely on pending booking data.
+ * Retrieve pending booking data from the database
  */
 async function getPendingBookingData(transactionId: string): Promise<PendingBookingData | null> {
-  console.log(`⚠️ getPendingBookingData is deprecated. Using createBookingAndPaymentDirect instead for transaction: ${transactionId}`);
-  return null;
+  try {
+    console.log(`📋 Retrieving pending booking data for transaction: ${transactionId}`);
+
+    // Extract merchant transaction ID from the transactionId if needed
+    const merchantTransactionId = transactionId.includes('NIBOG_') ? transactionId : `NIBOG_${transactionId}`;
+
+    console.log(`📋 Looking for pending booking with merchant transaction ID: ${merchantTransactionId}`);
+
+    const response = await fetch(`${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/api/pending-bookings/get`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        transaction_id: merchantTransactionId
+      }),
+    });
+
+    console.log(`📋 Pending booking API response status: ${response.status}`);
+
+    if (!response.ok) {
+      if (response.status === 404) {
+        console.log(`📭 No pending booking found for transaction: ${merchantTransactionId}`);
+        return null;
+      }
+
+      const errorText = await response.text();
+      console.error(`❌ Failed to retrieve pending booking: ${response.status} - ${errorText}`);
+      return null;
+    }
+
+    const result = await response.json();
+    console.log(`✅ Retrieved pending booking data:`, JSON.stringify(result, null, 2));
+
+    // Log DOB specifically for tracking
+    if (result && result.childDob) {
+      console.log("=== DOB TRACKING IN PENDING BOOKING RETRIEVAL ===");
+      console.log("Retrieved DOB:", result.childDob);
+      console.log("DOB type:", typeof result.childDob);
+      console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(result.childDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
+    }
+
+    return result;
+  } catch (error) {
+    console.error(`❌ Error retrieving pending booking data:`, error);
+    return null;
+  }
 }
 
 /**
@@ -763,8 +807,19 @@ export async function POST(request: Request) {
     if (paymentState === "COMPLETED") {
       console.log("✅ Payment completed successfully. Creating booking and payment record...");
 
-      // Create booking and payment directly without relying on pending bookings
-      const bookingResult = await createBookingAndPaymentDirect(transactionId, merchantTransactionId, amount, paymentState);
+      // First, try to retrieve pending booking data
+      console.log("🔍 Attempting to retrieve pending booking data...");
+      const pendingBookingData = await getPendingBookingData(merchantTransactionId);
+
+      let bookingResult;
+
+      if (pendingBookingData) {
+        console.log("✅ Found pending booking data. Creating booking with actual user data...");
+        bookingResult = await createBookingAndPayment(pendingBookingData, transactionId, merchantTransactionId, amount, paymentState);
+      } else {
+        console.log("⚠️ No pending booking data found. Using fallback method...");
+        bookingResult = await createBookingAndPaymentDirect(transactionId, merchantTransactionId, amount, paymentState);
+      }
 
       if (bookingResult.success && bookingResult.bookingId) {
         console.log(`✅ Booking and payment successfully created for ID: ${bookingResult.bookingId}`);
@@ -789,20 +844,20 @@ export async function POST(request: Request) {
           const settings = emailSettings[0];
           console.log('📧 Email settings retrieved successfully');
 
-          // Generate booking confirmation HTML
+          // Generate booking confirmation HTML with actual data if available
           const bookingRef = `B${String(bookingResult.bookingId).padStart(7, '0')}`;
           const htmlContent = generateBookingConfirmationHTML({
             bookingId: bookingResult.bookingId,
             bookingRef: bookingRef,
-            parentName: 'Valued Customer',
-            childName: 'Child',
-            eventTitle: 'NIBOG Event',
-            eventDate: new Date().toLocaleDateString(),
-            eventVenue: 'Main Stadium',
+            parentName: pendingBookingData?.parentName || 'Valued Customer',
+            childName: pendingBookingData?.childName || 'Child',
+            eventTitle: pendingBookingData?.eventTitle || 'NIBOG Event',
+            eventDate: pendingBookingData?.eventDate || new Date().toLocaleDateString(),
+            eventVenue: pendingBookingData?.eventVenue || 'Main Stadium',
             totalAmount: amount / 100,
             paymentMethod: 'PhonePe',
             transactionId: transactionId,
-            gameDetails: [] // Add empty gameDetails array for fallback case
+            gameDetails: pendingBookingData?.gameDetails || [] // Use actual game details if available
           });
 
           // Send email using existing send-receipt-email API
@@ -812,8 +867,8 @@ export async function POST(request: Request) {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              to: `customer-${transactionId.slice(-6)}@example.com`, // Fallback email
-              subject: `🎉 Booking Confirmed - NIBOG Event | NIBOG`,
+              to: pendingBookingData?.email || `customer-${transactionId.slice(-6)}@example.com`,
+              subject: `🎉 Booking Confirmed - ${pendingBookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
               html: htmlContent,
               settings: settings
             }),
@@ -839,18 +894,18 @@ export async function POST(request: Request) {
           const phoneMatch = merchantTransactionId.match(/NIBOG_(\d+)_/);
           const userId = phoneMatch ? parseInt(phoneMatch[1]) : null;
 
-          // Prepare notification data
+          // Prepare notification data with actual booking information
           const bookingRef = `B${String(bookingResult.bookingId).padStart(7, '0')}`;
           const notificationData = {
             bookingId: bookingResult.bookingId,
             bookingRef: bookingRef,
-            parentName: 'Valued Customer',
-            parentPhone: `+91${userId || '9999999999'}`, // Fallback phone number
-            parentEmail: `customer-${bookingResult.bookingId}@example.com`,
-            childName: 'Child',
-            eventTitle: 'NIBOG Event',
-            eventDate: new Date().toLocaleDateString(),
-            eventVenue: 'Main Stadium',
+            parentName: pendingBookingData?.parentName || 'Valued Customer',
+            parentPhone: pendingBookingData?.phone || `+91${userId || '9999999999'}`,
+            parentEmail: pendingBookingData?.email || `customer-${bookingResult.bookingId}@example.com`,
+            childName: pendingBookingData?.childName || 'Child',
+            eventTitle: pendingBookingData?.eventTitle || 'NIBOG Event',
+            eventDate: pendingBookingData?.eventDate || new Date().toLocaleDateString(),
+            eventVenue: pendingBookingData?.eventVenue || 'Main Stadium',
             totalAmount: amount / 100,
             paymentMethod: 'PhonePe',
             transactionId: transactionId,

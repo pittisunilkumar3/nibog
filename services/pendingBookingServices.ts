@@ -53,11 +53,23 @@ export interface PendingBookingData {
       });
   
       if (!response.ok) {
-        const errorData = await response.json();
-        console.error('Failed to create pending booking:', errorData);
+        console.error(`❌ Pending booking API failed with status: ${response.status}`);
+        console.error(`❌ Response status text: ${response.statusText}`);
+
+        let errorData;
+        try {
+          errorData = await response.json();
+          console.error('❌ Error response data:', errorData);
+        } catch (parseError) {
+          console.error('❌ Failed to parse error response as JSON');
+          const errorText = await response.text();
+          console.error('❌ Raw error response:', errorText);
+          errorData = { error: errorText };
+        }
+
         return {
           success: false,
-          error: errorData.error || `Failed to create pending booking: ${response.status}`
+          error: errorData.error || `Failed to create pending booking: ${response.status} - ${response.statusText}`
         };
       }
   
