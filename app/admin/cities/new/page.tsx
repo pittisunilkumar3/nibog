@@ -63,26 +63,26 @@ export default function NewCityPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => router.push("/admin/cities")}>
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+          <Button variant="outline" size="icon" onClick={() => router.push("/admin/cities")} className="touch-manipulation flex-shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Add New City</h1>
-            <p className="text-muted-foreground">Add a new city for NIBOG events</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Add New City</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">Add a new city for NIBOG events</p>
           </div>
         </div>
       </div>
 
       <form onSubmit={handleSubmit}>
         <Card>
-          <CardHeader>
-            <CardTitle>City Information</CardTitle>
-            <CardDescription>Enter the details for the new city</CardDescription>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg sm:text-xl">City Information</CardTitle>
+            <CardDescription className="text-sm">Enter the details for the new city</CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
             {error && (
               <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md mb-4">
                 {error}
@@ -123,11 +123,11 @@ export default function NewCityPage() {
               />
             </div>
           </CardContent>
-          <CardFooter className="flex justify-between">
-            <Button variant="outline" type="button" onClick={() => router.push("/admin/cities")}>
+          <CardFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between p-4 sm:p-6">
+            <Button variant="outline" type="button" onClick={() => router.push("/admin/cities")} className="w-full sm:w-auto touch-manipulation">
               Cancel
             </Button>
-            <Button type="submit" disabled={isLoading}>
+            <Button type="submit" disabled={isLoading} className="w-full sm:w-auto touch-manipulation">
               {isLoading ? (
                 "Creating..."
               ) : (

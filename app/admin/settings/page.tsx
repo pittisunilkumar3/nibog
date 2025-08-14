@@ -338,31 +338,31 @@ export default function SettingsPage() {
   const [testMode, setTestMode] = useState(true)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <div>
-        <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-        <p className="text-muted-foreground">Manage your NIBOG platform settings</p>
+        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Settings</h1>
+        <p className="text-muted-foreground text-sm sm:text-base">Manage your NIBOG platform settings</p>
       </div>
 
       <Tabs defaultValue="general" className="space-y-4">
-        <TabsList>
-          <TabsTrigger value="general">General</TabsTrigger>
-          <TabsTrigger value="social">Social Media</TabsTrigger>
-          <TabsTrigger value="email">Email</TabsTrigger>
-          <TabsTrigger value="notifications">Notifications</TabsTrigger>
-          <TabsTrigger value="payment">Payment</TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2 sm:grid-cols-5 h-auto sm:h-10">
+          <TabsTrigger value="general" className="text-xs sm:text-sm px-2 sm:px-3 py-2">General</TabsTrigger>
+          <TabsTrigger value="social" className="text-xs sm:text-sm px-2 sm:px-3 py-2">Social</TabsTrigger>
+          <TabsTrigger value="email" className="text-xs sm:text-sm px-2 sm:px-3 py-2">Email</TabsTrigger>
+          <TabsTrigger value="notifications" className="text-xs sm:text-sm px-2 sm:px-3 py-2">Notifications</TabsTrigger>
+          <TabsTrigger value="payment" className="text-xs sm:text-sm px-2 sm:px-3 py-2">Payment</TabsTrigger>
         </TabsList>
 
         {/* General Settings */}
-        <TabsContent value="general" className="space-y-4">
+        <TabsContent value="general" className="space-y-3 sm:space-y-4">
           <Card>
-            <CardHeader>
-              <CardTitle>General Settings</CardTitle>
+            <CardHeader className="p-4 sm:p-6">
+              <CardTitle className="text-lg sm:text-xl">General Settings</CardTitle>
               <CardDescription>
                 Configure the basic information for your NIBOG platform
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
               {isLoadingGeneralSetting ? (
                 <div className="flex flex-col items-center justify-center py-8">
                   <div className="mb-4 h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent"></div>
@@ -376,7 +376,7 @@ export default function SettingsPage() {
                       {/* Basic Information Display */}
                       <div>
                         <h3 className="text-lg font-medium mb-4">Basic Information</h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">Site Name</Label>
                             <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md">{siteName || "Not configured"}</p>

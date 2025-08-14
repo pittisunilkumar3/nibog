@@ -439,14 +439,14 @@ export default function NewEventPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <div className="grid gap-6 md:grid-cols-2">
-          <div className="space-y-6">
+        <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+          <div className="space-y-4 sm:space-y-6">
             <Card>
               <CardHeader>
                 <CardTitle>Event Details</CardTitle>
                 <CardDescription>Basic information about the event</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
                 <div className="space-y-2">
                   <Label htmlFor="title">Event Title</Label>
                   <Input
@@ -594,7 +594,7 @@ export default function NewEventPage() {
                 <CardTitle>Add Games</CardTitle>
                 <CardDescription>Select games to include in this event</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
                 <div className="space-y-2">
                   <Label htmlFor="gameTemplate">Game Templates</Label>
                   {isLoadingGames ? (
@@ -671,7 +671,7 @@ export default function NewEventPage() {
             </Card>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             {activeGameIndex !== null && selectedGames[activeGameIndex] && (
               <Card>
                 <CardHeader>
@@ -680,7 +680,7 @@ export default function NewEventPage() {
                     Customize the selected game for this event
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
                   {activeGameIndex !== null && selectedGames[activeGameIndex] && (() => {
                     const game = selectedGames[activeGameIndex];
                     const template = gameTemplates.find(t => t.id === game.templateId);
@@ -898,11 +898,21 @@ export default function NewEventPage() {
             )}
 
             <Card>
-              <CardFooter className="flex justify-between pt-6">
-                <Button type="button" variant="outline" onClick={() => router.push("/admin/events")}>
+              <CardFooter className="flex flex-col sm:flex-row gap-3 sm:justify-between pt-4 sm:pt-6 p-4 sm:p-6">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => router.push("/admin/events")}
+                  className="w-full sm:w-auto touch-manipulation"
+                >
                   Cancel
                 </Button>
-                <Button type="submit">Create Event</Button>
+                <Button
+                  type="submit"
+                  className="w-full sm:w-auto touch-manipulation"
+                >
+                  Create Event
+                </Button>
               </CardFooter>
             </Card>
           </div>

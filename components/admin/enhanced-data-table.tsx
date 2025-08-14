@@ -301,16 +301,16 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
   const MobileCardView = ({ data }: { data: T[] }) => (
     <div className="space-y-3">
       {data.map((row, index) => (
-        <div key={index} className="border rounded-lg p-4 space-y-3 bg-card">
+        <div key={index} className="border rounded-lg p-4 space-y-3 bg-card shadow-sm hover:shadow-md transition-shadow touch-manipulation">
           {/* Show only priority columns in mobile card view */}
           {responsiveColumns
             .filter(col => visibleColumns.has(col.key) && col.priority && col.priority <= 4)
             .map((column) => (
-              <div key={String(column.key)} className="flex justify-between items-start">
-                <span className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0 mr-2">
+              <div key={String(column.key)} className="flex justify-between items-start gap-3">
+                <span className="text-sm font-medium text-muted-foreground min-w-0 flex-shrink-0">
                   {column.label}:
                 </span>
-                <div className="text-sm text-right min-w-0 flex-1">
+                <div className="text-sm text-right min-w-0 flex-1 break-words">
                   {column.render ? column.render(row[column.key], row) : String(row[column.key])}
                 </div>
               </div>
@@ -318,24 +318,29 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
 
           {/* Actions for mobile */}
           {actions.length > 0 && (
-            <div className="flex justify-end pt-2 border-t">
+            <div className="flex justify-end pt-3 border-t mt-3">
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="sm">
+                  <Button variant="outline" size="sm" className="touch-manipulation h-9">
                     <MoreHorizontal className="h-4 w-4 mr-2" />
                     Actions
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="min-w-[160px]">
                   {actions.map((action, actionIndex) => (
                     <DropdownMenuItem
                       key={actionIndex}
                       onClick={() => action.onClick(row)}
                       disabled={action.disabled?.(row)}
-                      className={action.variant === 'destructive' ? 'text-destructive' : ''}
+                      className={cn(
+                        "touch-manipulation py-3 px-3 cursor-pointer",
+                        action.variant === 'destructive' ? 'text-destructive focus:text-destructive' : ''
+                      )}
                     >
-                      {action.icon}
-                      {action.label}
+                      <div className="flex items-center gap-2">
+                        {action.icon}
+                        <span>{typeof action.label === 'function' ? action.label(row) : action.label}</span>
+                      </div>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
@@ -655,7 +660,10 @@ export default function EnhancedDataTable<T extends Record<string, any>>({
                     variant={currentPage === page ? "default" : "outline"}
                     size="sm"
                     onClick={() => setCurrentPage(page)}
-                    className="w-8 h-8 p-0 flex-shrink-0"
+                    className={cn(
+                      "flex-shrink-0 touch-manipulation",
+                      isMobile ? "w-10 h-10 p-0" : "w-8 h-8 p-0"
+                    )}
                   >
                     {page}
                   </Button>

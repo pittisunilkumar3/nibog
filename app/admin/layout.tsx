@@ -6,6 +6,7 @@ import { Toaster } from "@/components/ui/toaster"
 import AdminSidebar from "@/components/admin/admin-sidebar"
 import AdminHeader from "@/components/admin/admin-header"
 import AuthGuard from "@/components/auth/auth-guard"
+import ResponsiveTestHelper from "@/components/admin/responsive-test-helper"
 
 const inter = Inter({ subsets: ["latin"] })
 
@@ -21,6 +22,9 @@ export default function AdminLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <Toaster />
@@ -36,6 +40,7 @@ export default function AdminLayout({
                 </main>
               </div>
             </div>
+            <ResponsiveTestHelper />
           </AuthGuard>
         </ThemeProvider>
       </body>

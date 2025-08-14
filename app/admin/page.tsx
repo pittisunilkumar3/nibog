@@ -176,13 +176,13 @@ export default function AdminDashboard() {
     <PageTransition>
       <div className="space-y-8">
         {/* Header with Refresh Button */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Dashboard</h1>
+            <p className="text-muted-foreground text-sm sm:text-base">
               Real-time overview of your NIBOG platform
               {metrics && (
-                <span className="ml-2 text-xs text-muted-foreground">
+                <span className="block sm:inline sm:ml-2 text-xs text-muted-foreground">
                   Last updated: {new Date().toLocaleTimeString()}
                 </span>
               )}
@@ -192,6 +192,7 @@ export default function AdminDashboard() {
             onClick={() => fetchDashboardData(true)}
             disabled={isRefreshing}
             variant="outline"
+            className="w-full sm:w-auto touch-manipulation"
           >
             <RefreshCw className={`h-4 w-4 mr-2 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh Data
@@ -228,27 +229,27 @@ export default function AdminDashboard() {
         <FadeIn delay={0.5}>
           <div className="space-y-6">
             <Tabs defaultValue="overview" className="space-y-6">
-          <div className="flex items-center justify-between">
-            <TabsList className="grid w-full max-w-2xl grid-cols-5 h-11">
-              <TabsTrigger value="overview" className="flex items-center gap-2">
-                <TrendingUp className="h-4 w-4" />
-                <span className="hidden sm:inline">Overview</span>
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <TabsList className="grid w-full max-w-full sm:max-w-2xl grid-cols-5 h-11 touch-manipulation">
+              <TabsTrigger value="overview" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+                <TrendingUp className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Overview</span>
               </TabsTrigger>
-              <TabsTrigger value="bookings" className="flex items-center gap-2">
-                <Calendar className="h-4 w-4" />
-                <span className="hidden sm:inline">Bookings</span>
+              <TabsTrigger value="bookings" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+                <Calendar className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Bookings</span>
               </TabsTrigger>
-              <TabsTrigger value="events" className="flex items-center gap-2">
-                <Activity className="h-4 w-4" />
-                <span className="hidden sm:inline">Events</span>
+              <TabsTrigger value="events" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+                <Activity className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Events</span>
               </TabsTrigger>
-              <TabsTrigger value="addons" className="flex items-center gap-2">
-                <Package className="h-4 w-4" />
-                <span className="hidden sm:inline">Add-ons</span>
+              <TabsTrigger value="addons" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+                <Package className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Add-ons</span>
               </TabsTrigger>
-              <TabsTrigger value="promos" className="flex items-center gap-2">
-                <Tag className="h-4 w-4" />
-                <span className="hidden sm:inline">Promos</span>
+              <TabsTrigger value="promos" className="flex items-center gap-1 sm:gap-2 px-2 sm:px-3">
+                <Tag className="h-4 w-4 flex-shrink-0" />
+                <span className="hidden sm:inline text-xs sm:text-sm">Promos</span>
               </TabsTrigger>
             </TabsList>
           </div>

@@ -111,16 +111,16 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
 
   return (
     <header className="sticky top-0 z-40 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="flex h-16 items-center gap-4 px-6">
-        {/* Breadcrumbs */}
-        <div className="flex-1">
+      <div className="flex h-16 items-center gap-2 sm:gap-4 pl-16 pr-3 sm:px-6 md:pl-6">
+        {/* Breadcrumbs - Hidden on mobile, shown on larger screens */}
+        <div className="flex-1 min-w-0 hidden sm:block">
           <Breadcrumb>
             <BreadcrumbList>
               <BreadcrumbItem>
                 <BreadcrumbLink asChild>
                   <Link href="/admin" className="flex items-center gap-1">
                     <Home className="h-4 w-4" />
-                    <span className="sr-only">Dashboard</span>
+                    <span className="sr-only sm:not-sr-only sm:ml-1">Dashboard</span>
                   </Link>
                 </BreadcrumbLink>
               </BreadcrumbItem>
@@ -131,12 +131,14 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
                     <div key={breadcrumb.href} className="flex items-center gap-2">
                       <BreadcrumbItem>
                         {breadcrumb.isLast ? (
-                          <BreadcrumbPage className="font-medium">
+                          <BreadcrumbPage className="font-medium truncate max-w-[200px]">
                             {title || breadcrumb.label}
                           </BreadcrumbPage>
                         ) : (
                           <BreadcrumbLink asChild>
-                            <Link href={breadcrumb.href}>{breadcrumb.label}</Link>
+                            <Link href={breadcrumb.href} className="truncate max-w-[150px]">
+                              {breadcrumb.label}
+                            </Link>
                           </BreadcrumbLink>
                         )}
                       </BreadcrumbItem>
@@ -148,22 +150,38 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
             </BreadcrumbList>
           </Breadcrumb>
           {description && (
-            <p className="text-sm text-muted-foreground mt-1">{description}</p>
+            <p className="text-sm text-muted-foreground mt-1 truncate">{description}</p>
           )}
         </div>
 
-        {/* Search */}
-        <div className="flex items-center gap-2">
-          <GlobalSearch />
+        {/* Mobile title - Only shown on mobile */}
+        <div className="flex-1 min-w-0 sm:hidden">
+          <h1 className="text-lg font-semibold truncate">
+            {title || (breadcrumbs.length > 0 ? breadcrumbs[breadcrumbs.length - 1].label : 'Dashboard')}
+          </h1>
         </div>
 
-        {/* Notifications */}
-        <NotificationCenter />
+        {/* Search - Responsive sizing */}
+        <div className="flex items-center gap-1 sm:gap-2">
+          <div className="hidden sm:block">
+            <GlobalSearch />
+          </div>
+          {/* Mobile search button - could be implemented later */}
+          <Button variant="ghost" size="icon" className="sm:hidden touch-manipulation">
+            <Search className="h-4 w-4" />
+            <span className="sr-only">Search</span>
+          </Button>
+        </div>
+
+        {/* Notifications - Hidden on mobile to save space */}
+        <div className="hidden sm:block">
+          <NotificationCenter />
+        </div>
 
         {/* User Menu */}
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="icon">
+            <Button variant="outline" size="icon" className="flex-shrink-0 touch-manipulation">
               <User className="h-4 w-4" />
               <span className="sr-only">User menu</span>
             </Button>
@@ -171,14 +189,24 @@ export default function AdminHeader({ title, description }: AdminHeaderProps) {
           <DropdownMenuContent align="end" className="w-56">
             <DropdownMenuLabel>Admin Account</DropdownMenuLabel>
             <DropdownMenuSeparator />
+            {/* Show notifications in mobile menu */}
+            <div className="sm:hidden">
+              <DropdownMenuItem asChild>
+                <Link href="/admin/notifications" className="flex items-center">
+                  <Bell className="mr-2 h-4 w-4" />
+                  Notifications
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+            </div>
             <DropdownMenuItem asChild>
-              <Link href="/admin/settings" className="flex items-center">
+              <Link href="/admin/settings" className="flex items-center touch-manipulation">
                 <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={handleLogout} className="text-red-600">
+            <DropdownMenuItem onClick={handleLogout} className="text-red-600 touch-manipulation">
               <LogOut className="mr-2 h-4 w-4" />
               Logout
             </DropdownMenuItem>

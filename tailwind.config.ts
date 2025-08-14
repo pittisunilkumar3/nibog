@@ -19,6 +19,9 @@ const config = {
       },
     },
     extend: {
+      screens: {
+        'xs': '475px', // Extra small devices
+      },
       colors: {
         // Custom colors for backgrounds
         lavender: {

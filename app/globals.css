@@ -304,4 +304,61 @@
   .mobile-scroll::-webkit-scrollbar-thumb:hover {
     background: hsl(var(--muted-foreground));
   }
+
+  /* Touch-friendly button and form element sizing */
+  .touch-manipulation {
+    touch-action: manipulation;
+    min-height: 44px;
+    min-width: 44px;
+  }
+
+  /* Mobile-optimized form elements */
+  .mobile-input {
+    @apply touch-manipulation text-base; /* Prevents zoom on iOS */
+  }
+
+  /* Mobile-friendly spacing */
+  .mobile-padding {
+    @apply px-3 py-2 sm:px-4 sm:py-3;
+  }
+
+  .mobile-margin {
+    @apply mx-3 my-2 sm:mx-4 sm:my-3;
+  }
+
+  /* Mobile card layouts */
+  .mobile-card {
+    @apply p-3 sm:p-4 rounded-lg border bg-card text-card-foreground shadow-sm;
+  }
+
+  /* Mobile-friendly text sizes */
+  .mobile-text-sm {
+    @apply text-sm sm:text-base;
+  }
+
+  .mobile-text-lg {
+    @apply text-lg sm:text-xl;
+  }
+
+  .mobile-text-xl {
+    @apply text-xl sm:text-2xl;
+  }
+
+  /* Mobile-optimized grid layouts */
+  .mobile-grid-1 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3;
+  }
+
+  .mobile-grid-2 {
+    @apply grid grid-cols-1 md:grid-cols-2;
+  }
+
+  /* Mobile-friendly flex layouts */
+  .mobile-flex-col {
+    @apply flex flex-col sm:flex-row;
+  }
+
+  .mobile-flex-wrap {
+    @apply flex flex-wrap gap-2 sm:gap-3;
+  }
 }

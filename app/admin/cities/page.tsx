@@ -72,26 +72,23 @@ export default function CitiesPage() {
   // Define table columns
   const columns: Column<City>[] = [
     {
-      key: 'id',
-      label: 'ID',
-      sortable: true,
-      width: '80px'
-    },
-    {
       key: 'city_name',
       label: 'City Name',
-      sortable: true
+      sortable: true,
+      priority: 1 // Highest priority for mobile
     },
     {
       key: 'state',
       label: 'State',
       sortable: true,
+      priority: 2, // Second priority for mobile
       render: (value) => value || 'N/A'
     },
     {
       key: 'is_active',
       label: 'Status',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value) => (
         <Badge className={value ? 'bg-green-500 hover:bg-green-600' : 'bg-red-500 hover:bg-red-600'}>
           {value ? 'Active' : 'Inactive'}
@@ -99,10 +96,18 @@ export default function CitiesPage() {
       )
     },
     {
+      key: 'id',
+      label: 'ID',
+      sortable: true,
+      width: '80px',
+      hideOnMobile: true // Hide on mobile to save space
+    },
+    {
       key: 'venues',
       label: 'Total Venues',
       sortable: true,
       align: 'right',
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => value || 0
     },
     {
@@ -110,6 +115,7 @@ export default function CitiesPage() {
       label: 'Total Events',
       sortable: true,
       align: 'right',
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => value || 0
     },
     {
@@ -230,32 +236,34 @@ export default function CitiesPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">NIBOG Cities</h1>
-          <p className="text-muted-foreground">
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">NIBOG Cities</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">
             Manage cities where NIBOG events are held
             {!isLoading && (
-              <span className="ml-2 text-sm font-medium">
-                • Total: {citiesList.length} cities
+              <span className="block sm:inline sm:ml-2 text-sm font-medium">
+                Total: {citiesList.length} cities
               </span>
             )}
           </p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={handleRefresh}
             disabled={isRefreshing}
+            className="touch-manipulation"
           >
             <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/cities/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New City
+              <span className="hidden sm:inline">Add New City</span>
+              <span className="sm:hidden">New City</span>
             </Link>
           </Button>
         </div>

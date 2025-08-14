@@ -292,6 +292,7 @@ export default function EventsPage() {
       key: 'title',
       label: 'Event',
       sortable: true,
+      priority: 1, // Highest priority for mobile
       render: (value) => (
         <TruncatedText
           text={value}
@@ -301,14 +302,77 @@ export default function EventsPage() {
       )
     },
     {
+      key: 'city',
+      label: 'City',
+      sortable: true,
+      priority: 2, // Second priority for mobile
+      render: (value) => (
+        <Link
+          href={`/admin/events/cities/${encodeURIComponent(value)}`}
+          className="flex items-center hover:underline touch-manipulation"
+        >
+          <MapPin className="mr-1 h-3 w-3 text-muted-foreground" />
+          {value}
+        </Link>
+      )
+    },
+    {
+      key: 'date',
+      label: 'Date',
+      sortable: true,
+      priority: 3, // Third priority for mobile
+      render: (value) => (
+        <span className="text-sm">{value}</span>
+      )
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      priority: 4, // Fourth priority for mobile
+      render: (value) => {
+        const statusColors = {
+          published: 'bg-green-500 hover:bg-green-600',
+          draft: 'outline',
+          paused: 'bg-amber-500 hover:bg-amber-600',
+          cancelled: 'bg-red-500 hover:bg-red-600',
+          completed: 'bg-blue-500 hover:bg-blue-600'
+        }
+        const variant = value === 'draft' ? 'outline' : undefined
+        const className = statusColors[value as keyof typeof statusColors] || ''
+
+        return (
+          <Badge variant={variant} className={variant ? undefined : className}>
+            {value.charAt(0).toUpperCase() + value.slice(1)}
+          </Badge>
+        )
+      }
+    },
+    {
+      key: 'venue',
+      label: 'Venue',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value, row) => (
+        <Link
+          href={`/admin/events/venues/${row.venueId}`}
+          className="flex items-center hover:underline touch-manipulation"
+        >
+          <Building className="mr-1 h-3 w-3 text-muted-foreground" />
+          {value}
+        </Link>
+      )
+    },
+    {
       key: 'gameTemplate',
       label: 'Games',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => (
         <div className="max-w-[200px]">
           {value && typeof value === 'string' ?
             value.split(", ").map((game, index) => (
-              <Badge key={index} variant="outline" className="mr-1 mb-1">
+              <Badge key={index} variant="outline" className="mr-1 mb-1 text-xs">
                 {game}
               </Badge>
             )) : (
@@ -319,41 +383,9 @@ export default function EventsPage() {
       )
     },
     {
-      key: 'venue',
-      label: 'Venue',
-      sortable: true,
-      render: (value, row) => (
-        <Link
-          href={`/admin/events/venues/${row.venueId}`}
-          className="flex items-center hover:underline"
-        >
-          <Building className="mr-1 h-3 w-3 text-muted-foreground" />
-          {value}
-        </Link>
-      )
-    },
-    {
-      key: 'city',
-      label: 'City',
-      sortable: true,
-      render: (value) => (
-        <Link
-          href={`/admin/events/cities/${encodeURIComponent(value)}`}
-          className="flex items-center hover:underline"
-        >
-          <MapPin className="mr-1 h-3 w-3 text-muted-foreground" />
-          {value}
-        </Link>
-      )
-    },
-    {
-      key: 'date',
-      label: 'Date',
-      sortable: true
-    },
-    {
       key: 'slots',
       label: 'Slots',
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => (
         <div className="flex flex-col gap-1">
           {value && Array.isArray(value) && value.length > 0 ?
@@ -378,28 +410,6 @@ export default function EventsPage() {
           }
         </div>
       )
-    },
-    {
-      key: 'status',
-      label: 'Status',
-      sortable: true,
-      render: (value) => {
-        const statusColors = {
-          published: 'bg-green-500 hover:bg-green-600',
-          draft: 'outline',
-          paused: 'bg-amber-500 hover:bg-amber-600',
-          cancelled: 'bg-red-500 hover:bg-red-600',
-          completed: 'bg-blue-500 hover:bg-blue-600'
-        }
-        const variant = value === 'draft' ? 'outline' : undefined
-        const className = statusColors[value as keyof typeof statusColors] || ''
-
-        return (
-          <Badge variant={variant} className={variant ? undefined : className}>
-            {value.charAt(0).toUpperCase() + value.slice(1)}
-          </Badge>
-        )
-      }
     }
   ]
 
@@ -650,65 +660,67 @@ export default function EventsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">NIBOG Events</h1>
-          <p className="text-muted-foreground">Manage NIBOG baby games events across 21 cities</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">NIBOG Events</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage NIBOG baby games events across 21 cities</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href="/admin/events/cities">
               <MapPin className="mr-2 h-4 w-4" />
-              Browse by City
+              <span className="hidden sm:inline">Browse by City</span>
+              <span className="sm:hidden">Cities</span>
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/events/new">
               <Plus className="mr-2 h-4 w-4" />
-              Create New Event
+              <span className="hidden sm:inline">Create New Event</span>
+              <span className="sm:hidden">New Event</span>
             </Link>
           </Button>
         </div>
       </div>
 
       <Tabs defaultValue="list" className="space-y-4">
-        <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
-          <TabsList>
-            <TabsTrigger value="list">List View</TabsTrigger>
-            <TabsTrigger value="calendar">Calendar View</TabsTrigger>
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <TabsList className="grid w-full grid-cols-2 sm:w-auto sm:grid-cols-none sm:flex">
+            <TabsTrigger value="list" className="touch-manipulation">List View</TabsTrigger>
+            <TabsTrigger value="calendar" className="touch-manipulation">Calendar View</TabsTrigger>
           </TabsList>
 
-          <div className="flex flex-1 items-center gap-2 sm:justify-end">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
             <div className="relative flex-1 sm:max-w-xs">
-              <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search events..."
-                className="pl-8"
+                className="pl-9 h-10 touch-manipulation"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
             <Popover>
               <PopoverTrigger asChild>
-                <Button variant="outline" size="icon">
-                  <Filter className="h-4 w-4" />
-                  <span className="sr-only">Filter</span>
+                <Button variant="outline" className="w-full sm:w-auto touch-manipulation">
+                  <Filter className="mr-2 h-4 w-4 sm:mr-0" />
+                  <span className="sm:sr-only">Filters</span>
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-80" align="end">
-                <div className="space-y-4">
-                  <h4 className="font-medium">Filter Events</h4>
+              <PopoverContent className="w-[calc(100vw-2rem)] sm:w-80 md:w-96" align="end" sideOffset={8}>
+                <div className="space-y-3 sm:space-y-4 p-1">
+                  <h4 className="font-medium text-base">Filter Events</h4>
                   <div className="space-y-2">
-                    <Label htmlFor="city">City</Label>
+                    <Label htmlFor="city" className="text-sm font-medium">City</Label>
                     <Select value={selectedCity} onValueChange={setSelectedCity}>
-                      <SelectTrigger id="city">
+                      <SelectTrigger id="city" className="touch-manipulation">
                         <SelectValue placeholder="All Cities" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Cities</SelectItem>
+                        <SelectItem value="" className="touch-manipulation">All Cities</SelectItem>
                         {cities.map((city) => (
-                          <SelectItem key={city.id} value={city.city_name}>
+                          <SelectItem key={city.id} value={city.city_name} className="touch-manipulation">
                             {city.city_name}
                           </SelectItem>
                         ))}
@@ -716,15 +728,15 @@ export default function EventsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="venue">Venue</Label>
+                    <Label htmlFor="venue" className="text-sm font-medium">Venue</Label>
                     <Select value={selectedVenue} onValueChange={setSelectedVenue}>
-                      <SelectTrigger id="venue">
+                      <SelectTrigger id="venue" className="touch-manipulation">
                         <SelectValue placeholder="All Venues" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Venues</SelectItem>
+                        <SelectItem value="" className="touch-manipulation">All Venues</SelectItem>
                         {filteredVenues.map((venue) => (
-                          <SelectItem key={venue.id} value={venue.venue_name}>
+                          <SelectItem key={venue.id} value={venue.venue_name} className="touch-manipulation">
                             {venue.venue_name}
                           </SelectItem>
                         ))}
@@ -732,15 +744,15 @@ export default function EventsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="template">Game Template</Label>
+                    <Label htmlFor="template" className="text-sm font-medium">Game Template</Label>
                     <Select value={selectedTemplate} onValueChange={setSelectedTemplate}>
-                      <SelectTrigger id="template">
+                      <SelectTrigger id="template" className="touch-manipulation">
                         <SelectValue placeholder="All Templates" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Templates</SelectItem>
+                        <SelectItem value="" className="touch-manipulation">All Templates</SelectItem>
                         {gameTemplates.map((template) => (
-                          <SelectItem key={template.id} value={template.game_name}>
+                          <SelectItem key={template.id} value={template.game_name} className="touch-manipulation">
                             {template.game_name}
                           </SelectItem>
                         ))}
@@ -748,29 +760,29 @@ export default function EventsPage() {
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="status">Status</Label>
+                    <Label htmlFor="status" className="text-sm font-medium">Status</Label>
                     <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                      <SelectTrigger id="status">
+                      <SelectTrigger id="status" className="touch-manipulation">
                         <SelectValue placeholder="All Statuses" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="">All Statuses</SelectItem>
-                        <SelectItem value="draft">Draft</SelectItem>
-                        <SelectItem value="published">Published</SelectItem>
-                        <SelectItem value="paused">Paused</SelectItem>
-                        <SelectItem value="cancelled">Cancelled</SelectItem>
-                        <SelectItem value="completed">Completed</SelectItem>
+                        <SelectItem value="" className="touch-manipulation">All Statuses</SelectItem>
+                        <SelectItem value="draft" className="touch-manipulation">Draft</SelectItem>
+                        <SelectItem value="published" className="touch-manipulation">Published</SelectItem>
+                        <SelectItem value="paused" className="touch-manipulation">Paused</SelectItem>
+                        <SelectItem value="cancelled" className="touch-manipulation">Cancelled</SelectItem>
+                        <SelectItem value="completed" className="touch-manipulation">Completed</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div className="space-y-2">
-                    <Label>Date</Label>
+                    <Label className="text-sm font-medium">Date</Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal",
+                            "w-full justify-start text-left font-normal touch-manipulation",
                             !selectedDate && "text-muted-foreground"
                           )}
                         >
@@ -778,7 +790,7 @@ export default function EventsPage() {
                           {selectedDate ? format(selectedDate, "PPP") : "Pick a date"}
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0">
+                      <PopoverContent className="w-auto p-0" align="start">
                         <Calendar
                           mode="single"
                           selected={selectedDate}
@@ -788,7 +800,7 @@ export default function EventsPage() {
                       </PopoverContent>
                     </Popover>
                   </div>
-                  <div className="flex justify-between">
+                  <div className="flex flex-col gap-2 pt-4 border-t">
                     <Button
                       variant="outline"
                       onClick={() => {
@@ -799,10 +811,11 @@ export default function EventsPage() {
                         setSelectedStatus("")
                         setSelectedDate(undefined)
                       }}
+                      className="w-full touch-manipulation"
                     >
                       Reset Filters
                     </Button>
-                    <Button>Apply Filters</Button>
+                    <Button className="w-full touch-manipulation">Apply Filters</Button>
                   </div>
                 </div>
               </PopoverContent>
@@ -844,14 +857,15 @@ export default function EventsPage() {
                 <div className="space-y-4">
                   {/* Calendar Header */}
                   <div className="flex items-center justify-between">
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-lg sm:text-2xl font-bold">
                       {format(currentMonth, "MMMM yyyy")}
                     </h2>
-                    <div className="flex gap-2">
+                    <div className="flex gap-1 sm:gap-2">
                       <Button
                         variant="outline"
                         size="icon"
                         onClick={() => navigateMonth('prev')}
+                        className="h-9 w-9 touch-manipulation"
                       >
                         <ChevronLeft className="h-4 w-4" />
                       </Button>
@@ -859,6 +873,7 @@ export default function EventsPage() {
                         variant="outline"
                         size="icon"
                         onClick={() => navigateMonth('next')}
+                        className="h-9 w-9 touch-manipulation"
                       >
                         <ChevronRight className="h-4 w-4" />
                       </Button>
@@ -866,11 +881,12 @@ export default function EventsPage() {
                   </div>
 
                   {/* Calendar Grid */}
-                  <div className="grid grid-cols-7 gap-1">
+                  <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
                     {/* Day headers */}
                     {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
-                      <div key={day} className="p-2 text-center text-sm font-medium text-muted-foreground">
-                        {day}
+                      <div key={day} className="p-1 sm:p-2 text-center text-xs sm:text-sm font-medium text-muted-foreground">
+                        <span className="hidden sm:inline">{day}</span>
+                        <span className="sm:hidden">{day.charAt(0)}</span>
                       </div>
                     ))}
 
@@ -884,7 +900,7 @@ export default function EventsPage() {
                         <div
                           key={index}
                           className={cn(
-                            "min-h-[100px] p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors",
+                            "min-h-[60px] sm:min-h-[100px] p-0.5 sm:p-1 border border-border cursor-pointer hover:bg-muted/50 transition-colors touch-manipulation",
                             !isCurrentMonth && "bg-muted/20 text-muted-foreground",
                             isCurrentDay && "bg-primary/10 border-primary"
                           )}
@@ -892,18 +908,18 @@ export default function EventsPage() {
                         >
                           <div className="flex flex-col h-full">
                             <div className={cn(
-                              "text-sm font-medium mb-1",
+                              "text-xs sm:text-sm font-medium mb-0.5 sm:mb-1",
                               isCurrentDay && "text-primary font-bold"
                             )}>
                               {format(day, 'd')}
                             </div>
 
-                            <div className="flex-1 space-y-1">
-                              {dayEvents.slice(0, 3).map((event, eventIndex) => (
+                            <div className="flex-1 space-y-0.5 sm:space-y-1">
+                              {dayEvents.slice(0, 2).map((event, eventIndex) => (
                                 <div
                                   key={eventIndex}
                                   className={cn(
-                                    "text-xs p-1 rounded text-white truncate",
+                                    "text-[10px] sm:text-xs p-0.5 sm:p-1 rounded text-white truncate",
                                     getStatusColor(event.status)
                                   )}
                                   title={`${event.title} - ${event.status}`}
@@ -912,9 +928,9 @@ export default function EventsPage() {
                                 </div>
                               ))}
 
-                              {dayEvents.length > 3 && (
-                                <div className="text-xs text-muted-foreground">
-                                  +{dayEvents.length - 3} more
+                              {dayEvents.length > 2 && (
+                                <div className="text-[10px] sm:text-xs text-muted-foreground">
+                                  +{dayEvents.length - 2} more
                                 </div>
                               )}
                             </div>
@@ -925,26 +941,26 @@ export default function EventsPage() {
                   </div>
 
                   {/* Legend */}
-                  <div className="flex flex-wrap gap-4 pt-4 border-t">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-green-500"></div>
-                      <span className="text-sm">Published</span>
+                  <div className="flex flex-wrap gap-2 sm:gap-4 pt-3 sm:pt-4 border-t">
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-green-500"></div>
+                      <span className="text-xs sm:text-sm">Published</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-amber-500"></div>
-                      <span className="text-sm">Paused</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-amber-500"></div>
+                      <span className="text-xs sm:text-sm">Paused</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-red-500"></div>
-                      <span className="text-sm">Cancelled</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-red-500"></div>
+                      <span className="text-xs sm:text-sm">Cancelled</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-gray-500"></div>
-                      <span className="text-sm">Draft</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-gray-500"></div>
+                      <span className="text-xs sm:text-sm">Draft</span>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 rounded bg-blue-500"></div>
-                      <span className="text-sm">Completed</span>
+                    <div className="flex items-center gap-1.5 sm:gap-2">
+                      <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-blue-500"></div>
+                      <span className="text-xs sm:text-sm">Completed</span>
                     </div>
                   </div>
                 </div>
@@ -956,12 +972,12 @@ export default function EventsPage() {
 
       {/* Event Details Modal */}
       <Dialog open={isEventModalOpen} onOpenChange={setIsEventModalOpen}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-[calc(100vw-2rem)] sm:max-w-4xl max-h-[85vh] sm:max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">
               Events for {selectedDayEvents.length > 0 && format(new Date(selectedDayEvents[0].date), "MMMM d, yyyy")}
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-sm">
               {selectedDayEvents.length} event{selectedDayEvents.length !== 1 ? 's' : ''} scheduled for this day
             </DialogDescription>
           </DialogHeader>
@@ -974,11 +990,11 @@ export default function EventsPage() {
               </div>
             ) : (
               selectedDayEvents.map((event) => (
-                <Card key={event.id} className="p-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-2">
-                        <h3 className="text-lg font-semibold">
+                <Card key={event.id} className="p-3 sm:p-4">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+                    <div className="flex-1 space-y-3">
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
+                        <h3 className="text-base sm:text-lg font-semibold">
                           <TruncatedText
                             text={event.title}
                             maxLength={60}
@@ -1002,18 +1018,18 @@ export default function EventsPage() {
                         )}
                       </div>
 
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
                         <div className="flex items-center gap-2">
-                          <MapPin className="h-4 w-4 text-muted-foreground" />
-                          <span>{event.city}</span>
+                          <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{event.city}</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <Building className="h-4 w-4 text-muted-foreground" />
-                          <span>{event.venue}</span>
+                          <Building className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                          <span className="truncate">{event.venue}</span>
                         </div>
                       </div>
 
-                      <div className="mt-3">
+                      <div>
                         <div className="text-sm font-medium mb-2">Games:</div>
                         <div className="flex flex-wrap gap-1">
                           {event.gameTemplate && typeof event.gameTemplate === 'string' ?
@@ -1029,14 +1045,14 @@ export default function EventsPage() {
                       </div>
 
                       {event.slots && event.slots.length > 0 && (
-                        <div className="mt-3">
+                        <div>
                           <div className="text-sm font-medium mb-2">Time Slots:</div>
                           <div className="space-y-1">
                             {event.slots.map((slot: any) => (
                               <div key={slot.id} className="flex items-center gap-2 text-sm">
-                                <Clock className="h-3 w-3 text-muted-foreground" />
-                                <span>{slot.time}</span>
-                                <Users className="h-3 w-3 text-muted-foreground ml-2" />
+                                <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
+                                <span className="truncate">{slot.time}</span>
+                                <Users className="h-3 w-3 text-muted-foreground ml-2 flex-shrink-0" />
                                 <span>{slot.booked}/{slot.capacity}</span>
                               </div>
                             ))}
@@ -1045,23 +1061,23 @@ export default function EventsPage() {
                       )}
                     </div>
 
-                    <div className="flex gap-2 ml-4">
-                      <Button variant="ghost" size="icon" asChild>
+                    <div className="flex flex-wrap gap-2 sm:ml-4">
+                      <Button variant="ghost" size="sm" asChild className="touch-manipulation">
                         <Link href={`/admin/events/${event.id}`}>
-                          <Eye className="h-4 w-4" />
-                          <span className="sr-only">View details</span>
+                          <Eye className="h-4 w-4 mr-2 sm:mr-0" />
+                          <span className="sm:sr-only">View</span>
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" asChild>
+                      <Button variant="ghost" size="sm" asChild className="touch-manipulation">
                         <Link href={`/admin/events/${event.id}/edit`}>
-                          <Edit className="h-4 w-4" />
-                          <span className="sr-only">Edit event</span>
+                          <Edit className="h-4 w-4 mr-2 sm:mr-0" />
+                          <span className="sm:sr-only">Edit</span>
                         </Link>
                       </Button>
-                      <Button variant="ghost" size="icon" asChild>
+                      <Button variant="ghost" size="sm" asChild className="touch-manipulation">
                         <Link href={`/admin/events/clone/${event.id}`}>
-                          <Copy className="h-4 w-4" />
-                          <span className="sr-only">Clone event</span>
+                          <Copy className="h-4 w-4 mr-2 sm:mr-0" />
+                          <span className="sm:sr-only">Clone</span>
                         </Link>
                       </Button>
 

@@ -251,19 +251,32 @@ export default function AdminSidebar() {
     <>
       <Sheet open={open} onOpenChange={setOpen}>
         <SheetTrigger asChild>
-          <Button variant="ghost" size="icon" className="fixed left-4 top-4 z-40 md:hidden">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="fixed left-3 top-3 z-50 md:hidden h-10 w-10 touch-manipulation bg-background/80 backdrop-blur-sm border shadow-sm hover:bg-accent"
+          >
             <Menu className="h-5 w-5" />
             <span className="sr-only">Toggle Menu</span>
           </Button>
         </SheetTrigger>
-        <SheetContent side="left" className="w-64 p-0">
+        <SheetContent side="left" className="w-72 p-0 touch-manipulation">
           <div className="flex h-full flex-col">
             <div className="border-b p-4">
               <div className="flex items-center justify-between">
-                <Link href="/admin" className="flex items-center gap-2 font-semibold">
+                <Link
+                  href="/admin"
+                  className="flex items-center gap-2 font-semibold text-lg"
+                  onClick={() => setOpen(false)}
+                >
                   NIBOG Admin
                 </Link>
-                <Button variant="ghost" size="icon" onClick={() => setOpen(false)}>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setOpen(false)}
+                  className="h-10 w-10 touch-manipulation"
+                >
                   <X className="h-5 w-5" />
                   <span className="sr-only">Close</span>
                 </Button>
@@ -289,7 +302,7 @@ export default function AdminSidebar() {
                             <li key={`parent-${sectionIndex}-${itemIndex}`}>
                               <button
                                 className={cn(
-                                  "w-full flex items-center justify-between gap-2 rounded-lg px-3 py-2.5 text-sm font-medium hover:bg-muted/50 transition-colors",
+                                  "w-full flex items-center justify-between gap-2 rounded-lg px-4 py-3 text-sm font-medium hover:bg-muted/50 transition-colors touch-manipulation",
                                   (isExpanded || hasActiveChild) ? "bg-muted text-foreground" : "text-muted-foreground hover:text-foreground",
                                 )}
                                 onClick={() => toggleSection(item.label)}
@@ -323,7 +336,7 @@ export default function AdminSidebar() {
                                       <Link
                                         href={child.href || '#'}
                                         className={cn(
-                                          "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors",
+                                          "flex items-center gap-2 rounded-md px-3 py-2 text-sm transition-colors touch-manipulation",
                                           pathname === child.href ? "bg-muted text-foreground font-medium" : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
                                         )}
                                         onClick={() => setOpen(false)}
@@ -351,7 +364,7 @@ export default function AdminSidebar() {
                             <Link
                               href={item.href as string}
                               className={cn(
-                                "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors group",
+                                "flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors group touch-manipulation",
                                 pathname === item.href
                                   ? "bg-primary text-primary-foreground hover:bg-primary/90"
                                   : "text-muted-foreground hover:text-foreground hover:bg-muted/80",
@@ -395,7 +408,7 @@ export default function AdminSidebar() {
             <div className="border-t p-4">
               <Button
                 variant="outline"
-                className="w-full justify-start"
+                className="w-full justify-start touch-manipulation"
                 onClick={handleLogout}
               >
                 <LogOut className="mr-2 h-4 w-4" />
