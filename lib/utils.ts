@@ -44,6 +44,28 @@ export function isChildEligible(childDob: Date, eventDate: Date, minAgeMonths: n
   return ageInMonths >= minAgeMonths && ageInMonths <= maxAgeMonths
 }
 
+// Format date to YYYY-MM-DD format for API consistency
+export function formatDateForAPI(date: Date | string): string {
+  if (date instanceof Date) {
+    return date.toISOString().split('T')[0];
+  } else if (typeof date === 'string') {
+    // If it's already a string, check if it's an ISO string and convert
+    return date.includes('T') ? date.split('T')[0] : date;
+  } else {
+    throw new Error('Invalid date format');
+  }
+}
+
+// Parse date from various formats to Date object
+export function parseDateFromAPI(dateString: string): Date {
+  // Handle YYYY-MM-DD format
+  if (dateString.match(/^\d{4}-\d{2}-\d{2}$/)) {
+    return new Date(dateString + 'T00:00:00.000Z');
+  }
+  // Handle ISO string format
+  return new Date(dateString);
+}
+
 // Format price in Indian Rupees
 export function formatPrice(price: number | string | undefined): string {
   // Convert price to a number and handle undefined/NaN cases

@@ -15,7 +15,7 @@ import { Badge } from "@/components/ui/badge"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { format, addMonths, differenceInMonths, differenceInDays } from "date-fns"
-import { cn } from "@/lib/utils"
+import { cn, formatDateForAPI } from "@/lib/utils"
 import { Calendar as CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
@@ -628,7 +628,7 @@ export default function RegisterEventClientPage() {
         phone,
         childName,
         schoolName,
-        dob: dob?.toISOString(),
+        dob: dob ? formatDateForAPI(dob) : undefined, // Store as YYYY-MM-DD format
         gender,
         eventDate: eventDate.toISOString(),
         selectedCity,
@@ -667,7 +667,7 @@ export default function RegisterEventClientPage() {
         phone,
         childName,
         schoolName,
-        dob: dob?.toISOString(),
+        dob: dob ? formatDateForAPI(dob) : undefined, // Store as YYYY-MM-DD format
         gender,
         eventDate: eventDate.toISOString(),
         selectedCity,
@@ -972,7 +972,7 @@ export default function RegisterEventClientPage() {
         email,
         phone,
         childName,
-        childDob: dob!.toISOString(),
+        childDob: formatDateForAPI(dob!), // Store as YYYY-MM-DD format
         schoolName,
         gender,
         eventId: selectedApiEvent.event_id,

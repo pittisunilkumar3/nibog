@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { BOOKING_API } from '@/config/api';
 import { PHONEPE_CONFIG, generateSHA256Hash } from '@/config/phonepe';
 import { WhatsAppBookingData } from '@/services/whatsappService';
+import { formatDateForAPI } from '@/lib/utils';
 
 // Cache successful transaction IDs to prevent duplicate processing
 let processedTransactions: Set<string> = new Set();
@@ -505,7 +506,14 @@ async function createBookingAndPayment(
       },
       child: {
         full_name: bookingData.childName,
-        date_of_birth: bookingData.childDob,
+        date_of_birth: (() => {
+          const formattedDob = formatDateForAPI(bookingData.childDob);
+          console.log("=== DOB FORMATTING IN PAYMENT CALLBACK ===");
+          console.log("Original DOB:", bookingData.childDob);
+          console.log("Formatted DOB:", formattedDob);
+          console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(formattedDob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
+          return formattedDob;
+        })(),
         school_name: bookingData.schoolName,
         gender: bookingData.gender,
       },

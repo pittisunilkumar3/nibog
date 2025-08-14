@@ -1,6 +1,7 @@
 // Booking registration service for handling booking API calls
 import { BOOKING_API } from '@/config/api';
 import { validateGameData, formatGamesForAPI, createFallbackGame } from '@/utils/gameIdValidation';
+import { formatDateForAPI } from '@/lib/utils';
 
 export interface BookingVariant {
   variant_id: number;
@@ -98,7 +99,7 @@ export function formatBookingDataForAPI(formData: {
   email: string;
   phone: string;
   childName: string;
-  childDob: Date;
+  childDob: Date | string; // Updated to accept both Date and string
   schoolName: string;
   gender: string;
   eventId: number;
@@ -112,10 +113,14 @@ export function formatBookingDataForAPI(formData: {
   selectedAddOns?: { addOn: any; quantity: number; variantId?: string }[];
   promoCode?: string;
 }): BookingRegistrationData {
-  // Format the date of birth to YYYY-MM-DD
-  const dob = formData.childDob.toISOString().split('T')[0];
+  // Format the date of birth to YYYY-MM-DD using utility function
+  const dob = formatDateForAPI(formData.childDob);
 
   console.log("=== FORMATTING BOOKING DATA FOR API ===");
+  console.log("Input childDob:", formData.childDob);
+  console.log("childDob type:", typeof formData.childDob);
+  console.log("Formatted DOB:", dob);
+  console.log("DOB format validation:", /^\d{4}-\d{2}-\d{2}$/.test(dob) ? "✅ Valid YYYY-MM-DD" : "❌ Invalid format");
   console.log("Input gameId:", formData.gameId);
   console.log("Input gamePrice:", formData.gamePrice);
   console.log("gameId type:", typeof formData.gameId);
