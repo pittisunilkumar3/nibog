@@ -8,7 +8,7 @@ import { Input } from "@/components/ui/input"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Badge } from "@/components/ui/badge"
-import { Plus, Search, Filter, Eye, Edit, Trash, Copy, AlertTriangle, BarChart, Loader2 } from "lucide-react"
+import { Plus, Search, Filter, Eye, Edit, Trash, Copy, AlertTriangle, BarChart, Loader2, RefreshCw } from "lucide-react"
 import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
 import { ExportColumn } from "@/lib/export-utils"
 import {
@@ -142,26 +142,44 @@ export default function PromoCodesPage() {
   const [promoCodesList, setPromoCodesList] = useState<PromoCode[]>([])
   const [isProcessing, setIsProcessing] = useState<string | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  // Fetch promo codes from API
+  const loadPromoCodes = async () => {
+    try {
+      setError(null)
+      const codes = await fetchPromoCodes()
+      setPromoCodesList(codes)
+    } catch (err) {
+      setError('Failed to load promo codes. Please try again.')
+      console.error('Error loading promo codes:', err)
+      toast({
+        title: "Error",
+        description: "Failed to load promo codes. Please try again.",
+        variant: "destructive",
+      })
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }
 
   // Fetch promo codes on component mount
   useEffect(() => {
-    const loadPromoCodes = async () => {
-      try {
-        setIsLoading(true)
-        setError(null)
-        const codes = await fetchPromoCodes()
-        setPromoCodesList(codes)
-      } catch (err) {
-        setError('Failed to load promo codes. Please try again.')
-        console.error('Error loading promo codes:', err)
-      } finally {
-        setIsLoading(false)
-      }
-    }
-
+    setIsLoading(true)
     loadPromoCodes()
   }, [])
+
+  // Handle refresh
+  const handleRefresh = async () => {
+    setIsRefreshing(true)
+    await loadPromoCodes()
+    toast({
+      title: "Success",
+      description: "Promo codes data refreshed successfully.",
+    })
+  }
 
   // Handle copy promo code
   const handleCopyPromoCode = (code: string) => {
@@ -238,39 +256,27 @@ export default function PromoCodesPage() {
       key: 'code',
       label: 'Code',
       sortable: true,
-    },
-    {
-      key: 'description',
-      label: 'Description',
-      sortable: true,
-    },
-    {
-      key: 'discountType',
-      label: 'Type',
-      sortable: true,
-      render: (value) => (
-        <Badge variant="outline">
-          {value === 'percentage' ? 'Percentage' : 'Fixed Amount'}
-        </Badge>
+      priority: 1, // Highest priority for mobile
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.description}</div>
+        </div>
       )
     },
     {
       key: 'discount',
       label: 'Value',
       sortable: true,
+      priority: 2, // Second priority for mobile
       render: (value, row) =>
         row.discountType === 'percentage' ? `${value}%` : `₹${value}`
-    },
-    {
-      key: 'usageCount',
-      label: 'Used',
-      sortable: true,
-      render: (value, row) => `${value}/${row.usageLimit || '∞'}`
     },
     {
       key: 'status',
       label: 'Status',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value) => {
         const statusColors = {
           active: 'bg-green-500 hover:bg-green-600',
@@ -283,6 +289,31 @@ export default function PromoCodesPage() {
           </Badge>
         )
       }
+    },
+    {
+      key: 'discountType',
+      label: 'Type',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => (
+        <Badge variant="outline">
+          {value === 'percentage' ? 'Percentage' : 'Fixed Amount'}
+        </Badge>
+      )
+    },
+    {
+      key: 'usageCount',
+      label: 'Used',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value, row) => `${value}/${row.usageLimit || '∞'}`
+    },
+    {
+      key: 'validTo',
+      label: 'Expires',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => new Date(value).toLocaleDateString()
     }
   ]
 
@@ -343,23 +374,34 @@ export default function PromoCodesPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Promo Codes</h1>
-          <p className="text-muted-foreground">Manage discount codes for NIBOG events</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Promo Codes</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage discount codes for NIBOG events</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button
+            variant="outline"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+            className="touch-manipulation"
+          >
+            <RefreshCw className={`mr-2 h-4 w-4 ${isRefreshing ? 'animate-spin' : ''}`} />
+            Refresh
+          </Button>
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href="/admin/promo-codes/analytics">
               <BarChart className="mr-2 h-4 w-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/promo-codes/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New Promo Code
+              <span className="hidden sm:inline">Add New Promo Code</span>
+              <span className="sm:hidden">New Code</span>
             </Link>
           </Button>
         </div>
@@ -368,38 +410,41 @@ export default function PromoCodesPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search promo codes..."
-                className="h-9 w-full md:w-[300px]"
+                className="pl-9 h-10 touch-manipulation"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="h-9 w-full md:w-[150px]">
-                  <SelectValue placeholder="All Statuses" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
-                  {statuses.map((status) => (
-                    <SelectItem key={status.id} value={status.name}>
-                      {status.name.charAt(0).toUpperCase() + status.name.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <Select value={selectedStatus} onValueChange={setSelectedStatus} disabled={isLoading}>
+                  <SelectTrigger className="h-10 w-full sm:w-[150px] touch-manipulation">
+                    <SelectValue placeholder="All Statuses" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="touch-manipulation">All Statuses</SelectItem>
+                    {statuses.map((status) => (
+                      <SelectItem key={status.id} value={status.name} className="touch-manipulation">
+                        {status.name.charAt(0).toUpperCase() + status.name.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={selectedType} onValueChange={setSelectedType}>
-                <SelectTrigger className="h-9 w-full md:w-[180px]">
+              <Select value={selectedType} onValueChange={setSelectedType} disabled={isLoading}>
+                <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
                   <SelectValue placeholder="All Discount Types" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Discount Types</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Discount Types</SelectItem>
                   {discountTypes.map((type) => (
-                    <SelectItem key={type.id} value={type.name}>
+                    <SelectItem key={type.id} value={type.name} className="touch-manipulation">
                       {type.name === "percentage" ? "Percentage" : "Fixed Amount"}
                     </SelectItem>
                   ))}
@@ -426,6 +471,7 @@ export default function PromoCodesPage() {
         exportTitle="NIBOG Promo Codes Report"
         exportFilename="nibog-promo-codes"
         emptyMessage="No promo codes found"
+        onRefresh={handleRefresh}
         className="min-h-[400px]"
       />
     </div>

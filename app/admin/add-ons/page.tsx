@@ -137,11 +137,19 @@ export default function AddOnsPage() {
       key: 'name',
       label: 'Name',
       sortable: true,
+      priority: 1, // Highest priority for mobile
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.description}</div>
+        </div>
+      )
     },
     {
       key: 'category',
       label: 'Category',
       sortable: true,
+      priority: 2, // Second priority for mobile
       render: (value) => (
         <Badge variant="outline">
           {value}
@@ -152,12 +160,25 @@ export default function AddOnsPage() {
       key: 'price',
       label: 'Price',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value) => `₹${value}`
+    },
+    {
+      key: 'is_active',
+      label: 'Status',
+      sortable: true,
+      priority: 4, // Fourth priority for mobile
+      render: (value) => (
+        <Badge variant={value ? "default" : "secondary"}>
+          {value ? "Active" : "Inactive"}
+        </Badge>
+      )
     },
     {
       key: 'stock_quantity',
       label: 'Stock',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value, row) => {
         if (row.has_variants) {
           const totalStock = row.variants?.reduce((sum: number, v: any) => sum + v.stock_quantity, 0) || 0
@@ -167,14 +188,11 @@ export default function AddOnsPage() {
       }
     },
     {
-      key: 'is_active',
-      label: 'Status',
+      key: 'sku',
+      label: 'SKU',
       sortable: true,
-      render: (value) => (
-        <Badge variant={value ? "default" : "secondary"}>
-          {value ? "Active" : "Inactive"}
-        </Badge>
-      )
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => value || 'N/A'
     }
   ]
 
@@ -215,89 +233,93 @@ export default function AddOnsPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Add-ons</h1>
-          <p className="text-muted-foreground">Manage add-ons for NIBOG events</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Add-ons</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage add-ons for NIBOG events</p>
         </div>
-        <div className="flex items-center gap-2">
-          <Button variant="outline" onClick={handleRefreshAddOns} disabled={isLoading}>
+        <div className="flex flex-col gap-2 sm:flex-row">
+          <Button variant="outline" onClick={handleRefreshAddOns} disabled={isLoading} className="touch-manipulation">
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href="/admin/add-ons/analytics">
               <BarChart className="mr-2 h-4 w-4" />
-              Analytics
+              <span className="hidden sm:inline">Analytics</span>
+              <span className="sm:hidden">Stats</span>
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href="/admin/add-ons/new">
               <Plus className="mr-2 h-4 w-4" />
-              Add New Add-on
+              <span className="hidden sm:inline">Add New Add-on</span>
+              <span className="sm:hidden">New Add-on</span>
             </Link>
           </Button>
         </div>
       </div>
 
       {/* Summary Statistics */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalAddOns}</div>
-            <p className="text-xs text-muted-foreground">Total Add-ons</p>
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+        <Card className="touch-manipulation">
+          <CardContent className="pt-4 sm:pt-6 p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">{totalAddOns}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Add-ons</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-green-600">{activeAddOns}</div>
-            <p className="text-xs text-muted-foreground">Active</p>
+        <Card className="touch-manipulation">
+          <CardContent className="pt-4 sm:pt-6 p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-green-600">{activeAddOns}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Active</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold text-gray-600">{inactiveAddOns}</div>
-            <p className="text-xs text-muted-foreground">Inactive</p>
+        <Card className="touch-manipulation">
+          <CardContent className="pt-4 sm:pt-6 p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold text-gray-600">{inactiveAddOns}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Inactive</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="pt-6">
-            <div className="text-2xl font-bold">{totalStock}</div>
-            <p className="text-xs text-muted-foreground">Total Stock</p>
+        <Card className="touch-manipulation">
+          <CardContent className="pt-4 sm:pt-6 p-3 sm:p-6">
+            <div className="text-xl sm:text-2xl font-bold">{totalStock}</div>
+            <p className="text-xs sm:text-sm text-muted-foreground">Total Stock</p>
           </CardContent>
         </Card>
       </div>
 
-      <div className="flex flex-col gap-4 md:flex-row">
-        <div className="flex-1">
-          <div className="relative">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder="Search add-ons..."
-              className="pl-8"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
+      {/* Search and Filter Controls */}
+      <Card>
+        <CardContent className="pt-6">
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
+              <Input
+                placeholder="Search add-ons..."
+                className="pl-9 h-10 touch-manipulation"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+              />
+            </div>
+            <div className="flex items-center gap-2 w-full sm:w-auto">
+              <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+              <Select value={categoryFilter} onValueChange={setCategoryFilter} disabled={isLoading}>
+                <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
+                  <SelectValue placeholder="All Categories" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all" className="touch-manipulation">All Categories</SelectItem>
+                  <SelectItem value="meal" className="touch-manipulation">Meal</SelectItem>
+                  <SelectItem value="merchandise" className="touch-manipulation">Merchandise</SelectItem>
+                  <SelectItem value="service" className="touch-manipulation">Service</SelectItem>
+                  <SelectItem value="other" className="touch-manipulation">Other</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
-        </div>
-        <div className="flex w-full items-center gap-2 md:w-auto">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <Select value={categoryFilter} onValueChange={setCategoryFilter}>
-            <SelectTrigger className="w-full md:w-[180px]">
-              <SelectValue placeholder="Category" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Categories</SelectItem>
-              <SelectItem value="meal">Meal</SelectItem>
-              <SelectItem value="merchandise">Merchandise</SelectItem>
-              <SelectItem value="service">Service</SelectItem>
-              <SelectItem value="other">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
+        </CardContent>
+      </Card>
 
       <EnhancedDataTable
         data={filteredAddOns}
@@ -315,6 +337,7 @@ export default function AddOnsPage() {
         exportTitle="NIBOG Add-ons Report"
         exportFilename="nibog-add-ons"
         emptyMessage="No add-ons found"
+        onRefresh={handleRefreshAddOns}
         className="min-h-[400px]"
       />
     </div>

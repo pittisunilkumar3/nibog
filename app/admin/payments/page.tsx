@@ -257,40 +257,29 @@ export default function PaymentsPage() {
   // Define table columns for EnhancedDataTable
   const columns: Column<any>[] = [
     {
-      key: 'transaction_id',
-      label: 'Transaction ID',
-      sortable: true,
-    },
-    {
       key: 'user_name',
       label: 'Customer',
       sortable: true,
-    },
-    {
-      key: 'event_title',
-      label: 'Event',
-      sortable: true,
+      priority: 1, // Highest priority for mobile
+      render: (value, row) => (
+        <div>
+          <div className="font-medium">{value}</div>
+          <div className="text-xs text-muted-foreground truncate">{row.transaction_id}</div>
+        </div>
+      )
     },
     {
       key: 'amount',
       label: 'Amount',
       sortable: true,
+      priority: 2, // Second priority for mobile
       render: (value) => `₹${value?.toLocaleString() || '0'}`
-    },
-    {
-      key: 'payment_method',
-      label: 'Method',
-      sortable: true,
-      render: (value) => (
-        <Badge variant="outline">
-          {value || 'Unknown'}
-        </Badge>
-      )
     },
     {
       key: 'payment_status',
       label: 'Status',
       sortable: true,
+      priority: 3, // Third priority for mobile
       render: (value) => {
         const statusColors = {
           successful: 'bg-green-500 hover:bg-green-600',
@@ -306,10 +295,34 @@ export default function PaymentsPage() {
       }
     },
     {
+      key: 'event_title',
+      label: 'Event',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+    },
+    {
+      key: 'payment_method',
+      label: 'Method',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => (
+        <Badge variant="outline">
+          {value || 'Unknown'}
+        </Badge>
+      )
+    },
+    {
       key: 'created_at',
       label: 'Date',
       sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
       render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
+    },
+    {
+      key: 'booking_id',
+      label: 'Booking ID',
+      sortable: true,
+      hideOnMobile: true, // Hide on mobile to save space
     }
   ]
 
@@ -328,73 +341,76 @@ export default function PaymentsPage() {
   const bulkActions: BulkAction<any>[] = []
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Payments</h1>
-          <p className="text-muted-foreground">Manage NIBOG event payments</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="space-y-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Payments</h1>
+          <p className="text-sm sm:text-base text-muted-foreground">Manage NIBOG event payments</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-col gap-2 sm:flex-row">
           <Button
             variant="outline"
             onClick={handleRefresh}
             disabled={refreshing}
+            className="touch-manipulation"
           >
             <RefreshCw className={cn("mr-2 h-4 w-4", refreshing && "animate-spin")} />
             Refresh
           </Button>
-          <Button variant="outline" asChild>
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href="/admin/payments/record">
               <Plus className="mr-2 h-4 w-4" />
-              Record Payment
+              <span className="hidden sm:inline">Record Payment</span>
+              <span className="sm:hidden">Record</span>
             </Link>
           </Button>
-          <Button onClick={openExportModal}>
+          <Button onClick={openExportModal} className="touch-manipulation">
             <Download className="mr-2 h-4 w-4" />
-            Export Payments
+            <span className="hidden sm:inline">Export Payments</span>
+            <span className="sm:hidden">Export</span>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
+      <div className="grid gap-3 sm:gap-4 grid-cols-2 md:grid-cols-4">
+        <Card className="touch-manipulation">
+          <CardContent className="flex flex-col items-center justify-center p-3 sm:p-6">
             {loading ? (
-              <div className="text-2xl font-bold">Loading...</div>
+              <div className="text-xl sm:text-2xl font-bold">Loading...</div>
             ) : (
-              <div className="text-2xl font-bold">₹{(totalAmount || 0).toLocaleString()}</div>
+              <div className="text-xl sm:text-2xl font-bold">₹{(totalAmount || 0).toLocaleString()}</div>
             )}
-            <p className="text-sm text-muted-foreground">Total Revenue</p>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">Total Revenue</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
+        <Card className="touch-manipulation">
+          <CardContent className="flex flex-col items-center justify-center p-3 sm:p-6">
             {loading ? (
-              <div className="text-2xl font-bold">-</div>
+              <div className="text-xl sm:text-2xl font-bold">-</div>
             ) : (
-              <div className="text-2xl font-bold">{successfulCount || 0}</div>
+              <div className="text-xl sm:text-2xl font-bold">{successfulCount || 0}</div>
             )}
-            <p className="text-sm text-muted-foreground">Successful Payments</p>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">Successful</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
+        <Card className="touch-manipulation">
+          <CardContent className="flex flex-col items-center justify-center p-3 sm:p-6">
             {loading ? (
-              <div className="text-2xl font-bold">-</div>
+              <div className="text-xl sm:text-2xl font-bold">-</div>
             ) : (
-              <div className="text-2xl font-bold">{pendingCount || 0}</div>
+              <div className="text-xl sm:text-2xl font-bold">{pendingCount || 0}</div>
             )}
-            <p className="text-sm text-muted-foreground">Pending Payments</p>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">Pending</p>
           </CardContent>
         </Card>
-        <Card>
-          <CardContent className="flex flex-col items-center justify-center p-6">
+        <Card className="touch-manipulation">
+          <CardContent className="flex flex-col items-center justify-center p-3 sm:p-6">
             {loading ? (
-              <div className="text-2xl font-bold">-</div>
+              <div className="text-xl sm:text-2xl font-bold">-</div>
             ) : (
-              <div className="text-2xl font-bold">{refundedCount || 0}</div>
+              <div className="text-xl sm:text-2xl font-bold">{refundedCount || 0}</div>
             )}
-            <p className="text-sm text-muted-foreground">Refunded Payments</p>
+            <p className="text-xs sm:text-sm text-muted-foreground text-center">Refunded</p>
           </CardContent>
         </Card>
       </div>
@@ -402,56 +418,60 @@ export default function PaymentsPage() {
       <Card>
         <CardContent className="pt-6">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
-              <Search className="h-4 w-4 text-muted-foreground" />
+            <div className="relative flex-1">
+              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground pointer-events-none" />
               <Input
                 placeholder="Search payments..."
-                className="h-9 w-full md:w-[300px]"
+                className="pl-9 h-10 touch-manipulation"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
-              <Select value={selectedMethod} onValueChange={setSelectedMethod}>
-                <SelectTrigger className="h-9 w-full md:w-[180px]">
-                  <SelectValue placeholder="All Payment Methods" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Payment Methods</SelectItem>
-                  {paymentMethods.map((method) => (
-                    <SelectItem key={method.id} value={method.name}>
-                      {method.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap">
+              <div className="flex items-center gap-2 w-full sm:w-auto">
+                <Filter className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                <Select value={selectedMethod} onValueChange={setSelectedMethod} disabled={loading}>
+                  <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
+                    <SelectValue placeholder="All Methods" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all" className="touch-manipulation">All Payment Methods</SelectItem>
+                    {paymentMethods.map((method) => (
+                      <SelectItem key={method.id} value={method.name} className="touch-manipulation">
+                        {method.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
 
-              <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="h-9 w-full md:w-[150px]">
+              <Select value={selectedStatus} onValueChange={setSelectedStatus} disabled={loading}>
+                <SelectTrigger className="h-10 w-full sm:w-[150px] touch-manipulation">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Statuses</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Statuses</SelectItem>
                   {statuses.map((status) => (
-                    <SelectItem key={status.id} value={status.name}>
+                    <SelectItem key={status.id} value={status.name} className="touch-manipulation">
                       {status.name.charAt(0).toUpperCase() + status.name.slice(1)}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
 
-              <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                <SelectTrigger className="h-9 w-full md:w-[180px]">
+              <Select value={selectedEvent} onValueChange={setSelectedEvent} disabled={loading}>
+                <SelectTrigger className="h-10 w-full sm:w-[180px] touch-manipulation">
                   <SelectValue placeholder="All Events" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
+                  <SelectItem value="all" className="touch-manipulation">All Events</SelectItem>
                   {events
                     .filter(event => event?.event_id != null) // Filter out events without an ID
                     .map((event) => (
-                      <SelectItem 
-                        key={event.event_id} 
+                      <SelectItem
+                        key={event.event_id}
                         value={event.event_id.toString()}
+                        className="touch-manipulation"
                       >
                         {event.event_title || 'Untitled Event'}
                       </SelectItem>
@@ -464,11 +484,16 @@ export default function PaymentsPage() {
                   <Button
                     variant="outline"
                     className={cn(
-                      "h-9 w-full justify-start text-left font-normal md:w-[150px]",
+                      "h-10 w-full justify-start text-left font-normal sm:w-[150px] touch-manipulation",
                       !selectedDate && "text-muted-foreground"
                     )}
                   >
-                    {selectedDate ? format(selectedDate, "PPP") : "Select Date"}
+                    <span className="hidden sm:inline">
+                      {selectedDate ? format(selectedDate, "PPP") : "Select Date"}
+                    </span>
+                    <span className="sm:hidden">
+                      {selectedDate ? format(selectedDate, "MMM d") : "Date"}
+                    </span>
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent className="w-auto p-0" align="start">
@@ -483,7 +508,7 @@ export default function PaymentsPage() {
                       <Button
                         variant="ghost"
                         size="sm"
-                        className="w-full justify-center text-xs"
+                        className="w-full justify-center text-xs touch-manipulation"
                         onClick={handleClearDate}
                       >
                         Clear Date
@@ -513,6 +538,7 @@ export default function PaymentsPage() {
         exportTitle="NIBOG Payments Report"
         exportFilename="nibog-payments"
         emptyMessage="No payments found"
+        onRefresh={handleRefresh}
         className="min-h-[400px]"
       />
 

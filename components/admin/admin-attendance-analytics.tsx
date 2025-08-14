@@ -69,28 +69,31 @@ export default function AdminAttendanceAnalytics() {
           <CardTitle className="text-base font-medium">Attendance Analytics</CardTitle>
           <CardDescription>Attendance statistics and trends for NIBOG events</CardDescription>
         </div>
-        <Tabs defaultValue={timeRange} onValueChange={setTimeRange} className="w-[400px]">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="week">Week</TabsTrigger>
-            <TabsTrigger value="month">Month</TabsTrigger>
-            <TabsTrigger value="quarter">Quarter</TabsTrigger>
-            <TabsTrigger value="year">Year</TabsTrigger>
+        <Tabs defaultValue={timeRange} onValueChange={setTimeRange} className="w-full sm:w-[400px]">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsTrigger value="week" className="text-xs sm:text-sm touch-manipulation">Week</TabsTrigger>
+            <TabsTrigger value="month" className="text-xs sm:text-sm touch-manipulation">Month</TabsTrigger>
+            <TabsTrigger value="quarter" className="text-xs sm:text-sm touch-manipulation">
+              <span className="hidden sm:inline">Quarter</span>
+              <span className="sm:hidden">Q</span>
+            </TabsTrigger>
+            <TabsTrigger value="year" className="text-xs sm:text-sm touch-manipulation">Year</TabsTrigger>
           </TabsList>
         </Tabs>
       </CardHeader>
       <CardContent className="px-2 pt-0">
-        <div className="mt-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <Card>
+        <div className="mt-4 grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+          <Card className="touch-manipulation">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Registrations</CardTitle>
-              <Users className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Total Registrations</CardTitle>
+              <Users className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,340</div>
+            <CardContent className="p-3 sm:p-6">
+              <div className="text-xl sm:text-2xl font-bold">1,340</div>
               <p className="text-xs text-muted-foreground">
                 +12.5% from last {timeRange}
               </p>
-              <div className="mt-4 h-[60px]">
+              <div className="mt-2 sm:mt-4 h-[40px] sm:h-[60px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceOverTime.slice(-6)} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey="registered" fill="#8884d8" radius={[4, 4, 0, 0]} />
@@ -99,17 +102,17 @@ export default function AdminAttendanceAnalytics() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="touch-manipulation">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Attendance</CardTitle>
-              <UserCheck className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Attendance</CardTitle>
+              <UserCheck className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">1,238</div>
+            <CardContent className="p-3 sm:p-6">
+              <div className="text-xl sm:text-2xl font-bold">1,238</div>
               <p className="text-xs text-muted-foreground">
                 +14.2% from last {timeRange}
               </p>
-              <div className="mt-4 h-[60px]">
+              <div className="mt-2 sm:mt-4 h-[40px] sm:h-[60px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceOverTime.slice(-6)} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey="attended" fill="#4ade80" radius={[4, 4, 0, 0]} />
@@ -118,17 +121,17 @@ export default function AdminAttendanceAnalytics() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="touch-manipulation">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">No-Shows</CardTitle>
-              <UserX className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium">No-Shows</CardTitle>
+              <UserX className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">102</div>
+            <CardContent className="p-3 sm:p-6">
+              <div className="text-xl sm:text-2xl font-bold">102</div>
               <p className="text-xs text-muted-foreground">
                 -3.8% from last {timeRange}
               </p>
-              <div className="mt-4 h-[60px]">
+              <div className="mt-2 sm:mt-4 h-[40px] sm:h-[60px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceOverTime.slice(-6)} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey={(data) => data.registered - data.attended} fill="#f97316" radius={[4, 4, 0, 0]} />
@@ -137,17 +140,17 @@ export default function AdminAttendanceAnalytics() {
               </div>
             </CardContent>
           </Card>
-          <Card>
+          <Card className="touch-manipulation">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Attendance Rate</CardTitle>
-              <Clock className="h-4 w-4 text-muted-foreground" />
+              <CardTitle className="text-xs sm:text-sm font-medium">Attendance Rate</CardTitle>
+              <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">92.4%</div>
+            <CardContent className="p-3 sm:p-6">
+              <div className="text-xl sm:text-2xl font-bold">92.4%</div>
               <p className="text-xs text-muted-foreground">
                 +1.7% from last {timeRange}
               </p>
-              <div className="mt-4 h-[60px]">
+              <div className="mt-2 sm:mt-4 h-[40px] sm:h-[60px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart data={attendanceOverTime.slice(-6)} margin={{ top: 0, right: 0, left: 0, bottom: 0 }}>
                     <Bar dataKey="attendanceRate" fill="#8884d8" radius={[4, 4, 0, 0]} />
@@ -158,31 +161,31 @@ export default function AdminAttendanceAnalytics() {
           </Card>
         </div>
         
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Recent Event Attendance</CardTitle>
-              <CardDescription>Attendance statistics for recent events</CardDescription>
+        <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+          <Card className="col-span-1 touch-manipulation">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base">Recent Event Attendance</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Attendance statistics for recent events</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="space-y-4">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="space-y-3 sm:space-y-4">
                 {attendanceByEvent.map((event) => (
-                  <div key={event.id} className="flex items-center justify-between rounded-lg border p-3 transition-all hover:bg-muted/50">
-                    <div className="flex-1">
-                      <p className="font-medium">{event.name}</p>
+                  <div key={event.id} className="flex flex-col sm:flex-row sm:items-center sm:justify-between rounded-lg border p-3 transition-all hover:bg-muted/50 touch-manipulation gap-2 sm:gap-4">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-sm sm:text-base truncate">{event.name}</p>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                        <span>{event.venue}</span>
+                        <span className="truncate">{event.venue}</span>
                         <span>•</span>
                         <span>{event.date}</span>
                       </div>
                     </div>
-                    <div className="flex items-center gap-4">
+                    <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4">
                       <div className="text-center">
-                        <p className="text-sm font-medium">{event.registered}</p>
+                        <p className="text-xs sm:text-sm font-medium">{event.registered}</p>
                         <p className="text-xs text-muted-foreground">Registered</p>
                       </div>
                       <div className="text-center">
-                        <p className="text-sm font-medium">{event.attended}</p>
+                        <p className="text-xs sm:text-sm font-medium">{event.attended}</p>
                         <p className="text-xs text-muted-foreground">Attended</p>
                       </div>
                       <div className="text-center">
@@ -197,22 +200,22 @@ export default function AdminAttendanceAnalytics() {
             </CardContent>
           </Card>
           
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Attendance by City</CardTitle>
-              <CardDescription>Comparison of attendance rates across cities</CardDescription>
+          <Card className="col-span-1 touch-manipulation">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base">Attendance by City</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Comparison of attendance rates across cities</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="h-[250px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={attendanceByCity}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
                     layout="vertical"
                   >
                     <CartesianGrid strokeDasharray="3 3" />
                     <XAxis type="number" />
-                    <YAxis dataKey="name" type="category" width={100} />
+                    <YAxis dataKey="name" type="category" width={60} fontSize={12} />
                     <Tooltip formatter={(value, name) => {
                       if (name === "registered") return [`${value} registrations`, 'Registered'];
                       if (name === "attended") return [`${value} attendees`, 'Attended'];
@@ -229,22 +232,22 @@ export default function AdminAttendanceAnalytics() {
           </Card>
         </div>
         
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Attendance by Time Slot</CardTitle>
-              <CardDescription>Attendance patterns across different time slots</CardDescription>
+        <div className="mt-4 sm:mt-6 grid gap-3 sm:gap-4 grid-cols-1 md:grid-cols-2">
+          <Card className="col-span-1 touch-manipulation">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base">Attendance by Time Slot</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Attendance patterns across different time slots</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="h-[250px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <BarChart
                     data={attendanceByTime}
-                    margin={{ top: 20, right: 30, left: 20, bottom: 5 }}
+                    margin={{ top: 20, right: 10, left: 10, bottom: 5 }}
                   >
                     <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="name" />
-                    <YAxis />
+                    <XAxis dataKey="name" fontSize={12} />
+                    <YAxis fontSize={12} />
                     <Tooltip formatter={(value, name) => {
                       if (name === "registered") return [`${value} registrations`, 'Registered'];
                       if (name === "attended") return [`${value} attendees`, 'Attended'];
@@ -259,14 +262,14 @@ export default function AdminAttendanceAnalytics() {
               </div>
             </CardContent>
           </Card>
-          
-          <Card className="col-span-1">
-            <CardHeader>
-              <CardTitle>Attendance by Age Group</CardTitle>
-              <CardDescription>Attendance patterns across different age groups</CardDescription>
+
+          <Card className="col-span-1 touch-manipulation">
+            <CardHeader className="p-3 sm:p-6">
+              <CardTitle className="text-sm sm:text-base">Attendance by Age Group</CardTitle>
+              <CardDescription className="text-xs sm:text-sm">Attendance patterns across different age groups</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="h-[300px]">
+            <CardContent className="p-3 sm:p-6 pt-0">
+              <div className="h-[250px] sm:h-[300px]">
                 <ResponsiveContainer width="100%" height="100%">
                   <PieChart>
                     <Pie
@@ -274,7 +277,7 @@ export default function AdminAttendanceAnalytics() {
                       cx="50%"
                       cy="50%"
                       labelLine={false}
-                      outerRadius={100}
+                      outerRadius={80}
                       fill="#8884d8"
                       dataKey="attended"
                       nameKey="name"
