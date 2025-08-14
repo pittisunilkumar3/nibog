@@ -308,13 +308,29 @@
   /* Touch-friendly button and form element sizing */
   .touch-manipulation {
     touch-action: manipulation;
+  }
+
+  /* Touch-friendly buttons specifically */
+  .touch-button {
+    touch-action: manipulation;
     min-height: 44px;
     min-width: 44px;
   }
 
   /* Mobile-optimized form elements */
   .mobile-input {
-    @apply touch-manipulation text-base; /* Prevents zoom on iOS */
+    @apply text-base; /* Prevents zoom on iOS */
+    touch-action: manipulation;
+  }
+
+  /* Mobile-friendly switch wrapper */
+  .mobile-switch-wrapper {
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    touch-action: manipulation;
   }
 
   /* Mobile-friendly spacing */
@@ -342,6 +358,93 @@
 
   .mobile-text-xl {
     @apply text-xl sm:text-2xl;
+  }
+
+  /* Mobile-optimized button sizes */
+  .mobile-button {
+    @apply h-10 sm:h-10 px-4 sm:px-4 text-sm sm:text-sm;
+    touch-action: manipulation;
+  }
+
+  .mobile-button-sm {
+    @apply h-9 sm:h-9 px-3 sm:px-3 text-xs sm:text-sm;
+    touch-action: manipulation;
+  }
+
+  .mobile-button-lg {
+    @apply h-12 sm:h-11 px-6 sm:px-8 text-base sm:text-base;
+    touch-action: manipulation;
+  }
+
+  /* Mobile-optimized spacing */
+  .mobile-space-y {
+    @apply space-y-3 sm:space-y-4;
+  }
+
+  .mobile-gap {
+    @apply gap-3 sm:gap-4;
+  }
+
+  /* Mobile-friendly form layouts */
+  .mobile-form-grid {
+    @apply grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4;
+  }
+
+  .mobile-form-grid-3 {
+    @apply grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4;
+  }
+
+  /* Mobile tab improvements */
+  .mobile-tabs {
+    @apply grid grid-cols-1 gap-1 sm:gap-0 h-auto sm:h-10;
+  }
+
+  @media (min-width: 640px) {
+    .mobile-tabs {
+      grid-template-columns: repeat(auto-fit, minmax(0, 1fr));
+    }
+  }
+
+  .mobile-tab-trigger {
+    @apply w-full h-9 sm:h-auto text-sm sm:text-base px-3 sm:px-4;
+    touch-action: manipulation;
+    min-height: 36px;
+  }
+
+  /* Improved mobile card styling */
+  .mobile-card-header {
+    @apply p-3 sm:p-4 lg:p-6;
+  }
+
+  .mobile-card-content {
+    @apply p-3 sm:p-4 lg:p-6 space-y-3 sm:space-y-4;
+  }
+
+  .mobile-card-footer {
+    @apply p-3 sm:p-4 lg:p-6 flex flex-col sm:flex-row gap-2 sm:gap-3;
+  }
+
+  /* Mobile-optimized switch styling */
+  .mobile-switch-container {
+    @apply flex items-center justify-between py-2 min-h-[44px];
+  }
+
+  /* Better mobile form styling */
+  .mobile-form-section {
+    @apply space-y-3 sm:space-y-4 p-3 sm:p-4 border rounded-lg bg-card;
+  }
+
+  /* Mobile-friendly table improvements */
+  .mobile-table-container {
+    @apply overflow-x-auto mobile-scroll rounded-lg border;
+  }
+
+  .mobile-table-cell {
+    @apply px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm;
+  }
+
+  .mobile-table-header {
+    @apply px-2 sm:px-3 py-2 sm:py-3 text-xs sm:text-sm font-medium;
   }
 
   /* Mobile-optimized grid layouts */

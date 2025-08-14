@@ -30,6 +30,8 @@ import {
 } from "lucide-react"
 import { PageTransition, FadeIn } from "@/components/ui/animated-components"
 import { getFooterSetting, saveFooterSetting, type FooterSetting, type FooterSettingPayload } from "@/services/footerSettingService"
+import { cn } from "@/lib/utils"
+import { MobileTestHelper } from "@/components/admin/mobile-test-helper"
 
 // Types for footer content
 interface SocialMediaLink {
@@ -323,20 +325,21 @@ export default function FooterManagement() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Footer Management</h1>
-            <p className="text-muted-foreground">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+          <div className="min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Footer Management</h1>
+            <p className="text-sm sm:text-base text-muted-foreground">
               Manage your website footer content, links, and contact information
             </p>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
             <Button
               variant="outline"
               onClick={loadFooterContent}
               disabled={isLoading}
+              className="w-full sm:w-auto touch-manipulation h-10"
             >
               <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
               Refresh
@@ -344,6 +347,7 @@ export default function FooterManagement() {
             <Button
               onClick={saveFooterContent}
               disabled={isSaving || !hasChanges}
+              className="w-full sm:w-auto touch-manipulation h-10"
             >
               <Save className={`mr-2 h-4 w-4 ${isSaving ? 'animate-spin' : ''}`} />
               {isSaving ? 'Saving...' : 'Save Changes'}
@@ -366,24 +370,24 @@ export default function FooterManagement() {
 
         {/* Main Content */}
         <Tabs defaultValue="company" className="space-y-4">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="company">Company Info</TabsTrigger>
-            <TabsTrigger value="contact">Contact Info</TabsTrigger>
-            <TabsTrigger value="settings">Settings</TabsTrigger>
+          <TabsList className="grid w-full mobile-tabs grid-cols-1 sm:grid-cols-3">
+            <TabsTrigger value="company" className="mobile-tab-trigger">Company Info</TabsTrigger>
+            <TabsTrigger value="contact" className="mobile-tab-trigger">Contact Info</TabsTrigger>
+            <TabsTrigger value="settings" className="mobile-tab-trigger">Settings</TabsTrigger>
           </TabsList>
 
           {/* Company Information Tab */}
           <TabsContent value="company" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle>Company Information</CardTitle>
-                <CardDescription>
+              <CardHeader className="mobile-card-header">
+                <CardTitle className="mobile-text-lg">Company Information</CardTitle>
+                <CardDescription className="mobile-text-sm">
                   Manage your company name, description, and branding in the footer
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="mobile-card-content">
                 <div className="space-y-2">
-                  <Label htmlFor="companyName">Company Name</Label>
+                  <Label htmlFor="companyName" className="mobile-text-sm font-medium">Company Name</Label>
                   <Input
                     id="companyName"
                     value={footerContent.companyName}
@@ -394,14 +398,17 @@ export default function FooterManagement() {
                       }
                     }}
                     placeholder="Enter company name"
-                    className={validationErrors.companyName ? "border-red-500" : ""}
+                    className={cn(
+                      "mobile-input",
+                      validationErrors.companyName ? "border-red-500" : ""
+                    )}
                   />
                   {validationErrors.companyName && (
-                    <p className="text-sm text-red-500">{validationErrors.companyName}</p>
+                    <p className="text-xs sm:text-sm text-red-500">{validationErrors.companyName}</p>
                   )}
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="companyDescription">Company Description</Label>
+                  <Label htmlFor="companyDescription" className="mobile-text-sm font-medium">Company Description</Label>
                   <Textarea
                     id="companyDescription"
                     value={footerContent.companyDescription}
@@ -412,11 +419,14 @@ export default function FooterManagement() {
                       }
                     }}
                     placeholder="Enter company description"
-                    rows={4}
-                    className={validationErrors.companyDescription ? "border-red-500" : ""}
+                    rows={3}
+                    className={cn(
+                      "mobile-input touch-manipulation min-h-[80px] sm:min-h-[100px]",
+                      validationErrors.companyDescription ? "border-red-500" : ""
+                    )}
                   />
                   {validationErrors.companyDescription && (
-                    <p className="text-sm text-red-500">{validationErrors.companyDescription}</p>
+                    <p className="text-xs sm:text-sm text-red-500">{validationErrors.companyDescription}</p>
                   )}
                   <p className="text-xs text-muted-foreground">
                     This description will appear in the footer to describe your company
@@ -430,18 +440,18 @@ export default function FooterManagement() {
           {/* Contact Information Tab */}
           <TabsContent value="contact" className="space-y-4">
             <Card>
-              <CardHeader>
-                <CardTitle className="flex items-center gap-2">
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
                   <Phone className="h-4 w-4" />
                   Contact Information
                 </CardTitle>
-                <CardDescription>
+                <CardDescription className="text-sm sm:text-base">
                   Manage contact details displayed in the footer
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 p-4 sm:p-6">
                 <div className="space-y-2">
-                  <Label htmlFor="address" className="flex items-center gap-2">
+                  <Label htmlFor="address" className="flex items-center gap-2 text-sm sm:text-base font-medium">
                     <MapPin className="h-4 w-4" />
                     Address
                   </Label>
@@ -458,15 +468,18 @@ export default function FooterManagement() {
                     }}
                     placeholder="Enter company address"
                     rows={3}
-                    className={validationErrors.address ? "border-red-500" : ""}
+                    className={cn(
+                      "mobile-input touch-manipulation min-h-[80px]",
+                      validationErrors.address ? "border-red-500" : ""
+                    )}
                   />
                   {validationErrors.address && (
-                    <p className="text-sm text-red-500">{validationErrors.address}</p>
+                    <p className="text-xs sm:text-sm text-red-500">{validationErrors.address}</p>
                   )}
                 </div>
-                <div className="grid gap-4 md:grid-cols-2">
+                <div className="grid gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-2">
+                    <Label htmlFor="phone" className="flex items-center gap-2 text-sm sm:text-base font-medium">
                       <Phone className="h-4 w-4" />
                       Phone Number
                     </Label>
@@ -482,14 +495,17 @@ export default function FooterManagement() {
                         }
                       }}
                       placeholder="Enter phone number"
-                      className={validationErrors.phone ? "border-red-500" : ""}
+                      className={cn(
+                        "mobile-input touch-manipulation",
+                        validationErrors.phone ? "border-red-500" : ""
+                      )}
                     />
                     {validationErrors.phone && (
-                      <p className="text-sm text-red-500">{validationErrors.phone}</p>
+                      <p className="text-xs sm:text-sm text-red-500">{validationErrors.phone}</p>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-2">
+                    <Label htmlFor="email" className="flex items-center gap-2 text-sm sm:text-base font-medium">
                       <Mail className="h-4 w-4" />
                       Email Address
                     </Label>
@@ -506,10 +522,13 @@ export default function FooterManagement() {
                         }
                       }}
                       placeholder="Enter email address"
-                      className={validationErrors.email ? "border-red-500" : ""}
+                      className={cn(
+                        "mobile-input touch-manipulation",
+                        validationErrors.email ? "border-red-500" : ""
+                      )}
                     />
                     {validationErrors.email && (
-                      <p className="text-sm text-red-500">{validationErrors.email}</p>
+                      <p className="text-xs sm:text-sm text-red-500">{validationErrors.email}</p>
                     )}
                   </div>
                 </div>
@@ -519,19 +538,19 @@ export default function FooterManagement() {
 
           {/* Settings Tab */}
           <TabsContent value="settings" className="space-y-4">
-            <div className="grid gap-4 md:grid-cols-2">
+            <div className="grid gap-4 grid-cols-1 lg:grid-cols-2">
               <Card>
-                <CardHeader>
-                  <CardTitle>Newsletter Settings</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Newsletter Settings</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">
                     Configure newsletter subscription in footer
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="space-y-0.5">
-                      <Label>Enable Newsletter Subscription</Label>
-                      <p className="text-sm text-muted-foreground">
+                <CardContent className="space-y-4 p-4 sm:p-6">
+                  <div className="mobile-switch-container">
+                    <div className="space-y-1 flex-1">
+                      <Label className="mobile-text-sm font-medium">Enable Newsletter Subscription</Label>
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         Show newsletter signup form in footer
                       </p>
                     </div>
@@ -544,15 +563,15 @@ export default function FooterManagement() {
               </Card>
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Copyright Settings</CardTitle>
-                  <CardDescription>
+                <CardHeader className="p-4 sm:p-6">
+                  <CardTitle className="text-lg sm:text-xl">Copyright Settings</CardTitle>
+                  <CardDescription className="text-sm sm:text-base">
                     Customize copyright text in footer
                   </CardDescription>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-4 p-4 sm:p-6">
                   <div className="space-y-2">
-                    <Label htmlFor="copyright">Copyright Text</Label>
+                    <Label htmlFor="copyright" className="text-sm sm:text-base font-medium">Copyright Text</Label>
                     <Textarea
                       id="copyright"
                       value={footerContent.copyrightText}
@@ -564,10 +583,13 @@ export default function FooterManagement() {
                       }}
                       placeholder="Enter copyright text"
                       rows={2}
-                      className={validationErrors.copyrightText ? "border-red-500" : ""}
+                      className={cn(
+                        "mobile-input touch-manipulation min-h-[60px] sm:min-h-[80px]",
+                        validationErrors.copyrightText ? "border-red-500" : ""
+                      )}
                     />
                     {validationErrors.copyrightText && (
-                      <p className="text-sm text-red-500">{validationErrors.copyrightText}</p>
+                      <p className="text-xs sm:text-sm text-red-500">{validationErrors.copyrightText}</p>
                     )}
                     <p className="text-xs text-muted-foreground">
                       Use {"{year}"} to automatically insert the current year
@@ -579,24 +601,24 @@ export default function FooterManagement() {
 
             {/* Preview Section */}
             <Card>
-              <CardHeader>
-                <CardTitle>Footer Preview</CardTitle>
-                <CardDescription>
+              <CardHeader className="p-4 sm:p-6">
+                <CardTitle className="text-lg sm:text-xl">Footer Preview</CardTitle>
+                <CardDescription className="text-sm sm:text-base">
                   Preview how your footer will look with current settings
                 </CardDescription>
               </CardHeader>
-              <CardContent>
-                <div className="border rounded-lg p-6 bg-muted/30">
-                  <div className="grid grid-cols-1 gap-6 md:grid-cols-4 lg:grid-cols-5">
+              <CardContent className="p-4 sm:p-6">
+                <div className="border rounded-lg p-4 sm:p-6 bg-muted/30">
+                  <div className="grid grid-cols-1 gap-4 sm:gap-6 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5">
                     {/* Company Info */}
-                    <div className="space-y-3 lg:col-span-2">
-                      <h3 className="text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+                    <div className="space-y-3 sm:col-span-2 lg:col-span-2 xl:col-span-2">
+                      <h3 className="text-base sm:text-lg font-semibold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
                         {footerContent.companyName}
                       </h3>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-xs sm:text-sm text-muted-foreground">
                         {footerContent.companyDescription}
                       </p>
-                      <div className="flex space-x-4">
+                      <div className="flex space-x-3 sm:space-x-4">
                         {footerContent.socialMediaLinks
                           .filter(link => link.enabled && link.url)
                           .map(link => (
@@ -609,8 +631,8 @@ export default function FooterManagement() {
 
                     {/* Quick Links */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold">Quick Links</h3>
-                      <ul className="space-y-2 text-sm">
+                      <h3 className="text-base sm:text-lg font-semibold">Quick Links</h3>
+                      <ul className="space-y-2 text-xs sm:text-sm">
                         {footerContent.quickLinks
                           .filter(link => link.enabled && link.label)
                           .map(link => (
@@ -625,8 +647,8 @@ export default function FooterManagement() {
 
                     {/* Legal Links */}
                     <div className="space-y-3">
-                      <h3 className="text-lg font-semibold">Legal</h3>
-                      <ul className="space-y-2 text-sm">
+                      <h3 className="text-base sm:text-lg font-semibold">Legal</h3>
+                      <ul className="space-y-2 text-xs sm:text-sm">
                         {footerContent.legalLinks
                           .filter(link => link.enabled && link.label)
                           .map(link => (
@@ -640,12 +662,12 @@ export default function FooterManagement() {
                     </div>
 
                     {/* Contact Info */}
-                    <div className="space-y-3">
-                      <h3 className="text-lg font-semibold">Contact Us</h3>
-                      <ul className="space-y-3 text-sm">
+                    <div className="space-y-3 sm:col-span-2 lg:col-span-1">
+                      <h3 className="text-base sm:text-lg font-semibold">Contact Us</h3>
+                      <ul className="space-y-2 sm:space-y-3 text-xs sm:text-sm">
                         {footerContent.contactInfo.address && (
                           <li className="flex items-start gap-2">
-                            <MapPin className="h-4 w-4 mt-0.5 text-muted-foreground" />
+                            <MapPin className="h-3 w-3 sm:h-4 sm:w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
                             <span className="text-muted-foreground">
                               {footerContent.contactInfo.address.split('\n').map((line, i) => (
                                 <span key={i}>
@@ -658,23 +680,23 @@ export default function FooterManagement() {
                         )}
                         {footerContent.contactInfo.phone && (
                           <li className="flex items-center gap-2">
-                            <Phone className="h-4 w-4 text-muted-foreground" />
+                            <Phone className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
                             <span className="text-muted-foreground">{footerContent.contactInfo.phone}</span>
                           </li>
                         )}
                         {footerContent.contactInfo.email && (
                           <li className="flex items-center gap-2">
-                            <Mail className="h-4 w-4 text-muted-foreground" />
-                            <span className="text-muted-foreground">{footerContent.contactInfo.email}</span>
+                            <Mail className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground flex-shrink-0" />
+                            <span className="text-muted-foreground break-all">{footerContent.contactInfo.email}</span>
                           </li>
                         )}
                       </ul>
                       {footerContent.newsletterEnabled && (
                         <div className="pt-2">
-                          <h4 className="text-sm font-medium mb-2">Subscribe to our newsletter</h4>
-                          <div className="flex gap-2">
-                            <Input type="email" placeholder="Your email" className="h-9" disabled />
-                            <Button size="sm" className="h-9" disabled>
+                          <h4 className="text-xs sm:text-sm font-medium mb-2">Subscribe to our newsletter</h4>
+                          <div className="flex flex-col sm:flex-row gap-2">
+                            <Input type="email" placeholder="Your email" className="h-8 sm:h-9 text-xs sm:text-sm" disabled />
+                            <Button size="sm" className="h-8 sm:h-9 text-xs sm:text-sm w-full sm:w-auto" disabled>
                               Subscribe
                             </Button>
                           </div>
@@ -682,7 +704,7 @@ export default function FooterManagement() {
                       )}
                     </div>
                   </div>
-                  <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
+                  <div className="mt-6 sm:mt-8 border-t pt-4 sm:pt-8 text-center text-xs sm:text-sm text-muted-foreground">
                     <p>{footerContent.copyrightText.replace('{year}', new Date().getFullYear().toString())}</p>
                   </div>
                 </div>
@@ -691,6 +713,7 @@ export default function FooterManagement() {
           </TabsContent>
         </Tabs>
       </div>
+      <MobileTestHelper />
     </PageTransition>
   )
 }
