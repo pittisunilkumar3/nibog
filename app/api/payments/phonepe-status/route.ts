@@ -240,6 +240,12 @@ export async function POST(request: Request) {
             
             // Extract the necessary data from the client-provided booking data
             // and ensure it has all required fields in the expected format
+            console.log("=== DEBUGGING DOB FIELD MAPPING ===");
+            console.log("bookingData.childDob:", bookingData.childDob);
+            console.log("bookingData.dob:", bookingData.dob);
+            console.log("childDob type:", typeof bookingData.childDob);
+            console.log("dob type:", typeof bookingData.dob);
+
             finalBookingData = {
               user_id: bookingData.userId || userId,
               parent: {
@@ -249,7 +255,7 @@ export async function POST(request: Request) {
               },
               child: {
                 full_name: bookingData.childName || `Child ${userId}`,
-                date_of_birth: bookingData.dob ? bookingData.dob : "2015-01-01",
+                date_of_birth: bookingData.childDob || bookingData.dob || new Date().toISOString().split('T')[0], // Fixed: use childDob (correct field name) first, then dob as fallback
                 school_name: bookingData.schoolName || "Unknown School",
                 gender: mapGenderToAllowedValue(bookingData.gender || ''),
               },
