@@ -263,11 +263,14 @@ export default function CertificateTemplatesPage() {
       key: 'name',
       label: 'Template Name',
       sortable: true,
+      priority: 1, // Most important for mobile
     },
     {
       key: 'description',
       label: 'Description',
       sortable: true,
+      priority: 3, // Less important on mobile
+      hideOnMobile: true, // Hide on very small screens
       render: (value) => (
         <div className="max-w-xs truncate" title={value}>
           {value || 'No description'}
@@ -278,6 +281,7 @@ export default function CertificateTemplatesPage() {
       key: 'category',
       label: 'Category',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value) => (
         <Badge variant="outline">
           {value || 'General'}
@@ -288,6 +292,7 @@ export default function CertificateTemplatesPage() {
       key: 'is_active',
       label: 'Status',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value) => (
         <Badge variant={value ? "default" : "secondary"}>
           {value ? "Active" : "Inactive"}
@@ -298,12 +303,16 @@ export default function CertificateTemplatesPage() {
       key: 'created_at',
       label: 'Created',
       sortable: true,
+      priority: 4, // Hide on mobile
+      hideOnMobile: true,
       render: (value) => formatDate(value)
     },
     {
       key: 'updated_at',
       label: 'Updated',
       sortable: true,
+      priority: 5, // Hide on mobile
+      hideOnMobile: true,
       render: (value) => formatDate(value)
     }
   ]
@@ -365,20 +374,20 @@ export default function CertificateTemplatesPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mobile-space-y">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Certificate Templates</h1>
-          <p className="text-muted-foreground">Manage certificate templates for NIBOG events</p>
+          <h1 className="mobile-text-xl font-bold tracking-tight">Certificate Templates</h1>
+          <p className="text-muted-foreground mobile-text-sm">Manage certificate templates for NIBOG events</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="mobile-button">
             <Link href="/admin/events">
               <Download className="mr-2 h-4 w-4" />
               Generate for Events
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="mobile-button">
             <Link href="/admin/certificate-templates/new">
               <Plus className="mr-2 h-4 w-4" />
               Create New Template
@@ -387,20 +396,20 @@ export default function CertificateTemplatesPage() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 md:flex-row md:items-center">
+      <Card className="mobile-card">
+        <CardContent className="mobile-card-content pt-6">
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center">
             <div className="flex items-center gap-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search templates..."
-                className="h-9"
+                className="mobile-button mobile-text-sm"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
               />
             </div>
             <Select value={typeFilter} onValueChange={setTypeFilter}>
-              <SelectTrigger className="w-full md:w-[200px]">
+              <SelectTrigger className="mobile-button w-full md:w-[200px]">
                 <SelectValue placeholder="Filter by type" />
               </SelectTrigger>
               <SelectContent>
@@ -414,14 +423,14 @@ export default function CertificateTemplatesPage() {
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Certificate Templates</CardTitle>
-          <CardDescription>
+      <Card className="mobile-card">
+        <CardHeader className="mobile-card-header">
+          <CardTitle className="mobile-text-lg">Certificate Templates</CardTitle>
+          <CardDescription className="mobile-text-sm">
             {filteredTemplates.length} template{filteredTemplates.length !== 1 ? 's' : ''} found
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mobile-card-content">
           <EnhancedDataTable
             data={filteredTemplates}
             columns={columns}

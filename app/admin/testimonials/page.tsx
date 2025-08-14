@@ -365,16 +365,20 @@ export default function TestimonialsPage() {
       key: 'name',
       label: 'Parent Name',
       sortable: true,
+      priority: 1, // Most important for mobile
     },
     {
       key: 'city',
       label: 'City',
       sortable: true,
+      priority: 3, // Less important on mobile
+      hideOnMobile: true,
     },
     {
       key: 'event_id',
-      label: 'Event ID',
+      label: 'Event',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value, row) => {
         // Try to find the event title from the events list
         const event = events.find(e => (e.event_id || e.id) === value);
@@ -385,11 +389,14 @@ export default function TestimonialsPage() {
       key: 'rating',
       label: 'Rating',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value) => getRatingStars(value)
     },
     {
       key: 'testimonial',
       label: 'Testimonial',
+      priority: 4, // Hide on mobile due to length
+      hideOnMobile: true,
       render: (value) => (
         <div className="max-w-xs truncate" title={value}>
           {value}
@@ -400,12 +407,15 @@ export default function TestimonialsPage() {
       key: 'status',
       label: 'Status',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value) => getStatusBadge(value)
     },
     {
       key: 'submitted_at',
       label: 'Date',
       sortable: true,
+      priority: 4, // Hide on mobile
+      hideOnMobile: true,
       render: (value) => value ? new Date(value).toLocaleDateString() : 'N/A'
     }
   ]
@@ -482,18 +492,18 @@ export default function TestimonialsPage() {
   ]
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="mobile-space-y">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Testimonials</h1>
-          <p className="text-muted-foreground">Manage parent testimonials for NIBOG events</p>
+          <h1 className="mobile-text-xl font-bold tracking-tight">Testimonials</h1>
+          <p className="text-muted-foreground mobile-text-sm">Manage parent testimonials for NIBOG events</p>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={handleRefreshData} disabled={isLoading}>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" onClick={handleRefreshData} disabled={isLoading} className="mobile-button">
             <RefreshCw className={`mr-2 h-4 w-4 ${isLoading ? 'animate-spin' : ''}`} />
             Refresh
           </Button>
-          <Button asChild>
+          <Button asChild className="mobile-button">
             <Link href="/admin/testimonials/new">
               <Plus className="mr-2 h-4 w-4" />
               Add New Testimonial
@@ -502,21 +512,21 @@ export default function TestimonialsPage() {
         </div>
       </div>
 
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-            <div className="flex items-center gap-2">
+      <Card className="mobile-card">
+        <CardContent className="mobile-card-content pt-6">
+          <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center">
+            <div className="flex items-center gap-2 flex-1">
               <Search className="h-4 w-4 text-muted-foreground" />
               <Input
                 placeholder="Search testimonials..."
-                className="h-9 w-full md:w-[300px]"
+                className="mobile-button mobile-text-sm w-full"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
               />
             </div>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
               <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-                <SelectTrigger className="h-9 w-full md:w-[150px]">
+                <SelectTrigger className="mobile-button w-full sm:w-[150px]">
                   <SelectValue placeholder="All Statuses" />
                 </SelectTrigger>
                 <SelectContent>
@@ -530,7 +540,7 @@ export default function TestimonialsPage() {
               </Select>
 
               <Select value={selectedEvent} onValueChange={setSelectedEvent}>
-                <SelectTrigger className="h-9 w-full md:w-[180px]">
+                <SelectTrigger className="mobile-button w-full sm:w-[180px]">
                   <SelectValue placeholder="All Events" />
                 </SelectTrigger>
                 <SelectContent>
@@ -544,7 +554,7 @@ export default function TestimonialsPage() {
               </Select>
 
               <Select value={selectedCity} onValueChange={setSelectedCity}>
-                <SelectTrigger className="h-9 w-full md:w-[150px]">
+                <SelectTrigger className="mobile-button w-full sm:w-[150px]">
                   <SelectValue placeholder="All Cities" />
                 </SelectTrigger>
                 <SelectContent>

@@ -14,7 +14,7 @@ import EnhancedKPICard, { KPIData } from "@/components/admin/enhanced-kpi-card"
 import QuickActions from "@/components/admin/quick-actions"
 import { PageTransition, Stagger, StaggerItem, FadeIn } from "@/components/ui/animated-components"
 import { SkeletonKPI, SkeletonChart } from "@/components/ui/skeleton-loader"
-import { getDashboardMetrics, getRevenueData, DashboardMetrics } from "@/services/dashboardService"
+import { getDashboardMetrics, getDashboardMetricsFromAPI, getRevenueData, DashboardMetrics } from "@/services/dashboardService"
 import { useToast } from "@/hooks/use-toast"
 
 export default function AdminDashboard() {
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
       }
       setError(null)
 
-      const dashboardMetrics = await getDashboardMetrics()
+      const dashboardMetrics = await getDashboardMetricsFromAPI()
       setMetrics(dashboardMetrics)
 
       if (showRefreshToast) {
@@ -71,11 +71,19 @@ export default function AdminDashboard() {
     return () => clearInterval(interval)
   }, [])
 
+  // Format currency with proper Indian formatting
+  const formatCurrency = (amount: number): string => {
+    return `₹${amount.toLocaleString('en-IN', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    })}`
+  }
+
   // Generate KPI data from real metrics
   const generateKPIData = (metrics: DashboardMetrics): KPIData[] => [
     {
       title: "Total Revenue",
-      value: `₹${metrics.totalRevenue.toLocaleString()}`,
+      value: formatCurrency(metrics.totalRevenue),
       change: {
         value: metrics.monthlyGrowth.revenue,
         period: "last month",
@@ -125,7 +133,7 @@ export default function AdminDashboard() {
     },
     {
       title: "Avg Ticket Price",
-      value: `₹${Math.round(metrics.averageTicketPrice)}`,
+      value: formatCurrency(metrics.averageTicketPrice),
       icon: <Star className="h-5 w-5" />,
       description: "Average booking value",
       color: "success",
@@ -139,6 +147,22 @@ export default function AdminDashboard() {
       color: "info",
       href: "/admin/completed-events",
     },
+    ...(metrics.totalCities ? [{
+      title: "Total Cities",
+      value: metrics.totalCities.toString(),
+      icon: <MapPin className="h-5 w-5" />,
+      description: "Cities with events",
+      color: "default",
+      href: "/admin/cities",
+    }] : []),
+    ...(metrics.totalVenues ? [{
+      title: "Total Venues",
+      value: metrics.totalVenues.toString(),
+      icon: <Package className="h-5 w-5" />,
+      description: "Event venues available",
+      color: "warning",
+      href: "/admin/venues",
+    }] : []),
   ]
 
   const kpiData = metrics ? generateKPIData(metrics) : []

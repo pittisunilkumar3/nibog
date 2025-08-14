@@ -136,17 +136,17 @@ export default function ReportsPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="mobile-space-y">
         <FadeIn>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
             <div>
-              <h1 className="text-3xl font-bold tracking-tight">Reports & Analytics</h1>
-              <p className="text-muted-foreground">
+              <h1 className="mobile-text-xl font-bold tracking-tight">Reports & Analytics</h1>
+              <p className="text-muted-foreground mobile-text-sm">
                 Comprehensive data reports and export functionality for all NIBOG admin data
               </p>
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" asChild>
+              <Button variant="outline" asChild className="mobile-button">
                 <Link href="/admin">
                   <Activity className="mr-2 h-4 w-4" />
                   Dashboard
@@ -157,46 +157,46 @@ export default function ReportsPage() {
         </FadeIn>
 
         <FadeIn delay={0.1}>
-          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+          <div className="mobile-grid-1 mobile-gap">
             {reportCards.map((card, index) => (
-              <Card 
-                key={card.title} 
-                className="group hover:shadow-lg transition-all duration-200 cursor-pointer"
+              <Card
+                key={card.title}
+                className="mobile-card group hover:shadow-lg transition-all duration-200 cursor-pointer touch-manipulation"
                 onClick={() => window.location.href = card.href}
               >
-                <CardHeader className="pb-3">
+                <CardHeader className="mobile-card-header pb-3">
                   <div className="flex items-center justify-between">
                     <div className={`p-2 rounded-lg ${card.color} text-white`}>
                       {card.icon}
                     </div>
-                    <Button 
-                      variant="ghost" 
+                    <Button
+                      variant="ghost"
                       size="sm"
                       asChild
-                      className="opacity-0 group-hover:opacity-100 transition-opacity"
+                      className="mobile-button-sm opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity"
                     >
                       <Link href={card.href}>
                         <Download className="h-4 w-4" />
                       </Link>
                     </Button>
                   </div>
-                  <CardTitle className="text-lg">{card.title}</CardTitle>
-                  <CardDescription className="text-sm">
+                  <CardTitle className="mobile-text-lg">{card.title}</CardTitle>
+                  <CardDescription className="mobile-text-sm">
                     {card.description}
                   </CardDescription>
                 </CardHeader>
-                <CardContent>
+                <CardContent className="mobile-card-content">
                   {card.stats && (
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-muted-foreground">
+                      <span className="mobile-text-sm text-muted-foreground">
                         {card.stats.label}
                       </span>
-                      <span className="font-semibold">
+                      <span className="font-semibold mobile-text-sm">
                         {card.stats.value}
                       </span>
                     </div>
                   )}
-                  <div className="mt-3 flex items-center text-sm text-muted-foreground">
+                  <div className="mt-3 flex items-center mobile-text-sm text-muted-foreground">
                     <TrendingUp className="mr-1 h-3 w-3" />
                     Click to view detailed reports
                   </div>

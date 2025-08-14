@@ -148,12 +148,16 @@ export default function PaymentReportsPage() {
       key: 'payment_id',
       label: 'Payment ID',
       sortable: true,
-      width: '100px'
+      width: '100px',
+      priority: 4, // Hide on mobile
+      hideOnMobile: true
     },
     {
       key: 'transaction_id',
       label: 'Transaction ID',
       sortable: true,
+      priority: 5, // Hide on mobile
+      hideOnMobile: true,
       render: (value) => (
         <code className="text-xs bg-muted px-2 py-1 rounded">
           {value}
@@ -164,6 +168,7 @@ export default function PaymentReportsPage() {
       key: 'user_name',
       label: 'Customer',
       sortable: true,
+      priority: 1, // Most important for mobile
       render: (value, row) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -176,6 +181,7 @@ export default function PaymentReportsPage() {
       label: 'Amount',
       sortable: true,
       align: 'right',
+      priority: 2, // Important for mobile
       render: (value) => (
         <span className="font-mono">₹{parseFloat(value.toString()).toFixed(2)}</span>
       )
@@ -184,6 +190,8 @@ export default function PaymentReportsPage() {
       key: 'payment_method',
       label: 'Method',
       sortable: true,
+      priority: 3, // Less important on mobile
+      hideOnMobile: true,
       render: (value) => (
         <Badge variant="outline">{value}</Badge>
       )
@@ -192,6 +200,7 @@ export default function PaymentReportsPage() {
       key: 'payment_status',
       label: 'Status',
       sortable: true,
+      priority: 2, // Important for mobile
       render: (value) => {
         const statusColors = {
           successful: 'bg-green-500 hover:bg-green-600',
@@ -210,6 +219,8 @@ export default function PaymentReportsPage() {
       key: 'event_title',
       label: 'Event',
       sortable: true,
+      priority: 3, // Less important on mobile
+      hideOnMobile: true,
       render: (value, row) => (
         <div>
           <div className="font-medium">{value}</div>
@@ -223,6 +234,8 @@ export default function PaymentReportsPage() {
       key: 'payment_date',
       label: 'Date',
       sortable: true,
+      priority: 4, // Hide on mobile
+      hideOnMobile: true,
       render: (value) => (
         <div className="text-sm">
           {format(new Date(value), "MMM d, yyyy")}
@@ -268,19 +281,19 @@ export default function PaymentReportsPage() {
 
   return (
     <PageTransition>
-      <div className="space-y-6">
+      <div className="mobile-space-y">
         <FadeIn>
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Button variant="ghost" size="sm" asChild>
+          <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+              <Button variant="ghost" size="sm" asChild className="mobile-button-sm w-fit">
                 <Link href="/admin/reports">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Reports
                 </Link>
               </Button>
               <div>
-                <h1 className="text-3xl font-bold tracking-tight">Payment Reports</h1>
-                <p className="text-muted-foreground">
+                <h1 className="mobile-text-xl font-bold tracking-tight">Payment Reports</h1>
+                <p className="text-muted-foreground mobile-text-sm">
                   Comprehensive payment analytics and transaction history
                 </p>
               </div>
@@ -290,6 +303,7 @@ export default function PaymentReportsPage() {
                 variant="outline"
                 onClick={handleRefresh}
                 disabled={isRefreshing}
+                className="mobile-button"
               >
                 <RefreshCw className={cn("mr-2 h-4 w-4", isRefreshing && "animate-spin")} />
                 Refresh
@@ -300,15 +314,15 @@ export default function PaymentReportsPage() {
 
         {/* KPI Cards */}
         <Stagger>
-          <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+          <div className="mobile-grid-1 lg:grid-cols-4 mobile-gap">
             <StaggerItem>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Total Revenue</CardTitle>
+              <Card className="mobile-card">
+                <CardHeader className="mobile-card-header flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="mobile-text-sm font-medium">Total Revenue</CardTitle>
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">
+                <CardContent className="mobile-card-content">
+                  <div className="mobile-text-lg font-bold">
                     ₹{calculatedAnalytics.summary.total_revenue.toFixed(2)}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -318,17 +332,17 @@ export default function PaymentReportsPage() {
               </Card>
             </StaggerItem>
             <StaggerItem>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Successful Payments</CardTitle>
+              <Card className="mobile-card">
+                <CardHeader className="mobile-card-header flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="mobile-text-sm font-medium">Successful Payments</CardTitle>
                   <TrendingUp className="h-4 w-4 text-green-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-green-600">
+                <CardContent className="mobile-card-content">
+                  <div className="mobile-text-lg font-bold text-green-600">
                     {calculatedAnalytics.summary.successful_payments}
                   </div>
                   <p className="text-xs text-muted-foreground">
-                    {calculatedAnalytics.summary.total_payments > 0 
+                    {calculatedAnalytics.summary.total_payments > 0
                       ? ((calculatedAnalytics.summary.successful_payments / calculatedAnalytics.summary.total_payments) * 100).toFixed(1)
                       : 0}% success rate
                   </p>
@@ -336,13 +350,13 @@ export default function PaymentReportsPage() {
               </Card>
             </StaggerItem>
             <StaggerItem>
-              <Card>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <CardTitle className="text-sm font-medium">Failed Payments</CardTitle>
+              <Card className="mobile-card">
+                <CardHeader className="mobile-card-header flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="mobile-text-sm font-medium">Failed Payments</CardTitle>
                   <TrendingDown className="h-4 w-4 text-red-600" />
                 </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold text-red-600">
+                <CardContent className="mobile-card-content">
+                  <div className="mobile-text-lg font-bold text-red-600">
                     {calculatedAnalytics.summary.failed_payments}
                   </div>
                   <p className="text-xs text-muted-foreground">
@@ -377,45 +391,47 @@ export default function PaymentReportsPage() {
               <CardTitle className="text-lg">Filters</CardTitle>
               <CardDescription>Filter payment data by various criteria</CardDescription>
             </CardHeader>
-            <CardContent>
-              <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
-                <div className="flex items-center gap-2">
+            <CardContent className="mobile-card-content">
+              <div className="flex flex-col gap-3 sm:gap-4 sm:flex-row sm:items-center">
+                <div className="flex items-center gap-2 flex-1">
                   <Search className="h-4 w-4 text-muted-foreground" />
                   <Input
                     placeholder="Search transactions..."
-                    className="h-9 w-full md:w-[300px]"
+                    className="mobile-button mobile-text-sm w-full"
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                   />
                 </div>
-                <div className="flex items-center gap-2">
-                  <Filter className="h-4 w-4 text-muted-foreground" />
-                  <Select value={statusFilter} onValueChange={setStatusFilter}>
-                    <SelectTrigger className="h-9 w-full md:w-[150px]">
-                      <SelectValue placeholder="All Statuses" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Statuses</SelectItem>
-                      <SelectItem value="successful">Successful</SelectItem>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="failed">Failed</SelectItem>
-                      <SelectItem value="refunded">Refunded</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Select value={methodFilter} onValueChange={setMethodFilter}>
-                    <SelectTrigger className="h-9 w-full md:w-[150px]">
-                      <SelectValue placeholder="All Methods" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Methods</SelectItem>
-                      <SelectItem value="PhonePe">PhonePe</SelectItem>
-                      <SelectItem value="Cash">Cash</SelectItem>
-                      <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
-                      <SelectItem value="Cheque">Cheque</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2">
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Filter className="h-4 w-4 text-muted-foreground" />
+                    <Select value={statusFilter} onValueChange={setStatusFilter}>
+                      <SelectTrigger className="mobile-button w-full sm:w-[150px]">
+                        <SelectValue placeholder="All Statuses" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Statuses</SelectItem>
+                        <SelectItem value="successful">Successful</SelectItem>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="failed">Failed</SelectItem>
+                        <SelectItem value="refunded">Refunded</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="flex items-center gap-2 w-full sm:w-auto">
+                    <Select value={methodFilter} onValueChange={setMethodFilter}>
+                      <SelectTrigger className="mobile-button w-full sm:w-[150px]">
+                        <SelectValue placeholder="All Methods" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="all">All Methods</SelectItem>
+                        <SelectItem value="PhonePe">PhonePe</SelectItem>
+                        <SelectItem value="Cash">Cash</SelectItem>
+                        <SelectItem value="Bank Transfer">Bank Transfer</SelectItem>
+                        <SelectItem value="Cheque">Cheque</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <Calendar className="h-4 w-4 text-muted-foreground" />

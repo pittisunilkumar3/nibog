@@ -1,21 +1,18 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import Link from "next/link"
-import { useRouter, useSearchParams } from "next/navigation"
-import { Download, Mail, FileText, Loader2, Filter, ArrowDown, ArrowUp, Calendar, Search, CheckSquare, Square, MoreHorizontal, Send, Eye } from "lucide-react"
+
+import { Download, Mail, FileText, Loader2, Filter, Search, Eye, Plus } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Checkbox } from "@/components/ui/checkbox"
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import {
   Select,
   SelectContent,
@@ -23,33 +20,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-import {
-  Pagination,
-  PaginationContent,
-  PaginationItem,
-  PaginationLink,
-  PaginationNext,
-  PaginationPrevious,
-} from "@/components/ui/pagination"
+import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
+import { ExportColumn } from "@/lib/export-utils"
+
 import { useToast } from "@/hooks/use-toast"
 import { CertificateListItem } from "@/types/certificate"
 import { getAllCertificates } from "@/services/certificateGenerationService"
-import { generateCertificatePDF, generateCertificatePDFFrontend, generateBulkPDFs, generateBulkPDFsFrontend } from "@/services/certificatePdfService"
+import { generateCertificatePDFFrontend, generateBulkPDFsFrontend } from "@/services/certificatePdfService"
 import { sendCertificateEmail } from "@/services/certificateEmailService"
 import { EmailCertificateModal } from "@/components/email-certificate-modal"
 import { CertificatePreviewModal } from "@/components/certificate-preview-modal"
 
 export default function CertificatesPage() {
-  const router = useRouter()
-  const searchParams = useSearchParams()
+
   const { toast } = useToast()
 
   // State
@@ -58,12 +41,8 @@ export default function CertificatesPage() {
   const [searchTerm, setSearchTerm] = useState("")
   const [eventFilter, setEventFilter] = useState<string | null>(null)
   const [statusFilter, setStatusFilter] = useState<string | null>(null)
-  const [sortField, setSortField] = useState<string>("generated_at")
-  const [sortDirection, setSortDirection] = useState<"asc" | "desc">("desc")
-  const [page, setPage] = useState(1)
-  const [totalPages, setTotalPages] = useState(1)
+
   const [selectedCertificates, setSelectedCertificates] = useState<Set<number>>(new Set())
-  const [selectAll, setSelectAll] = useState(false)
   const [downloadProgress, setDownloadProgress] = useState<{current: number, total: number} | null>(null)
   const [isEmailModalOpen, setIsEmailModalOpen] = useState(false)
   const [emailTarget, setEmailTarget] = useState<CertificateListItem[]>([])
@@ -75,16 +54,13 @@ export default function CertificatesPage() {
   // Load certificates
   useEffect(() => {
     loadCertificates()
-  }, [eventFilter, statusFilter, page])
+  }, [eventFilter, statusFilter])
 
   const loadCertificates = async () => {
     try {
       setLoading(true)
       
-      const filters: Record<string, any> = {
-        limit: itemsPerPage,
-        offset: (page - 1) * itemsPerPage
-      }
+      const filters: Record<string, any> = {}
       
       if (eventFilter) {
         filters.eventId = parseInt(eventFilter)
@@ -104,25 +80,7 @@ export default function CertificatesPage() {
       }
 
       console.log(`Successfully loaded ${data.length} certificates`);
-
-      // Sort certificates
-      const sortedData = [...data].sort((a, b) => {
-        const aValue = a[sortField as keyof CertificateListItem]
-        const bValue = b[sortField as keyof CertificateListItem]
-        
-        if (!aValue && !bValue) return 0
-        if (!aValue) return 1
-        if (!bValue) return -1
-        
-        const comparison = aValue > bValue ? 1 : -1
-        return sortDirection === 'asc' ? comparison : -comparison
-      })
-      
-      setCertificates(sortedData)
-      
-      // Calculate total pages (assuming we get a count from the API)
-      // This is a placeholder - we would need the total count from the API
-      setTotalPages(Math.ceil(data.length / itemsPerPage))
+      setCertificates(data)
     } catch (error) {
       console.error('Error loading certificates:', error)
       const errorMessage = error instanceof Error ? error.message : 'Unknown error occurred';
@@ -137,21 +95,12 @@ export default function CertificatesPage() {
 
       // Set empty state on error
       setCertificates([]);
-      setTotalPages(1);
     } finally {
       setLoading(false)
     }
   }
 
-  // Handle sorting
-  const handleSort = (field: string) => {
-    if (sortField === field) {
-      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc')
-    } else {
-      setSortField(field)
-      setSortDirection('asc')
-    }
-  }
+
 
   // Filter certificates by search term
   const filteredCertificates = certificates.filter(cert => {
@@ -280,36 +229,7 @@ export default function CertificatesPage() {
     }
   }
 
-  // Toggle individual certificate selection
-  const toggleCertificateSelection = (id: number) => {
-    const newSelected = new Set(selectedCertificates)
-    if (newSelected.has(id)) {
-      newSelected.delete(id)
-    } else {
-      newSelected.add(id)
-    }
-    setSelectedCertificates(newSelected)
-    
-    // Update selectAll state
-    if (newSelected.size === filteredCertificates.length) {
-      setSelectAll(true)
-    } else {
-      setSelectAll(false)
-    }
-  }
 
-  // Toggle select all certificates
-  const toggleSelectAll = () => {
-    if (selectAll) {
-      // Deselect all
-      setSelectedCertificates(new Set())
-    } else {
-      // Select all filtered certificates
-      const allIds = filteredCertificates.map(cert => cert.id)
-      setSelectedCertificates(new Set(allIds))
-    }
-    setSelectAll(!selectAll)
-  }
 
   // Get status badge color
   const getStatusBadgeColor = (status: string) => {
@@ -322,30 +242,148 @@ export default function CertificatesPage() {
     }
   }
 
-  return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+  // Define table columns for EnhancedDataTable
+  const columns: Column<CertificateListItem>[] = [
+    {
+      key: 'event_title',
+      label: 'Event',
+      sortable: true,
+      priority: 1, // Most important for mobile
+      render: (value, row) => (
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Certificates</h1>
-          <p className="text-muted-foreground">
+          <div className="font-medium mobile-text-sm">{value || 'Event Name Not Available'}</div>
+          <div className="text-xs text-muted-foreground">{row.event_date || ''}</div>
+          <div className="text-xs text-muted-foreground">
+            {row.venue_name || ''}
+            {row.city_name && row.venue_name ? `, ${row.city_name}` : row.city_name || ''}
+          </div>
+          {row.certificate_number && (
+            <div className="text-xs text-muted-foreground">{row.certificate_number}</div>
+          )}
+        </div>
+      )
+    },
+    {
+      key: 'child_name',
+      label: 'Recipient',
+      sortable: true,
+      priority: 2, // Important for mobile
+      render: (value, row) => (
+        <div>
+          <div className="font-medium mobile-text-sm">{value || 'Participant Name Not Available'}</div>
+          {row.game_name && (
+            <div className="text-xs text-muted-foreground">{row.game_name}</div>
+          )}
+          <div className="text-xs text-muted-foreground">{row.user_name || 'Parent Name Not Available'}</div>
+          <div className="text-xs text-muted-foreground">{row.user_email || 'Email Not Available'}</div>
+        </div>
+      )
+    },
+    {
+      key: 'generated_at',
+      label: 'Generated Date',
+      sortable: true,
+      priority: 3, // Less important on mobile
+      hideOnMobile: true,
+      render: (value) => new Date(value).toLocaleDateString()
+    },
+    {
+      key: 'status',
+      label: 'Status',
+      sortable: true,
+      priority: 2, // Important for mobile
+      render: (value) => (
+        <Badge className={getStatusBadgeColor(value)}>
+          {value.charAt(0).toUpperCase() + value.slice(1)}
+        </Badge>
+      )
+    }
+  ]
+
+  // Define table actions
+  const actions: TableAction<CertificateListItem>[] = [
+    {
+      label: "Download",
+      icon: <Download className="h-4 w-4" />,
+      onClick: handleDownload
+    },
+    {
+      label: "Email",
+      icon: <Mail className="h-4 w-4" />,
+      onClick: handleEmailCertificate,
+      disabled: (row) => emailingCertificates.has(row.id)
+    },
+    {
+      label: "Preview",
+      icon: <Eye className="h-4 w-4" />,
+      onClick: (row) => {
+        setPreviewTarget(row);
+        setIsPreviewModalOpen(true);
+      }
+    },
+    {
+      label: "Details",
+      icon: <FileText className="h-4 w-4" />,
+      onClick: (row) => window.location.href = `/admin/certificates/${row.id}`
+    }
+  ]
+
+  // Define bulk actions
+  const bulkActions: BulkAction<CertificateListItem>[] = [
+    {
+      label: "Download as ZIP",
+      icon: <Download className="h-4 w-4" />,
+      onClick: (selectedRows) => {
+        const selectedIds = new Set(selectedRows.map(row => row.id))
+        setSelectedCertificates(selectedIds)
+        handleBulkDownload()
+      }
+    },
+    {
+      label: "Email certificates",
+      icon: <Mail className="h-4 w-4" />,
+      onClick: (selectedRows) => {
+        setEmailTarget(selectedRows);
+        setIsEmailModalOpen(true);
+      }
+    }
+  ]
+
+  // Export columns
+  const exportColumns: ExportColumn<CertificateListItem>[] = [
+    { key: 'id', label: 'Certificate ID' },
+    { key: 'event_title', label: 'Event' },
+    { key: 'child_name', label: 'Child Name' },
+    { key: 'user_name', label: 'Parent Name' },
+    { key: 'user_email', label: 'Email' },
+    { key: 'status', label: 'Status' },
+    { key: 'generated_at', label: 'Generated Date' }
+  ]
+
+  return (
+    <div className="mobile-space-y">
+      <div className="flex flex-col gap-3 sm:gap-4 md:flex-row md:items-center md:justify-between">
+        <div>
+          <h1 className="mobile-text-xl font-bold tracking-tight">Certificates</h1>
+          <p className="text-muted-foreground mobile-text-sm">
             View and manage all generated certificates
           </p>
         </div>
-        
+
         {/* Bulk Actions */}
         {selectedCertificates.size > 0 && (
-          <div className="flex items-center space-x-2">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-2">
             <span className="text-sm text-muted-foreground">
               {selectedCertificates.size} selected
             </span>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="mobile-button w-full sm:w-auto">
                   <span>Bulk Actions</span>
-                  <MoreHorizontal className="ml-2 h-4 w-4" />
+                  <Plus className="ml-2 h-4 w-4" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem onClick={handleBulkDownload}>
                   <Download className="mr-2 h-4 w-4" />
                   <span>Download as ZIP</span>
@@ -353,7 +391,7 @@ export default function CertificatesPage() {
                 <DropdownMenuItem
                   onClick={() => {
                     // Get the selected certificates
-                    const selectedCerts = filteredCertificates.filter(cert => 
+                    const selectedCerts = filteredCertificates.filter(cert =>
                       selectedCertificates.has(cert.id)
                     );
                     setEmailTarget(selectedCerts);
@@ -370,26 +408,29 @@ export default function CertificatesPage() {
       </div>
 
       {/* Filter and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Filter Certificates</CardTitle>
+      <Card className="mobile-card">
+        <CardHeader className="mobile-card-header">
+          <CardTitle className="mobile-text-lg">Filter Certificates</CardTitle>
         </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-            <div>
-              <Input
-                placeholder="Search by name, email, event..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full"
-              />
+        <CardContent className="mobile-card-content">
+          <div className="mobile-form-grid-3 lg:grid-cols-4">
+            <div className="sm:col-span-2 lg:col-span-1">
+              <div className="flex items-center gap-2">
+                <Search className="h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Search by name, email, event..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="mobile-text-sm"
+                />
+              </div>
             </div>
             <div>
               <Select
                 value={eventFilter || "all"}
                 onValueChange={(value) => setEventFilter(value === "all" ? null : value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="mobile-button">
                   <SelectValue placeholder="Filter by event" />
                 </SelectTrigger>
                 <SelectContent>
@@ -405,7 +446,7 @@ export default function CertificatesPage() {
                 value={statusFilter || "all"}
                 onValueChange={(value) => setStatusFilter(value === "all" ? null : value)}
               >
-                <SelectTrigger>
+                <SelectTrigger className="mobile-button">
                   <SelectValue placeholder="Filter by status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -417,8 +458,8 @@ export default function CertificatesPage() {
                 </SelectContent>
               </Select>
             </div>
-            <div className="flex">
-              <Button onClick={loadCertificates} className="w-full">
+            <div className="sm:col-span-2 lg:col-span-1">
+              <Button onClick={loadCertificates} className="mobile-button w-full">
                 <Filter className="mr-2 h-4 w-4" />
                 Apply Filters
               </Button>
@@ -428,14 +469,14 @@ export default function CertificatesPage() {
       </Card>
 
       {/* Certificates Table */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Generated Certificates</CardTitle>
-          <CardDescription>
+      <Card className="mobile-card">
+        <CardHeader className="mobile-card-header">
+          <CardTitle className="mobile-text-lg">Generated Certificates</CardTitle>
+          <CardDescription className="mobile-text-sm">
             Total certificates: {filteredCertificates.length}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mobile-card-content">
           {/* Progress Overlay for Bulk Downloads */}
           {downloadProgress && (
             <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
@@ -474,201 +515,24 @@ export default function CertificatesPage() {
               <p className="text-muted-foreground">No certificates found</p>
             </div>
           ) : (
-            <>
-              <div className="rounded-md border">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead className="w-[50px]">
-                        <div className="flex items-center justify-center">
-                          <div 
-                            className="cursor-pointer h-5 w-5" 
-                            onClick={toggleSelectAll}
-                          >
-                            {selectAll ? (
-                              <CheckSquare className="h-5 w-5 text-primary" />
-                            ) : (
-                              <Square className="h-5 w-5" />
-                            )}
-                          </div>
-                        </div>
-                      </TableHead>
-                      <TableHead 
-                        className="cursor-pointer"
-                        onClick={() => handleSort('event_title')}
-                      >
-                        Event
-                        {sortField === 'event_title' && (
-                          sortDirection === 'asc' ? 
-                            <ArrowUp className="ml-1 h-3 w-3 inline" /> : 
-                            <ArrowDown className="ml-1 h-3 w-3 inline" />
-                        )}
-                      </TableHead>
-                      <TableHead 
-                        className="cursor-pointer"
-                        onClick={() => handleSort('user_name')}
-                      >
-                        Recipient
-                        {sortField === 'user_name' && (
-                          sortDirection === 'asc' ? 
-                            <ArrowUp className="ml-1 h-3 w-3 inline" /> : 
-                            <ArrowDown className="ml-1 h-3 w-3 inline" />
-                        )}
-                      </TableHead>
-                      <TableHead 
-                        className="cursor-pointer"
-                        onClick={() => handleSort('generated_at')}
-                      >
-                        Generated Date
-                        {sortField === 'generated_at' && (
-                          sortDirection === 'asc' ? 
-                            <ArrowUp className="ml-1 h-3 w-3 inline" /> : 
-                            <ArrowDown className="ml-1 h-3 w-3 inline" />
-                        )}
-                      </TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Actions</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {filteredCertificates.map((certificate) => (
-                      <TableRow key={certificate.id}>
-                        <TableCell>
-                          <div 
-                            className="flex items-center justify-center cursor-pointer" 
-                            onClick={() => toggleCertificateSelection(certificate.id)}
-                          >
-                            {selectedCertificates.has(certificate.id) ? (
-                              <CheckSquare className="h-5 w-5 text-primary" />
-                            ) : (
-                              <Square className="h-5 w-5" />
-                            )}
-                          </div>
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{certificate.event_title || 'Event Name Not Available'}</div>
-                          <div className="text-xs text-muted-foreground">{certificate.event_date || ''}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {certificate.venue_name || ''}
-                            {certificate.city_name && certificate.venue_name ? `, ${certificate.city_name}` : certificate.city_name || ''}
-                          </div>
-                          {certificate.certificate_number && (
-                            <div className="text-xs text-muted-foreground">{certificate.certificate_number}</div>
-                          )}
-                        </TableCell>
-                        <TableCell>
-                          <div className="font-medium">{certificate.child_name || 'Participant Name Not Available'}</div>
-                          {certificate.game_name && (
-                            <div className="text-xs text-muted-foreground">{certificate.game_name}</div>
-                          )}
-                          <div className="text-xs text-muted-foreground">{certificate.user_name || 'Parent Name Not Available'}</div>
-                          <div className="text-xs text-muted-foreground">{certificate.user_email || 'Email Not Available'}</div>
-                        </TableCell>
-                        <TableCell>
-                          {new Date(certificate.generated_at).toLocaleDateString()}
-                        </TableCell>
-                        <TableCell>
-                          <Badge className={getStatusBadgeColor(certificate.status)}>
-                            {certificate.status.charAt(0).toUpperCase() + certificate.status.slice(1)}
-                          </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex space-x-2">
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => handleDownload(certificate)}
-                              title="Download Certificate"
-                            >
-                              <Download className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleEmailCertificate(certificate)}
-                              disabled={emailingCertificates.has(certificate.id)}
-                              title="Email Certificate"
-                            >
-                              {emailingCertificates.has(certificate.id) ? (
-                                <Loader2 className="h-4 w-4 animate-spin" />
-                              ) : (
-                                <Mail className="h-4 w-4" />
-                              )}
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              onClick={() => {
-                                setPreviewTarget(certificate);
-                                setIsPreviewModalOpen(true);
-                              }}
-                              title="Preview Certificate Template"
-                            >
-                              <Eye className="h-4 w-4" />
-                            </Button>
-                            <Button 
-                              variant="outline" 
-                              size="sm"
-                              asChild
-                              title="View Certificate Details"
-                            >
-                              <Link href={`/admin/certificates/${certificate.id}`}>
-                                <FileText className="h-4 w-4" />
-                              </Link>
-                            </Button>
-                          </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
-              </div>
-              
-              {/* Pagination */}
-              <div className="mt-4">
-                <Pagination>
-                  <PaginationContent>
-                    <PaginationItem>
-                      <PaginationPrevious 
-                        href="#" 
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (page > 1) setPage(page - 1)
-                        }}
-                        className={page <= 1 ? "pointer-events-none opacity-50" : ""}
-                      />
-                    </PaginationItem>
-                    {Array.from({ length: Math.min(totalPages, 5) }, (_, i) => {
-                      const pageNumber = i + 1
-                      return (
-                        <PaginationItem key={pageNumber}>
-                          <PaginationLink
-                            href="#"
-                            onClick={(e) => {
-                              e.preventDefault()
-                              setPage(pageNumber)
-                            }}
-                            isActive={pageNumber === page}
-                          >
-                            {pageNumber}
-                          </PaginationLink>
-                        </PaginationItem>
-                      )
-                    })}
-                    <PaginationItem>
-                      <PaginationNext 
-                        href="#" 
-                        onClick={(e) => {
-                          e.preventDefault()
-                          if (page < totalPages) setPage(page + 1)
-                        }}
-                        className={page >= totalPages ? "pointer-events-none opacity-50" : ""}
-                      />
-                    </PaginationItem>
-                  </PaginationContent>
-                </Pagination>
-              </div>
-            </>
+            <EnhancedDataTable
+              data={filteredCertificates}
+              columns={columns}
+              actions={actions}
+              bulkActions={bulkActions}
+              loading={loading}
+              searchable={false} // We have custom search above
+              filterable={false} // We have custom filters above
+              exportable={true}
+              selectable={true}
+              pagination={true}
+              pageSize={itemsPerPage}
+              exportColumns={exportColumns}
+              exportTitle="NIBOG Certificates Report"
+              exportFilename="nibog-certificates"
+              emptyMessage="No certificates found"
+              className="min-h-[400px]"
+            />
           )}
         </CardContent>
       </Card>
