@@ -10,6 +10,7 @@ export interface BabyGame {
   max_age?: number;
   max_age_months?: number; // For API request
   duration_minutes: number;
+  suggested_price?: number;
   categories: string[];
   is_active: boolean;
   created_at?: string;

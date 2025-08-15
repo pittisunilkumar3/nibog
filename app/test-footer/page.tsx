@@ -175,7 +175,12 @@ export default function TestFooterPage() {
               <strong>Browser Console Commands:</strong>
               <div className="mt-2 p-2 bg-muted rounded text-sm font-mono">
                 <div>// Test API directly:</div>
-                <div>fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get').then(r => r.json()).then(console.log)</div>
+                {(() => {
+                  fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get')
+                    .then(r => r.json())
+                    .then(data => console.log(data));
+                  return null;
+                })()}
                 <div className="mt-2">// Check footer element:</div>
                 <div>document.querySelector('footer h3').textContent</div>
               </div>

@@ -10,9 +10,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Textarea } from "@/components/ui/textarea"
-import { Calendar } from "@/components/ui/calendar"
+import { Calendar as CalendarComponent } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, ArrowLeft, AlertTriangle, Loader2, Plus, Trash2 } from "lucide-react"
+import { Calendar as CalendarIcon, ArrowLeft, AlertTriangle, Loader2, Plus, Trash2 } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { Badge } from "@/components/ui/badge"
@@ -23,7 +23,18 @@ import { useToast } from "@/components/ui/use-toast"
 import { getEventById, updateEvent, formatEventDataForUpdate } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
 import { getVenuesByCity } from "@/services/venueService"
-import { getAllBabyGames, BabyGame } from "@/services/babyGameService"
+import { getAllBabyGames, BabyGame as ImportedBabyGame } from "@/services/babyGameService"
+
+interface LocalBabyGame {
+  id: string;
+  game_name: string;
+  description?: string;
+  min_age_months?: number;
+  max_age_months?: number;
+  duration_minutes: number;
+  suggested_price?: number;
+  categories?: string[];
+}
 import { TimePickerDemo } from "@/components/time-picker"
 import {
   AlertDialog,
@@ -46,7 +57,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 6,
     maxAgeMonths: 18,
     durationMinutes: 90,
-    suggestedPrice: 799
+    suggestedPrice: 799,
+    categories: ["Sensory", "Play"]
   },
   {
     id: "2",
@@ -55,7 +67,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 12,
     maxAgeMonths: 36,
     durationMinutes: 90,
-    suggestedPrice: 899
+    suggestedPrice: 899,
+    categories: ["Music", "Movement"]
   },
   {
     id: "3",
@@ -64,7 +77,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 8,
     maxAgeMonths: 24,
     durationMinutes: 120,
-    suggestedPrice: 999
+    suggestedPrice: 999,
+    categories: ["Sports", "Games"]
   },
 ]
 
@@ -84,7 +98,7 @@ export default function EditEventPage({ params }: Props) {
   const [eventData, setEventData] = useState<any>(null)
   const [cities, setCities] = useState<Array<{ id: number; name: string }>>([])
   const [apiVenues, setApiVenues] = useState<Array<{ id: number; name: string }>>([])
-  const [babyGames, setBabyGames] = useState<BabyGame[]>([])
+  const [babyGames, setBabyGames] = useState<ImportedBabyGame[]>([])
 
   const [eventTitle, setEventTitle] = useState("")
   const [eventDescription, setEventDescription] = useState("")
@@ -317,7 +331,7 @@ export default function EditEventPage({ params }: Props) {
         console.warn("No baby games found in the API response")
         setGamesError("No games found. Please add games first.")
       } else {
-        setBabyGames(gamesData)
+        setBabyGames(gamesData as ImportedBabyGame[])
       }
     } catch (error: any) {
       console.error("Failed to fetch baby games:", error)
@@ -329,14 +343,14 @@ export default function EditEventPage({ params }: Props) {
 
   // Get game templates (either from API or fallback)
   const gameTemplates = babyGames.length > 0
-    ? babyGames.map(game => ({
+    ? babyGames.map((game: ImportedBabyGame) => ({
         id: game.id?.toString() || "",
         name: game.game_name,
         description: game.description || "",
-        minAgeMonths: game.min_age || 0,
-        maxAgeMonths: game.max_age || 0,
+        minAgeMonths: game.min_age_months || 0,
+        maxAgeMonths: game.max_age_months || 0,
         durationMinutes: game.duration_minutes,
-        suggestedPrice: 799, // Default price since API doesn't provide price
+        suggestedPrice: game.suggested_price || 799,
         categories: game.categories || []
       }))
     : fallbackGameTemplates
@@ -718,12 +732,12 @@ export default function EditEventPage({ params }: Props) {
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0">
-                      <Calendar
+                      <CalendarComponent
                         mode="single"
-                        selected={selectedDate}
-                        onSelect={handleDateChange}
+                        selected={selectedDate || undefined}
+                        onSelect={(date: any) => handleDateChange(date)}
                         initialFocus
-                        disabled={(date) => date < new Date()}
+                        disabled={(date: Date) => date < new Date()}
                       />
                     </PopoverContent>
                   </Popover>
