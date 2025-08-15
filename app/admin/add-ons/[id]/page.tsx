@@ -150,28 +150,29 @@ export default function AddOnDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/add-ons">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{addOn.name}</h1>
-            <p className="text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{addOn.name}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">
               {addOn.category.charAt(0).toUpperCase() + addOn.category.slice(1)} •
               SKU: {addOn.has_variants ? "Multiple" : addOn.sku}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/add-ons/${addOn.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Add-on
+              <span className="hidden sm:inline">Edit Add-on</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
           <AlertDialog>
@@ -220,8 +221,8 @@ export default function AddOnDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="md:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Add-on Details</CardTitle>

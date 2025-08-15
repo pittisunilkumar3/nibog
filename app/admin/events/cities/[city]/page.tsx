@@ -260,30 +260,32 @@ export default function EventsCityPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/events/cities">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{cityName}</h1>
-            <p className="text-muted-foreground">Manage venues and events in {cityName}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{cityName}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Manage venues and events in {cityName}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/cities/${city?.id}/edit`}>
-              Edit City
+              <span className="hidden sm:inline">Edit City</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href={`/admin/venues/new?city=${encodeURIComponent(cityName)}`}>
               <Plus className="mr-2 h-4 w-4" />
-              Add Venue
+              <span className="hidden sm:inline">Add Venue</span>
+              <span className="sm:hidden">Add</span>
             </Link>
           </Button>
         </div>

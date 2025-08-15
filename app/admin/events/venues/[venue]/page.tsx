@@ -175,37 +175,39 @@ export default function EventsVenuePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href={`/admin/events/cities/${encodeURIComponent(venue.city_name || 'Unknown')}`}>
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{venue.venue_name}</h1>
-            <p className="text-muted-foreground">{venue.address}, {venue.city_name}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{venue.venue_name}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">{venue.address}, {venue.city_name}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/venues/${venue.id}/edit`}>
-              Edit Venue
+              <span className="hidden sm:inline">Edit Venue</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
-          <Button asChild>
+          <Button asChild className="touch-manipulation">
             <Link href={`/admin/events/new?venue=${encodeURIComponent(venue.venue_name || '')}`}>
               <Plus className="mr-2 h-4 w-4" />
-              Create Event
+              <span className="hidden sm:inline">Create Event</span>
+              <span className="sm:hidden">Create</span>
             </Link>
           </Button>
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <div className="space-y-6 md:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <div className="space-y-4 sm:space-y-6 lg:col-span-2">
           <Card>
             <CardHeader>
               <CardTitle>Venue Information</CardTitle>

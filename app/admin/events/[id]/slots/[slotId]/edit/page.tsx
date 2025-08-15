@@ -214,29 +214,31 @@ export default function EditSlotPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" asChild>
-          <Link href={`/admin/events/${eventId}/slots`}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Game Slot</h1>
-          <p className="text-muted-foreground">
-            {event.event_title} | {event.venue?.venue_name}, {event.city?.city_name}
-          </p>
-          {event.event_description && (
-            <div className="mt-1">
-              <TruncatedText
-                text={event.event_description}
-                maxLength={120}
-                className="text-sm text-muted-foreground"
-                showTooltip={true}
-              />
-            </div>
-          )}
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
+            <Link href={`/admin/events/${eventId}/slots`}>
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Link>
+          </Button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Edit Game Slot</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">
+              {event.event_title} | {event.venue?.venue_name}, {event.city?.city_name}
+            </p>
+            {event.event_description && (
+              <div className="mt-1">
+                <TruncatedText
+                  text={event.event_description}
+                  maxLength={120}
+                  className="text-sm text-muted-foreground"
+                  showTooltip={true}
+                />
+              </div>
+            )}
+          </div>
         </div>
       </div>
 

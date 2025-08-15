@@ -566,17 +566,19 @@ export default function EditEventPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2">
-        <Button variant="outline" size="icon" asChild>
-          <Link href={`/admin/events/${eventId}`}>
-            <ArrowLeft className="h-4 w-4" />
-            <span className="sr-only">Back</span>
-          </Link>
-        </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Event</h1>
-          <p className="text-muted-foreground">Update event details for {eventData.event_title}</p>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
+            <Link href={`/admin/events/${eventId}`}>
+              <ArrowLeft className="h-4 w-4" />
+              <span className="sr-only">Back</span>
+            </Link>
+          </Button>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Edit Event</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Update event details for {eventData.event_title}</p>
+          </div>
         </div>
       </div>
 
@@ -605,6 +607,7 @@ export default function EditEventPage({ params }: Props) {
                     value={eventTitle}
                     onChange={(e) => setEventTitle(e.target.value)}
                     placeholder="Enter event title"
+                    className="touch-manipulation"
                   />
                 </div>
 
@@ -616,6 +619,7 @@ export default function EditEventPage({ params }: Props) {
                     onChange={(e) => setEventDescription(e.target.value)}
                     placeholder="Enter event description"
                     rows={4}
+                    className="touch-manipulation"
                   />
                 </div>
 
@@ -639,7 +643,7 @@ export default function EditEventPage({ params }: Props) {
                       }}
                       disabled={cities.length === 0}
                     >
-                      <SelectTrigger id="city">
+                      <SelectTrigger id="city" className="touch-manipulation">
                         <SelectValue placeholder={cities.length === 0 ? "No cities available" : "Select a city"} />
                       </SelectTrigger>
                       <SelectContent>
@@ -670,7 +674,7 @@ export default function EditEventPage({ params }: Props) {
                       onValueChange={handleVenueChange}
                       disabled={!selectedCity || filteredVenues.length === 0}
                     >
-                      <SelectTrigger id="venue">
+                      <SelectTrigger id="venue" className="touch-manipulation">
                         <SelectValue
                           placeholder={
                             !selectedCity

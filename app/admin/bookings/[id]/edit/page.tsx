@@ -5,11 +5,9 @@ import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ArrowLeft, Save, Loader2, AlertTriangle } from "lucide-react"
+import { ArrowLeft, Check, Loader2, AlertTriangle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getBookingById, updateBookingStatus, type Booking } from "@/services/bookingService"
 
@@ -140,18 +138,18 @@ export default function EditBookingPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href={`/admin/bookings/${bookingId}`}>
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Booking</h1>
-            <p className="text-muted-foreground">Update booking status for #{booking.booking_id}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Edit Booking</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Update booking status for #{booking.booking_id}</p>
           </div>
         </div>
       </div>
@@ -162,26 +160,26 @@ export default function EditBookingPage({ params }: Props) {
           <CardTitle>Booking Information</CardTitle>
           <CardDescription>Current booking details (read-only)</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
+        <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+          <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
+            <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">Customer</Label>
-              <p className="text-sm">{booking.parent_name}</p>
-              <p className="text-xs text-muted-foreground">{booking.parent_email}</p>
+              <p className="text-sm font-medium break-words">{booking.parent_name}</p>
+              <p className="text-xs text-muted-foreground break-all">{booking.parent_email}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">Child</Label>
-              <p className="text-sm">{booking.child_full_name}</p>
+              <p className="text-sm font-medium break-words">{booking.child_full_name}</p>
               <p className="text-xs text-muted-foreground">{booking.child_gender}, Born: {new Date(booking.child_date_of_birth).toLocaleDateString()}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">Event</Label>
-              <p className="text-sm">{booking.event_title}</p>
+              <p className="text-sm font-medium break-words">{booking.event_title}</p>
               <p className="text-xs text-muted-foreground">{new Date(booking.event_event_date).toLocaleDateString()}</p>
             </div>
-            <div>
+            <div className="space-y-1">
               <Label className="text-sm font-medium text-muted-foreground">Venue</Label>
-              <p className="text-sm">{booking.venue_name}</p>
+              <p className="text-sm font-medium break-words">{booking.venue_name}</p>
               <p className="text-xs text-muted-foreground">{booking.city_name}</p>
             </div>
           </div>
@@ -197,11 +195,11 @@ export default function EditBookingPage({ params }: Props) {
               Change the booking status. Note: Booking data is preserved for record-keeping purposes.
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
             <div className="space-y-2">
               <Label htmlFor="status">Booking Status</Label>
               <Select value={status} onValueChange={setStatus} required>
-                <SelectTrigger id="status">
+                <SelectTrigger id="status" className="touch-manipulation">
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
@@ -214,14 +212,14 @@ export default function EditBookingPage({ params }: Props) {
               </Select>
             </div>
 
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-muted-foreground space-y-1">
               <p><strong>Current Status:</strong> {booking.booking_status}</p>
               <p><strong>Total Amount:</strong> ₹{booking.total_amount}</p>
               <p><strong>Payment Status:</strong> {booking.payment_status}</p>
             </div>
           </CardContent>
-          <CardFooter className="flex justify-end gap-4">
-            <Button variant="outline" type="button" asChild>
+          <CardFooter className="flex flex-col sm:flex-row gap-3 sm:justify-end p-4 sm:p-6">
+            <Button variant="outline" type="button" asChild className="w-full sm:w-auto touch-manipulation">
               <Link href={`/admin/bookings/${bookingId}`}>
                 Cancel
               </Link>
@@ -229,21 +227,25 @@ export default function EditBookingPage({ params }: Props) {
             <Button
               type="submit"
               disabled={isSaving || isSaved || status === booking.booking_status}
+              className="w-full sm:w-auto touch-manipulation"
             >
               {isSaving ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Saving...
+                  <span className="hidden sm:inline">Saving...</span>
+                  <span className="sm:hidden">Saving...</span>
                 </>
               ) : isSaved ? (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Saved
+                  <Check className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Saved</span>
+                  <span className="sm:hidden">Saved</span>
                 </>
               ) : (
                 <>
-                  <Save className="mr-2 h-4 w-4" />
-                  Update Status
+                  <Check className="mr-2 h-4 w-4" />
+                  <span className="hidden sm:inline">Update Status</span>
+                  <span className="sm:hidden">Update</span>
                 </>
               )}
             </Button>

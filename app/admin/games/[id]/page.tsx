@@ -148,27 +148,28 @@ export default function GameDetailPage({ params }: Props) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/games">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{game.game_name}</h1>
-            <p className="text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{game.game_name}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">
               {game.min_age}-{game.max_age} months | {game.duration_minutes} minutes
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/games/${game.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Game
+              <span className="hidden sm:inline">Edit Game</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
           <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

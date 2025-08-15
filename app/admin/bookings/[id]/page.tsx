@@ -408,27 +408,34 @@ export default function BookingDetailPage({ params }: Props) {
   }
   
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/bookings">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Booking #{booking.booking_id}</h1>
-            <p className="text-muted-foreground">{booking.event_title} - {new Date(booking.event_event_date).toLocaleDateString()}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+              Booking #{booking.booking_id}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">
+              {booking.event_title} - {new Date(booking.event_event_date).toLocaleDateString()}
+            </p>
           </div>
-          {/* Explore Modal Trigger */}
-          <ExploreModal booking={booking} />
+          {/* Explore Modal Trigger - Hidden on mobile to save space */}
+          <div className="hidden sm:block">
+            <ExploreModal booking={booking} />
+          </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/bookings/${booking.booking_id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Booking
+              <span className="hidden sm:inline">Edit Booking</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
 
@@ -437,29 +444,39 @@ export default function BookingDetailPage({ params }: Props) {
               variant="default"
               onClick={handleConfirmBooking}
               disabled={isProcessing === "confirm"}
+              className="touch-manipulation"
             >
               <Check className="mr-2 h-4 w-4" />
-              {isProcessing === "confirm" ? "Confirming..." : "Confirm Booking"}
+              <span className="hidden sm:inline">
+                {isProcessing === "confirm" ? "Confirming..." : "Confirm Booking"}
+              </span>
+              <span className="sm:hidden">
+                {isProcessing === "confirm" ? "Confirming..." : "Confirm"}
+              </span>
             </Button>
           )}
 
           {booking.booking_status.toLowerCase() === "confirmed" && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20">
+                <Button
+                  variant="outline"
+                  className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 touch-manipulation"
+                >
                   <X className="mr-2 h-4 w-4" />
-                  Cancel Booking
+                  <span className="hidden sm:inline">Cancel Booking</span>
+                  <span className="sm:hidden">Cancel</span>
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
                   <AlertDialogDescription>
                     <div className="flex items-start gap-2">
-                      <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500" />
+                      <AlertTriangle className="mt-0.5 h-5 w-5 text-amber-500 flex-shrink-0" />
                       <div className="space-y-2">
                         <div className="font-medium">Are you sure you want to cancel this booking?</div>
-                        <div>
+                        <div className="text-sm">
                           This will cancel booking #{booking.booking_id} for {booking.parent_name} for the {booking.event_title} event.
                           The user will be notified and may be eligible for a refund.
                         </div>
@@ -467,10 +484,10 @@ export default function BookingDetailPage({ params }: Props) {
                     </div>
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>No, Keep Booking</AlertDialogCancel>
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="touch-manipulation">No, Keep Booking</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-red-500 hover:bg-red-600"
+                    className="bg-red-500 hover:bg-red-600 touch-manipulation"
                     onClick={handleCancelBooking}
                     disabled={isProcessing === "cancel"}
                   >
@@ -483,8 +500,13 @@ export default function BookingDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
+      {/* Mobile-only Explore Modal Trigger */}
+      <div className="sm:hidden">
+        <ExploreModal booking={booking} />
+      </div>
+
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <div className="flex items-center gap-2">
@@ -506,44 +528,44 @@ export default function BookingDetailPage({ params }: Props) {
               )}
             </div>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="grid gap-4 sm:grid-cols-2">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6">
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               <div>
-                <h3 className="mb-2 font-medium">Event Information</h3>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{booking.event_title}</p>
+                <h3 className="mb-3 font-medium text-base">Event Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{booking.event_title}</p>
                       <p className="text-sm text-muted-foreground">{new Date(booking.event_event_date).toLocaleDateString()}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{booking.venue_name}</p>
+                  <div className="flex items-start gap-3">
+                    <MapPin className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{booking.venue_name}</p>
                       <p className="text-sm text-muted-foreground">{booking.city_name}</p>
                     </div>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Users className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
+                  <div className="flex items-start gap-3">
+                    <Users className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <div>
-                        <p className="font-medium">
+                        <p className="font-medium break-words">
                           {booking.slot_details?.custom_title || booking.game_name}
                         </p>
                         {booking.slot_details?.custom_title && booking.slot_details.custom_title !== booking.game_name && (
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-muted-foreground break-words">
                             Original: {booking.game_name}
                           </p>
                         )}
                       </div>
-                      <p className="text-sm text-muted-foreground mt-1">
+                      <p className="text-sm text-muted-foreground mt-1 break-words">
                         {booking.slot_details?.custom_description || booking.game_description}
                       </p>
                       {booking.slot_details?.start_time && booking.slot_details?.end_time && (
                         <div className="flex items-center gap-2 mt-2">
-                          <Clock className="h-3 w-3 text-muted-foreground" />
+                          <Clock className="h-3 w-3 text-muted-foreground flex-shrink-0" />
                           <p className="text-sm text-muted-foreground">
                             {booking.slot_details.start_time} - {booking.slot_details.end_time}
                           </p>
@@ -564,39 +586,39 @@ export default function BookingDetailPage({ params }: Props) {
                 </div>
               </div>
               <div>
-                <h3 className="mb-2 font-medium">Customer Information</h3>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <User className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <p>{booking.parent_name}</p>
+                <h3 className="mb-3 font-medium text-base">Customer Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <User className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="font-medium break-words">{booking.parent_name}</p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Mail className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">{booking.parent_email}</p>
+                  <div className="flex items-start gap-3">
+                    <Mail className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <p className="text-sm text-muted-foreground break-all">{booking.parent_email}</p>
                   </div>
-                  <div className="flex items-start gap-2">
-                    <Phone className="mt-0.5 h-4 w-4 text-muted-foreground" />
+                  <div className="flex items-start gap-3">
+                    <Phone className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
                     <p className="text-sm text-muted-foreground">{booking.parent_additional_phone}</p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <Separator />
-            
+
             <div>
-              <h3 className="mb-2 font-medium">Child Information</h3>
-              <div className="space-y-2">
-                <div className="rounded-lg border p-3">
-                  <div className="flex items-start gap-2">
-                    <Users className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{booking.child_full_name}</p>
+              <h3 className="mb-3 font-medium text-base">Child Information</h3>
+              <div className="space-y-3">
+                <div className="rounded-lg border p-3 sm:p-4">
+                  <div className="flex items-start gap-3">
+                    <Users className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{booking.child_full_name}</p>
                       <p className="text-sm text-muted-foreground">
                         Born: {new Date(booking.child_date_of_birth).toLocaleDateString()}, {booking.child_gender}
                       </p>
                       {booking.child_school_name && (
-                        <p className="text-sm text-muted-foreground">School: {booking.child_school_name}</p>
+                        <p className="text-sm text-muted-foreground break-words">School: {booking.child_school_name}</p>
                       )}
                     </div>
                   </div>
@@ -615,51 +637,51 @@ export default function BookingDetailPage({ params }: Props) {
               <>
                 <Separator />
                 <div>
-                  <h3 className="mb-2 font-medium">Booking Add-ons</h3>
-                  <div className="space-y-2">
+                  <h3 className="mb-3 font-medium text-base">Booking Add-ons</h3>
+                  <div className="space-y-3">
                     {booking.booking_addons.map((bookingAddonData, index) => (
                       bookingAddonData.booking_addons &&
                       Array.isArray(bookingAddonData.booking_addons) &&
                       bookingAddonData.booking_addons.length > 0 ? (
-                        <div key={index} className="rounded-lg border p-3">
+                        <div key={index} className="rounded-lg border p-3 sm:p-4">
                           <div className="space-y-3">
                             {bookingAddonData.booking_addons.map((addon) => (
                               addon && addon.booking_addon_id ? (
-                                <div key={addon.booking_addon_id} className="flex items-start gap-2">
-                                  <div className="flex-1">
-                                    <div className="flex items-center justify-between">
-                                      <p className="font-medium">
+                                <div key={addon.booking_addon_id} className="space-y-2">
+                                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2">
+                                    <div className="min-w-0 flex-1">
+                                      <p className="font-medium break-words">
                                         {addon.addon_name || `Add-on #${addon.addon_id}`}
                                       </p>
-                                      <div className="text-right">
-                                        <p className="text-sm font-medium">Qty: {addon.quantity}</p>
-                                        {addon.final_price_per_unit && (
-                                          <p className="text-sm text-muted-foreground">
-                                            ₹{addon.final_price_per_unit} each
-                                          </p>
-                                        )}
-                                        {addon.total_price && (
-                                          <p className="text-sm font-semibold text-green-600">
-                                            Total: ₹{addon.total_price}
-                                          </p>
-                                        )}
-                                      </div>
+                                      {addon.addon_description && (
+                                        <p className="text-sm text-muted-foreground mt-1 break-words">
+                                          {addon.addon_description}
+                                        </p>
+                                      )}
+                                      {addon.variant_name && (
+                                        <p className="text-sm text-blue-600 mt-1">
+                                          Variant: {addon.variant_name}
+                                        </p>
+                                      )}
+                                      {addon.addon_sku && (
+                                        <p className="text-xs text-muted-foreground mt-1">
+                                          SKU: {addon.addon_sku}
+                                        </p>
+                                      )}
                                     </div>
-                                    {addon.addon_description && (
-                                      <p className="text-sm text-muted-foreground mt-1">
-                                        {addon.addon_description}
-                                      </p>
-                                    )}
-                                    {addon.variant_name && (
-                                      <p className="text-sm text-blue-600 mt-1">
-                                        Variant: {addon.variant_name}
-                                      </p>
-                                    )}
-                                    {addon.addon_sku && (
-                                      <p className="text-xs text-muted-foreground mt-1">
-                                        SKU: {addon.addon_sku}
-                                      </p>
-                                    )}
+                                    <div className="text-left sm:text-right flex-shrink-0">
+                                      <p className="text-sm font-medium">Qty: {addon.quantity}</p>
+                                      {addon.final_price_per_unit && (
+                                        <p className="text-sm text-muted-foreground">
+                                          ₹{addon.final_price_per_unit} each
+                                        </p>
+                                      )}
+                                      {addon.total_price && (
+                                        <p className="text-sm font-semibold text-green-600">
+                                          Total: ₹{addon.total_price}
+                                        </p>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               ) : null
@@ -674,16 +696,16 @@ export default function BookingDetailPage({ params }: Props) {
             )}
 
             <Separator />
-            
-            <div className="grid gap-4 sm:grid-cols-2">
+
+            <div className="grid gap-4 sm:gap-6 lg:grid-cols-2">
               <div>
-                <h3 className="mb-2 font-medium">Payment Information</h3>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <CreditCard className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <p>{booking.payment_details?.payment_method || booking.payment_method || 'Not specified'}</p>
-                      <div className="flex items-center gap-2">
+                <h3 className="mb-3 font-medium text-base">Payment Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <CreditCard className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
+                      <p className="font-medium break-words">{booking.payment_details?.payment_method || booking.payment_method || 'Not specified'}</p>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 mt-2">
                         <span className="text-sm text-muted-foreground">Status:</span>
                         {booking.payment_details?.actual_payment_status ? (
                           <Badge
@@ -712,16 +734,16 @@ export default function BookingDetailPage({ params }: Props) {
                         )}
                       </div>
                       {booking.payment_details?.transaction_id && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-2 break-all">
                           Transaction ID: {booking.payment_details.transaction_id}
                         </p>
                       )}
                       {booking.payment_details?.payment_date && (
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-sm text-muted-foreground mt-1">
                           Payment Date: {new Date(booking.payment_details.payment_date).toLocaleDateString()}
                         </p>
                       )}
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Terms Accepted: {booking.terms_accepted ? 'Yes' : 'No'}
                       </p>
                     </div>
@@ -729,24 +751,24 @@ export default function BookingDetailPage({ params }: Props) {
                 </div>
               </div>
               <div>
-                <h3 className="mb-2 font-medium">Booking Information</h3>
-                <div className="space-y-2">
-                  <div className="flex items-start gap-2">
-                    <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground" />
-                    <div>
+                <h3 className="mb-3 font-medium text-base">Booking Information</h3>
+                <div className="space-y-3">
+                  <div className="flex items-start gap-3">
+                    <Calendar className="mt-0.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
+                    <div className="min-w-0">
                       <p className="text-sm text-muted-foreground">
                         Booked on: {new Date(booking.booking_created_at).toLocaleDateString()}
                       </p>
-                      <p className="text-sm text-muted-foreground">
+                      <p className="text-sm text-muted-foreground mt-1">
                         Last updated: {new Date(booking.booking_updated_at).toLocaleDateString()}
                       </p>
                       {booking.cancelled_at && (
-                        <p className="text-sm text-red-500">
+                        <p className="text-sm text-red-500 mt-1">
                           Cancelled on: {new Date(booking.cancelled_at).toLocaleDateString()}
                         </p>
                       )}
                       {booking.completed_at && (
-                        <p className="text-sm text-green-500">
+                        <p className="text-sm text-green-500 mt-1">
                           Completed on: {new Date(booking.completed_at).toLocaleDateString()}
                         </p>
                       )}
@@ -757,67 +779,67 @@ export default function BookingDetailPage({ params }: Props) {
             </div>
           </CardContent>
         </Card>
-        
+
         <Card>
-          <CardHeader>
-            <CardTitle>Booking Summary</CardTitle>
+          <CardHeader className="p-4 sm:p-6">
+            <CardTitle className="text-lg">Booking Summary</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="rounded-lg border p-4">
-              <div className="flex items-center justify-between">
+          <CardContent className="space-y-3 sm:space-y-4 p-4 sm:p-6 pt-0">
+            <div className="rounded-lg border p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-muted-foreground">Booking Reference</span>
-                <span className="font-medium">{booking.booking_ref || `#${booking.booking_id}`}</span>
+                <span className="font-medium text-right break-all">{booking.booking_ref || `#${booking.booking_id}`}</span>
               </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="flex items-center justify-between">
+            <div className="rounded-lg border p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-muted-foreground">Game Duration</span>
                 <span className="font-medium">{booking.game_duration_minutes} minutes</span>
               </div>
             </div>
-            <div className="rounded-lg border p-4">
-              <div className="flex items-center justify-between">
+            <div className="rounded-lg border p-3 sm:p-4">
+              <div className="flex items-center justify-between gap-2">
                 <span className="text-sm text-muted-foreground">Age Range</span>
                 <span className="font-medium">{booking.game_min_age} - {booking.game_max_age} months</span>
               </div>
             </div>
             {booking.slot_details?.max_participants && (
-              <div className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
+              <div className="rounded-lg border p-3 sm:p-4">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-muted-foreground">Max Participants</span>
                   <span className="font-medium">{booking.slot_details.max_participants}</span>
                 </div>
               </div>
             )}
             {booking.slot_details?.slot_id && (
-              <div className="rounded-lg border p-4">
-                <div className="flex items-center justify-between">
+              <div className="rounded-lg border p-3 sm:p-4">
+                <div className="flex items-center justify-between gap-2">
                   <span className="text-sm text-muted-foreground">Slot ID</span>
                   <span className="font-medium">#{booking.slot_details.slot_id}</span>
                 </div>
               </div>
             )}
-            <div className="rounded-lg border p-4 bg-muted/50">
-              <div className="flex items-center justify-between">
+            <div className="rounded-lg border p-3 sm:p-4 bg-muted/50">
+              <div className="flex items-center justify-between gap-2">
                 <span className="font-medium">Total Amount</span>
-                <span className="text-xl font-bold">₹{booking.total_amount}</span>
+                <span className="text-lg sm:text-xl font-bold">₹{booking.total_amount}</span>
               </div>
               {booking.slot_details?.slot_price && (
-                <div className="flex items-center justify-between mt-2 pt-2 border-t">
+                <div className="flex items-center justify-between gap-2 mt-2 pt-2 border-t">
                   <span className="text-sm text-muted-foreground">Slot Price</span>
                   <span className="text-sm font-medium">₹{booking.slot_details.slot_price}</span>
                 </div>
               )}
               {booking.slot_details?.custom_price && booking.slot_details.custom_price !== booking.slot_details.slot_price && (
-                <div className="flex items-center justify-between mt-1">
+                <div className="flex items-center justify-between gap-2 mt-1">
                   <span className="text-sm text-muted-foreground">Custom Price</span>
                   <span className="text-sm font-medium">₹{booking.slot_details.custom_price}</span>
                 </div>
               )}
             </div>
 
-            <div className="mt-4 space-y-2">
-              <Button className="w-full" asChild>
+            <div className="mt-4 space-y-2 sm:space-y-3">
+              <Button className="w-full touch-manipulation h-10 sm:h-11" asChild>
                 <Link href={`/admin/bookings/${booking.booking_id}/receipt`}>
                   View Receipt
                 </Link>
@@ -827,7 +849,7 @@ export default function BookingDetailPage({ params }: Props) {
               {(booking.payment_details?.actual_payment_status === 'pending' ||
                 booking.payment_status === 'Pending' ||
                 booking.payment_status === 'pending') && (
-                <Button variant="outline" className="w-full" asChild>
+                <Button variant="outline" className="w-full touch-manipulation h-10 sm:h-11" asChild>
                   <Link href={`/admin/bookings/payment/${booking.booking_id}`}>
                     <CreditCard className="mr-2 h-4 w-4" />
                     Record Payment
@@ -920,33 +942,46 @@ function ExploreModal({ booking }: { booking: any }) {
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" className="ml-2">Explore</Button>
+        <Button variant="outline" className="ml-2 touch-manipulation">
+          <span className="hidden sm:inline">Explore</span>
+          <span className="sm:hidden">Details</span>
+        </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="mx-4 max-w-md sm:max-w-2xl max-h-[90vh] overflow-hidden">
         <DialogHeader>
-          <DialogTitle>Explore Booking Columns</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Explore Booking Details</DialogTitle>
         </DialogHeader>
-        <div className="flex gap-4">
-          <div className="w-1/3 border-r pr-4">
-            <ul>
-              {columns.map(col => (
-                <li key={col.key}>
-                  <button
-                    className={`w-full text-left py-1 px-2 rounded ${selectedCol === col.key ? "bg-primary text-white" : "hover:bg-muted"}`}
-                    onClick={() => setSelectedCol(col.key)}
-                  >
-                    {col.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
+        <div className="flex flex-col sm:flex-row gap-4 overflow-hidden">
+          <div className="sm:w-1/3 sm:border-r sm:pr-4">
+            <div className="max-h-[200px] sm:max-h-[400px] overflow-y-auto">
+              <ul className="space-y-1">
+                {columns.map(col => (
+                  <li key={col.key}>
+                    <button
+                      className={`w-full text-left py-2 px-3 rounded touch-manipulation text-sm ${
+                        selectedCol === col.key
+                          ? "bg-primary text-primary-foreground"
+                          : "hover:bg-muted"
+                      }`}
+                      onClick={() => setSelectedCol(col.key)}
+                    >
+                      {col.label}
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </div>
           </div>
-          <div className="w-2/3 pl-4">
-            {selectedCol ? (
-              <div>{renderDetail(selectedCol)}</div>
-            ) : (
-              <div className="text-muted-foreground">Select a column to view details.</div>
-            )}
+          <div className="sm:w-2/3 sm:pl-4 min-h-0">
+            <div className="max-h-[300px] sm:max-h-[400px] overflow-y-auto">
+              {selectedCol ? (
+                <div className="text-sm sm:text-base break-words">{renderDetail(selectedCol)}</div>
+              ) : (
+                <div className="text-muted-foreground text-sm sm:text-base">
+                  Select a column to view details.
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </DialogContent>

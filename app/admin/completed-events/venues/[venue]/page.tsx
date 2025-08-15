@@ -159,30 +159,36 @@ export default function CompletedEventsVenuePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href={`/admin/completed-events/cities/${encodeURIComponent(cityName)}`}>
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{venueName}</h1>
-            <p className="text-muted-foreground">Completed events at {venueName}, {cityName}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{venueName}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Completed events at {venueName}, {cityName}</p>
           </div>
         </div>
-        <Button variant="outline" onClick={() => setActiveTab(activeTab === "events" ? "analytics" : "events")}>
+        <Button
+          variant="outline"
+          onClick={() => setActiveTab(activeTab === "events" ? "analytics" : "events")}
+          className="touch-manipulation"
+        >
           {activeTab === "events" ? (
             <>
               <BarChart className="mr-2 h-4 w-4" />
-              View Analytics
+              <span className="hidden sm:inline">View Analytics</span>
+              <span className="sm:hidden">Analytics</span>
             </>
           ) : (
             <>
               <Calendar className="mr-2 h-4 w-4" />
-              View Events
+              <span className="hidden sm:inline">View Events</span>
+              <span className="sm:hidden">Events</span>
             </>
           )}
         </Button>

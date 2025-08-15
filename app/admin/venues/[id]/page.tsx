@@ -276,25 +276,26 @@ export default function VenueDetailPage({ params }: Props) {
   console.log('Upcoming events data:', JSON.stringify(upcomingEvents, null, 2))
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/venues">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{venueName}</h1>
-            <p className="text-muted-foreground">{city ? city.city_name : `City ID: ${venue.city_id}`}</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">{venueName}</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">{city ? city.city_name : `City ID: ${venue.city_id}`}</p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/venues/${venue.venue_id || venue.id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Venue
+              <span className="hidden sm:inline">Edit Venue</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
           <AlertDialog>
@@ -342,8 +343,8 @@ export default function VenueDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Venue Details</CardTitle>
           </CardHeader>

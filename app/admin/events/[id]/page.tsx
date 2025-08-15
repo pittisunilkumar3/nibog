@@ -235,48 +235,56 @@ export default function EventDetailPage({ params }: Props) {
   const fillRate = totalCapacity > 0 ? Math.round((totalBookings / totalCapacity) * 100) : 0
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" asChild className="touch-manipulation flex-shrink-0">
             <Link href="/admin/events">
               <ArrowLeft className="h-4 w-4" />
               <span className="sr-only">Back</span>
             </Link>
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">{event.event_title}</h1>
-            <p className="text-muted-foreground">
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">
+              {event.event_title}
+            </h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">
               {event.venue_name}, {event.city_name} | {event.event_date.split('T')[0]}
             </p>
           </div>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" asChild>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Button variant="outline" asChild className="touch-manipulation">
             <Link href={`/admin/events/${event.event_id}/edit`}>
               <Edit className="mr-2 h-4 w-4" />
-              Edit Event
+              <span className="hidden sm:inline">Edit Event</span>
+              <span className="sm:hidden">Edit</span>
             </Link>
           </Button>
 
           {event.event_status.toLowerCase() === "published" && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline">
+                <Button variant="outline" className="touch-manipulation">
                   <Pause className="mr-2 h-4 w-4" />
-                  Pause Event
+                  <span className="hidden sm:inline">Pause Event</span>
+                  <span className="sm:hidden">Pause</span>
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Pause Event</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription className="text-sm">
                     This will pause all slots for this event. No new bookings will be allowed, but existing bookings will be maintained. Are you sure you want to continue?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>Cancel</AlertDialogCancel>
-                  <AlertDialogAction onClick={handlePauseEvent} disabled={isLoading.pause}>
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="touch-manipulation">Cancel</AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handlePauseEvent}
+                    disabled={isLoading.pause}
+                    className="touch-manipulation"
+                  >
                     {isLoading.pause ? "Pausing..." : "Pause Event"}
                   </AlertDialogAction>
                 </AlertDialogFooter>
@@ -288,30 +296,40 @@ export default function EventDetailPage({ params }: Props) {
               variant="outline"
               onClick={handleResumeEvent}
               disabled={isLoading.resume}
+              className="touch-manipulation"
             >
               <Play className="mr-2 h-4 w-4" />
-              {isLoading.resume ? "Resuming..." : "Resume Event"}
+              <span className="hidden sm:inline">
+                {isLoading.resume ? "Resuming..." : "Resume Event"}
+              </span>
+              <span className="sm:hidden">
+                {isLoading.resume ? "Resuming..." : "Resume"}
+              </span>
             </Button>
           )}
           {(event.event_status.toLowerCase() === "published" || event.event_status.toLowerCase() === "paused") && (
             <AlertDialog>
               <AlertDialogTrigger asChild>
-                <Button variant="outline" className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20">
+                <Button
+                  variant="outline"
+                  className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20 touch-manipulation"
+                >
                   <X className="mr-2 h-4 w-4" />
-                  Cancel Event
+                  <span className="hidden sm:inline">Cancel Event</span>
+                  <span className="sm:hidden">Cancel</span>
                 </Button>
               </AlertDialogTrigger>
-              <AlertDialogContent>
+              <AlertDialogContent className="mx-4 max-w-md sm:max-w-lg">
                 <AlertDialogHeader>
                   <AlertDialogTitle>Cancel Event</AlertDialogTitle>
-                  <AlertDialogDescription>
+                  <AlertDialogDescription className="text-sm">
                     This will cancel the entire event and all its slots. All existing bookings will be cancelled, and users will be notified. This action cannot be undone. Are you sure you want to continue?
                   </AlertDialogDescription>
                 </AlertDialogHeader>
-                <AlertDialogFooter>
-                  <AlertDialogCancel>No, Keep Event</AlertDialogCancel>
+                <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+                  <AlertDialogCancel className="touch-manipulation">No, Keep Event</AlertDialogCancel>
                   <AlertDialogAction
-                    className="bg-red-500 hover:bg-red-600"
+                    className="bg-red-500 hover:bg-red-600 touch-manipulation"
                     onClick={handleCancelEvent}
                     disabled={isLoading.cancel}
                   >
@@ -324,8 +342,8 @@ export default function EventDetailPage({ params }: Props) {
         </div>
       </div>
 
-      <div className="grid gap-6 md:grid-cols-3">
-        <Card className="md:col-span-2">
+      <div className="grid gap-4 sm:gap-6 lg:grid-cols-3">
+        <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle>Event Status</CardTitle>
           </CardHeader>

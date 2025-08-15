@@ -201,15 +201,15 @@ export default function EditCityPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <Button variant="outline" size="icon" onClick={() => router.push("/admin/cities")}>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex items-center gap-2 min-w-0">
+          <Button variant="outline" size="icon" onClick={() => router.push("/admin/cities")} className="touch-manipulation flex-shrink-0">
             <ArrowLeft className="h-4 w-4" />
           </Button>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit City</h1>
-            <p className="text-muted-foreground">Update city information for NIBOG events</p>
+          <div className="min-w-0 flex-1">
+            <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold tracking-tight truncate">Edit City</h1>
+            <p className="text-sm sm:text-base text-muted-foreground truncate">Update city information for NIBOG events</p>
           </div>
         </div>
       </div>
