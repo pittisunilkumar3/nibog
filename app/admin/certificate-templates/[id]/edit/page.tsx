@@ -19,7 +19,7 @@ import {
 import { Progress } from "@/components/ui/progress"
 import { ColorPicker } from "@/components/ui/color-picker"
 import { useToast } from "@/hooks/use-toast"
-import { CertificateField, CertificateTemplate, UpdateCertificateTemplateRequest, BackgroundStyle, AppreciationTextStyle } from "@/types/certificate"
+import { CertificateField, CertificateTemplate, UpdateCertificateTemplateRequest, BackgroundStyle, AppreciationTextStyle, CertificateTitleStyle, SignatureStyle } from "@/types/certificate"
 import {
   getCertificateTemplateById,
   updateCertificateTemplate,
@@ -45,6 +45,53 @@ export default function EditCertificateTemplatePage() {
   const [certificateTitle, setCertificateTitle] = useState("")
   const [appreciationText, setAppreciationText] = useState("")
 
+  // Certificate title styling
+  const [certificateTitleStyle, setCertificateTitleStyle] = useState<CertificateTitleStyle>({
+    // Position and Layout
+    x: 50,
+    y: 15,
+    max_width: 90,
+
+    // Typography
+    font_size: 32,
+    font_family: "Arial",
+    font_weight: "bold",
+    font_style: "normal",
+    color: "#000000",
+    alignment: "center",
+    line_height: 1.2,
+
+    // Text Styling
+    underline: false,
+    text_transform: "uppercase",
+    text_decoration: "none",
+    letter_spacing: 2,
+
+    // Text Effects
+    text_shadow: {
+      enabled: false,
+      color: "#000000",
+      offset_x: 2,
+      offset_y: 2,
+      blur_radius: 4
+    },
+
+    // Background and Border
+    background_color: "transparent",
+    background_enabled: false,
+    border_enabled: false,
+    border_color: "#000000",
+    border_width: 1,
+    border_style: "solid",
+    border_radius: 0,
+
+    // Padding
+    padding_top: 10,
+    padding_bottom: 10,
+    padding_left: 20,
+    padding_right: 20
+  })
+
   // New appreciation text positioning
   const [appreciationTextStyle, setAppreciationTextStyle] = useState<AppreciationTextStyle>({
     text: "",
@@ -65,6 +112,59 @@ export default function EditCertificateTemplatePage() {
     border_color: "#000000",
     border_width: 2,
     border_style: "solid"
+  })
+
+  // Signature styling
+  const [signatureStyle, setSignatureStyle] = useState<SignatureStyle>({
+    // Position and Layout
+    x: 80,
+    y: 85,
+    max_width: 30,
+
+    // Typography (for text signatures)
+    font_size: 16,
+    font_family: "Arial",
+    font_weight: "normal",
+    font_style: "italic",
+    color: "#000000",
+    alignment: "center",
+    line_height: 1.2,
+
+    // Text Styling
+    underline: false,
+    text_transform: "none",
+    text_decoration: "none",
+    letter_spacing: 0,
+
+    // Text Effects
+    text_shadow: {
+      enabled: false,
+      color: "#000000",
+      offset_x: 1,
+      offset_y: 1,
+      blur_radius: 2
+    },
+
+    // Background and Border
+    background_color: "transparent",
+    background_enabled: false,
+    border_enabled: false,
+    border_color: "#000000",
+    border_width: 1,
+    border_style: "solid",
+    border_radius: 0,
+
+    // Padding
+    padding_top: 5,
+    padding_bottom: 5,
+    padding_left: 10,
+    padding_right: 10,
+
+    // Image specific
+    image_width: 150,
+    image_height: 50,
+    image_opacity: 1,
+    image_filter: "none"
   })
 
   const [signatureImageUrl, setSignatureImageUrl] = useState("")
@@ -124,6 +224,17 @@ export default function EditCertificateTemplatePage() {
         } else if (templateData.type === "winner") {
           setAppreciationText("For outstanding performance in {event_name}.\nYour dedication, talent, and exceptional skills at NIBOG have distinguished you among the best.\nCongratulations on this remarkable achievement from the entire NIBOG team!")
         }
+      }
+
+      // Load certificate title style if available
+      if (templateData.certificate_title_style) {
+        setCertificateTitleStyle(templateData.certificate_title_style)
+      } else {
+        // Initialize with default certificate title style
+        setCertificateTitleStyle(prev => ({
+          ...prev,
+          // Keep default values but ensure consistency
+        }))
       }
 
       // Load appreciation text style if available
@@ -364,11 +475,14 @@ export default function EditCertificateTemplatePage() {
   const addField = (fieldName = "New Field") => {
     const position = getSmartPosition(fields.length, fieldName);
 
+    // Generate unique ID with timestamp and random component to prevent duplicates
+    const uniqueId = `field-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
     const newField: CertificateField = {
-      id: `field-${Date.now()}`,
+      id: uniqueId,
       name: fieldName,
       type: 'text' as 'text' | 'date' | 'image',
-      required: true,
+      required: false, // Default to optional, user can toggle as needed
       x: position.x,
       y: position.y,
       font_size: position.font_size || 16,
@@ -393,32 +507,37 @@ export default function EditCertificateTemplatePage() {
         type: 'text' as 'text' | 'date' | 'image' | 'signature',
         underline: true, // Certificate title should have underline by default
         font_size: 32,
-        y: 20
+        y: 20,
+        required: true // Certificate title is typically required
       },
       {
         name: "Participant Name",
         type: 'text' as 'text' | 'date' | 'image' | 'signature',
         font_size: 28,
-        y: 40
+        y: 40,
+        required: true // Participant name is typically required
       },
       {
         name: "Date",
         type: 'date' as 'text' | 'date' | 'image' | 'signature',
         font_size: 16,
-        y: 85
+        y: 85,
+        required: false // Date can be optional
       },
       {
         name: "Signature",
         type: 'signature' as 'text' | 'date' | 'image' | 'signature',
         signature_type: 'text' as 'text' | 'image',
         font_size: 16,
-        y: 85
+        y: 85,
+        required: false // Signature can be optional
       },
       {
         name: "Certificate Number",
         type: 'text' as 'text' | 'date' | 'image' | 'signature',
         font_size: 12,
-        y: 90
+        y: 90,
+        required: false // Certificate number can be optional
       }
     ]
 
@@ -427,11 +546,14 @@ export default function EditCertificateTemplatePage() {
       // Use customized positioning based on field type
       const position = getSmartPosition(index, fieldConfig.name)
 
+      // Generate unique ID with timestamp, field name, and random component
+      const uniqueId = `field-${Date.now()}-${fieldConfig.name.replace(/\s+/g, '-').toLowerCase()}-${index}-${Math.random().toString(36).substr(2, 9)}`;
+
       const newField: CertificateField = {
-        id: `field-${Date.now()}-${fieldConfig.name.replace(/\s+/g, '-').toLowerCase()}-${index}`,
+        id: uniqueId,
         name: fieldConfig.name,
         type: fieldConfig.type,
-        required: true,
+        required: fieldConfig.required ?? false, // Use config setting or default to false
         x: position.x,
         y: fieldConfig.y || position.y,
         font_size: fieldConfig.font_size || position.font_size || 16,
@@ -494,7 +616,32 @@ export default function EditCertificateTemplatePage() {
         }
         return !!(paperSize && orientation)
       case 3:
-        return fields.length > 0
+        // Fields are now optional - templates can be created with zero fields
+        // If no fields are provided, that's valid
+        if (fields.length === 0) return true
+
+        // If fields are provided, validate their structure
+        if (fields.length > 0) {
+          // Check for duplicate field IDs
+          const fieldIds = fields.map(f => f.id)
+          const uniqueIds = new Set(fieldIds)
+          if (fieldIds.length !== uniqueIds.size) {
+            console.error('Duplicate field IDs detected:', fieldIds)
+            return false
+          }
+
+          // Validate each field has required properties
+          return fields.every(field =>
+            field.id &&
+            field.name &&
+            field.type &&
+            typeof field.required === 'boolean' &&
+            typeof field.x === 'number' &&
+            typeof field.y === 'number'
+          )
+        }
+
+        return true
       default:
         return false
     }
@@ -534,9 +681,11 @@ export default function EditCertificateTemplatePage() {
         description: templateDescription,
         type: templateType,
         certificate_title: certificateTitle,
+        certificate_title_style: certificateTitleStyle, // Certificate title styling
         appreciation_text: appreciationText, // Keep for backward compatibility
         appreciation_text_style: appreciationTextStyle, // New structured appreciation text
         signature_image: signatureImageUrl,
+        signature_style: signatureStyle, // Signature styling
         background_image: backgroundImageUrl, // Keep for backward compatibility
         background_style: backgroundStyle, // New structured background options
         paper_size: paperSize,
@@ -622,7 +771,7 @@ export default function EditCertificateTemplatePage() {
     switch (currentStep) {
       case 1:
         return (
-          <div className="space-y-6">
+          <div className="space-y-4 sm:space-y-6">
             <div className="space-y-2">
               <Label htmlFor="name">Template Name *</Label>
               <Input
@@ -631,6 +780,7 @@ export default function EditCertificateTemplatePage() {
                 onChange={(e) => setTemplateName(e.target.value)}
                 placeholder="Enter template name"
                 required
+                className="mobile-input touch-manipulation"
               />
             </div>
 
@@ -643,6 +793,7 @@ export default function EditCertificateTemplatePage() {
                 placeholder="Describe this certificate template"
                 rows={3}
                 required
+                className="mobile-input touch-manipulation min-h-[80px] sm:min-h-[100px]"
               />
             </div>
 
@@ -667,12 +818,462 @@ export default function EditCertificateTemplatePage() {
                 value={certificateTitle}
                 onChange={(e) => setCertificateTitle(e.target.value)}
                 placeholder="e.g., Certificate of Participation"
+                className="mobile-input touch-manipulation"
               />
               <p className="text-sm text-gray-500">
                 This will be the main title displayed on the certificate. Leave empty to use default based on certificate type.
               </p>
             </div>
 
+            {/* Certificate Title Styling */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md">Certificate Title Styling</CardTitle>
+                <CardDescription>Configure the complete appearance and positioning of the certificate title</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Position and Layout Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Position & Layout</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>X Position (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={certificateTitleStyle.x}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Y Position (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={certificateTitleStyle.y}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Max Width (%)</Label>
+                        <Input
+                          type="number"
+                          min="10"
+                          max="100"
+                          value={certificateTitleStyle.max_width}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, max_width: parseInt(e.target.value) || 90 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Typography Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Typography</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>Font Size</Label>
+                        <Input
+                          type="number"
+                          min="8"
+                          max="72"
+                          value={certificateTitleStyle.font_size}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, font_size: parseInt(e.target.value) || 32 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Font Family</Label>
+                        <Select
+                          value={certificateTitleStyle.font_family}
+                          onValueChange={(value: string) => setCertificateTitleStyle(prev => ({ ...prev, font_family: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Arial">Arial</SelectItem>
+                            <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                            <SelectItem value="Georgia">Georgia</SelectItem>
+                            <SelectItem value="Helvetica">Helvetica</SelectItem>
+                            <SelectItem value="Verdana">Verdana</SelectItem>
+                            <SelectItem value="Calibri">Calibri</SelectItem>
+                            <SelectItem value="Cambria">Cambria</SelectItem>
+                            <SelectItem value="Great Vibes">Great Vibes</SelectItem>
+                            <SelectItem value="Pacifico">Pacifico</SelectItem>
+                            <SelectItem value="Dancing Script">Dancing Script</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Font Weight</Label>
+                        <Select
+                          value={certificateTitleStyle.font_weight}
+                          onValueChange={(value: 'normal' | 'bold' | 'bolder' | 'lighter') => setCertificateTitleStyle(prev => ({ ...prev, font_weight: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="bold">Bold</SelectItem>
+                            <SelectItem value="bolder">Bolder</SelectItem>
+                            <SelectItem value="lighter">Lighter</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Font Style</Label>
+                        <Select
+                          value={certificateTitleStyle.font_style}
+                          onValueChange={(value: 'normal' | 'italic' | 'oblique') => setCertificateTitleStyle(prev => ({ ...prev, font_style: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="normal">Normal</SelectItem>
+                            <SelectItem value="italic">Italic</SelectItem>
+                            <SelectItem value="oblique">Oblique</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <ColorPicker
+                          label="Text Color"
+                          value={certificateTitleStyle.color || '#000000'}
+                          onChange={(color) => setCertificateTitleStyle(prev => ({ ...prev, color }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Text Alignment</Label>
+                        <Select
+                          value={certificateTitleStyle.alignment}
+                          onValueChange={(value: 'left' | 'center' | 'right') => setCertificateTitleStyle(prev => ({ ...prev, alignment: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Line Height</Label>
+                        <Input
+                          type="number"
+                          min="0.5"
+                          max="3"
+                          step="0.1"
+                          value={certificateTitleStyle.line_height}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, line_height: parseFloat(e.target.value) || 1.2 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text Styling Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Text Styling</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>Text Transform</Label>
+                        <Select
+                          value={certificateTitleStyle.text_transform}
+                          onValueChange={(value: 'none' | 'uppercase' | 'lowercase' | 'capitalize') => setCertificateTitleStyle(prev => ({ ...prev, text_transform: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="uppercase">UPPERCASE</SelectItem>
+                            <SelectItem value="lowercase">lowercase</SelectItem>
+                            <SelectItem value="capitalize">Capitalize</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Text Decoration</Label>
+                        <Select
+                          value={certificateTitleStyle.text_decoration}
+                          onValueChange={(value: 'none' | 'underline' | 'line-through' | 'overline') => setCertificateTitleStyle(prev => ({ ...prev, text_decoration: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="underline">Underline</SelectItem>
+                            <SelectItem value="line-through">Strike Through</SelectItem>
+                            <SelectItem value="overline">Overline</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Letter Spacing (px)</Label>
+                        <Input
+                          type="number"
+                          min="-5"
+                          max="20"
+                          step="0.5"
+                          value={certificateTitleStyle.letter_spacing}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, letter_spacing: parseFloat(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Text Effects Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Text Effects</h4>
+                    <div className="space-y-4">
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="text-shadow-enabled"
+                          checked={certificateTitleStyle.text_shadow?.enabled || false}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({
+                            ...prev,
+                            text_shadow: {
+                              ...prev.text_shadow,
+                              enabled: e.target.checked
+                            }
+                          }))}
+                          className="rounded border-gray-300 touch-manipulation"
+                        />
+                        <Label htmlFor="text-shadow-enabled" className="text-sm">Enable Text Shadow</Label>
+                      </div>
+
+                      {certificateTitleStyle.text_shadow?.enabled && (
+                        <div className="mobile-form-grid gap-3 sm:gap-4 pl-6">
+                          <div className="space-y-2">
+                            <ColorPicker
+                              label="Shadow Color"
+                              value={certificateTitleStyle.text_shadow?.color || '#000000'}
+                              onChange={(color) => setCertificateTitleStyle(prev => ({
+                                ...prev,
+                                text_shadow: {
+                                  ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
+                                  color
+                                }
+                              }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Offset X (px)</Label>
+                            <Input
+                              type="number"
+                              min="-10"
+                              max="10"
+                              value={certificateTitleStyle.text_shadow?.offset_x}
+                              onChange={(e) => setCertificateTitleStyle(prev => ({
+                                ...prev,
+                                text_shadow: {
+                                  ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
+                                  offset_x: parseInt(e.target.value) || 0
+                                }
+                              }))}
+                              className="mobile-input touch-manipulation"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Offset Y (px)</Label>
+                            <Input
+                              type="number"
+                              min="-10"
+                              max="10"
+                              value={certificateTitleStyle.text_shadow?.offset_y}
+                              onChange={(e) => setCertificateTitleStyle(prev => ({
+                                ...prev,
+                                text_shadow: {
+                                  ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
+                                  offset_y: parseInt(e.target.value) || 0
+                                }
+                              }))}
+                              className="mobile-input touch-manipulation"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Blur Radius (px)</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="20"
+                              value={certificateTitleStyle.text_shadow?.blur_radius}
+                              onChange={(e) => setCertificateTitleStyle(prev => ({
+                                ...prev,
+                                text_shadow: {
+                                  ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
+                                  blur_radius: parseInt(e.target.value) || 0
+                                }
+                              }))}
+                              className="mobile-input touch-manipulation"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Background and Border Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Background & Border</h4>
+                    <div className="space-y-4">
+                      {/* Background */}
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="background-enabled"
+                          checked={certificateTitleStyle.background_enabled || false}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, background_enabled: e.target.checked }))}
+                          className="rounded border-gray-300 touch-manipulation"
+                        />
+                        <Label htmlFor="background-enabled" className="text-sm">Enable Background</Label>
+                      </div>
+
+                      {certificateTitleStyle.background_enabled && (
+                        <div className="pl-6">
+                          <ColorPicker
+                            label="Background Color"
+                            value={certificateTitleStyle.background_color || 'transparent'}
+                            onChange={(color) => setCertificateTitleStyle(prev => ({ ...prev, background_color: color }))}
+                          />
+                        </div>
+                      )}
+
+                      {/* Border */}
+                      <div className="flex items-center space-x-2">
+                        <input
+                          type="checkbox"
+                          id="border-enabled"
+                          checked={certificateTitleStyle.border_enabled || false}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, border_enabled: e.target.checked }))}
+                          className="rounded border-gray-300 touch-manipulation"
+                        />
+                        <Label htmlFor="border-enabled" className="text-sm">Enable Border</Label>
+                      </div>
+
+                      {certificateTitleStyle.border_enabled && (
+                        <div className="mobile-form-grid gap-3 sm:gap-4 pl-6">
+                          <div className="space-y-2">
+                            <ColorPicker
+                              label="Border Color"
+                              value={certificateTitleStyle.border_color || '#000000'}
+                              onChange={(color) => setCertificateTitleStyle(prev => ({ ...prev, border_color: color }))}
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Border Width (px)</Label>
+                            <Input
+                              type="number"
+                              min="1"
+                              max="10"
+                              value={certificateTitleStyle.border_width}
+                              onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, border_width: parseInt(e.target.value) || 1 }))}
+                              className="mobile-input touch-manipulation"
+                            />
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Border Style</Label>
+                            <Select
+                              value={certificateTitleStyle.border_style}
+                              onValueChange={(value: 'solid' | 'dashed' | 'dotted') => setCertificateTitleStyle(prev => ({ ...prev, border_style: value }))}
+                            >
+                              <SelectTrigger className="touch-manipulation">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="solid">Solid</SelectItem>
+                                <SelectItem value="dashed">Dashed</SelectItem>
+                                <SelectItem value="dotted">Dotted</SelectItem>
+                              </SelectContent>
+                            </Select>
+                          </div>
+                          <div className="space-y-2">
+                            <Label>Border Radius (px)</Label>
+                            <Input
+                              type="number"
+                              min="0"
+                              max="50"
+                              value={certificateTitleStyle.border_radius}
+                              onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, border_radius: parseInt(e.target.value) || 0 }))}
+                              className="mobile-input touch-manipulation"
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Padding Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Padding</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>Top (px)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={certificateTitleStyle.padding_top}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, padding_top: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Bottom (px)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={certificateTitleStyle.padding_bottom}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, padding_bottom: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Left (px)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={certificateTitleStyle.padding_left}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, padding_left: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Right (px)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={certificateTitleStyle.padding_right}
+                          onChange={(e) => setCertificateTitleStyle(prev => ({ ...prev, padding_right: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
           </div>
         )
@@ -735,11 +1336,23 @@ export default function EditCertificateTemplatePage() {
                       <div className="border-2 border-dashed border-gray-300 rounded-lg p-6">
                         {backgroundImageUrl ? (
                           <div className="space-y-4">
-                            <div className="relative">
+                            <div className="relative bg-gray-50 rounded-lg p-4 border">
                               <img
-                                src={backgroundImageUrl.startsWith('http') ? backgroundImageUrl : `http://localhost:3000${backgroundImageUrl}`}
+                                src={backgroundImageUrl.startsWith('http') ? backgroundImageUrl : `${window.location.origin}${backgroundImageUrl}`}
                                 alt="Background preview"
-                                className="max-w-full h-48 object-contain mx-auto rounded"
+                                className="max-w-full h-auto object-contain mx-auto rounded shadow-sm"
+                                style={{
+                                  maxHeight: '400px',
+                                  minHeight: '200px',
+                                  imageRendering: 'crisp-edges'
+                                }}
+                                onError={(e) => {
+                                  console.error('Background image failed to load:', e.currentTarget.src);
+                                  e.currentTarget.style.display = 'none';
+                                }}
+                                onLoad={(e) => {
+                                  console.log('Background image loaded successfully:', e.currentTarget.src);
+                                }}
                               />
                             </div>
                             <div className="flex justify-center gap-2">
@@ -893,7 +1506,7 @@ export default function EditCertificateTemplatePage() {
                   <div className="space-y-4">
                     <div className="relative">
                       <img
-                        src={signatureImageUrl.startsWith('http') ? signatureImageUrl : `${window.location.origin}${signatureImageUrl.startsWith('/') ? '' : '/'}${signatureImageUrl}`}
+                        src={signatureImageUrl.startsWith('blob:') || signatureImageUrl.startsWith('http') ? signatureImageUrl : `${window.location.origin}${signatureImageUrl.startsWith('/') ? '' : '/'}${signatureImageUrl}`}
                         alt="Signature preview"
                         className="max-w-full h-24 object-contain mx-auto rounded"
                       />
@@ -987,6 +1600,179 @@ export default function EditCertificateTemplatePage() {
                 Upload a signature image that can be used in signature fields. This is optional and can be used instead of text signatures.
               </p>
             </div>
+
+            {/* Signature Styling */}
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-md">Signature Styling</CardTitle>
+                <CardDescription>Configure the appearance and positioning of signature elements</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-6">
+                  {/* Position and Layout Section */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Position & Layout</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>X Position (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={signatureStyle.x}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, x: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Y Position (%)</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={signatureStyle.y}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, y: parseInt(e.target.value) || 0 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Max Width (%)</Label>
+                        <Input
+                          type="number"
+                          min="10"
+                          max="100"
+                          value={signatureStyle.max_width}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, max_width: parseInt(e.target.value) || 30 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Typography Section (for text signatures) */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Typography (Text Signatures)</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>Font Size</Label>
+                        <Input
+                          type="number"
+                          min="8"
+                          max="72"
+                          value={signatureStyle.font_size}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, font_size: parseInt(e.target.value) || 16 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Font Family</Label>
+                        <Select
+                          value={signatureStyle.font_family}
+                          onValueChange={(value: string) => setSignatureStyle(prev => ({ ...prev, font_family: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="Arial">Arial</SelectItem>
+                            <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                            <SelectItem value="Georgia">Georgia</SelectItem>
+                            <SelectItem value="Helvetica">Helvetica</SelectItem>
+                            <SelectItem value="Verdana">Verdana</SelectItem>
+                            <SelectItem value="Calibri">Calibri</SelectItem>
+                            <SelectItem value="Cambria">Cambria</SelectItem>
+                            <SelectItem value="Great Vibes">Great Vibes</SelectItem>
+                            <SelectItem value="Pacifico">Pacifico</SelectItem>
+                            <SelectItem value="Dancing Script">Dancing Script</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                      <div className="space-y-2">
+                        <ColorPicker
+                          label="Text Color"
+                          value={signatureStyle.color || '#000000'}
+                          onChange={(color) => setSignatureStyle(prev => ({ ...prev, color }))}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Text Alignment</Label>
+                        <Select
+                          value={signatureStyle.alignment}
+                          onValueChange={(value: 'left' | 'center' | 'right') => setSignatureStyle(prev => ({ ...prev, alignment: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="left">Left</SelectItem>
+                            <SelectItem value="center">Center</SelectItem>
+                            <SelectItem value="right">Right</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Image Settings Section (for image signatures) */}
+                  <div>
+                    <h4 className="text-sm font-medium mb-3">Image Settings (Image Signatures)</h4>
+                    <div className="mobile-form-grid gap-3 sm:gap-4">
+                      <div className="space-y-2">
+                        <Label>Image Width (px)</Label>
+                        <Input
+                          type="number"
+                          min="50"
+                          max="500"
+                          value={signatureStyle.image_width}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, image_width: parseInt(e.target.value) || 150 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Image Height (px)</Label>
+                        <Input
+                          type="number"
+                          min="20"
+                          max="200"
+                          value={signatureStyle.image_height}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, image_height: parseInt(e.target.value) || 50 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Image Opacity</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="1"
+                          step="0.1"
+                          value={signatureStyle.image_opacity}
+                          onChange={(e) => setSignatureStyle(prev => ({ ...prev, image_opacity: parseFloat(e.target.value) || 1 }))}
+                          className="mobile-input touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Image Filter</Label>
+                        <Select
+                          value={signatureStyle.image_filter}
+                          onValueChange={(value: 'none' | 'grayscale' | 'sepia' | 'blur') => setSignatureStyle(prev => ({ ...prev, image_filter: value }))}
+                        >
+                          <SelectTrigger className="touch-manipulation">
+                            <SelectValue />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="none">None</SelectItem>
+                            <SelectItem value="grayscale">Grayscale</SelectItem>
+                            <SelectItem value="sepia">Sepia</SelectItem>
+                            <SelectItem value="blur">Blur</SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
@@ -1106,116 +1892,191 @@ export default function EditCertificateTemplatePage() {
                         setAppreciationText(e.target.value);
                         setAppreciationTextStyle(prev => ({ ...prev, text: e.target.value }));
                       }}
-                      placeholder="Enter appreciation text that will appear on the certificate"
+                      placeholder="Enter appreciation text that will appear on the certificate (optional)"
                       rows={5}
-                      required
                     />
 
-                    {/* Appreciation Text Positioning */}
+                    {/* Comprehensive Appreciation Text Styling */}
                     <div className="border rounded-lg p-4 bg-gray-50">
-                      <Label className="text-sm font-medium mb-3 block">Text Positioning & Styling</Label>
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label>X Position (%)</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={appreciationTextStyle.x}
-                            onChange={(e) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              x: parseInt(e.target.value) || 0
-                            }))}
-                          />
+                      <Label className="text-sm font-medium mb-3 block">Comprehensive Text Styling</Label>
+                      <div className="space-y-6">
+                        {/* Position and Layout Section */}
+                        <div>
+                          <h4 className="text-sm font-medium mb-3">Position & Layout</h4>
+                          <div className="grid grid-cols-3 gap-4">
+                            <div className="space-y-2">
+                              <Label>X Position (%)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={appreciationTextStyle.x}
+                                onChange={(e) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  x: parseInt(e.target.value) || 0
+                                }))}
+                                className="mobile-input touch-manipulation"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Y Position (%)</Label>
+                              <Input
+                                type="number"
+                                min="0"
+                                max="100"
+                                value={appreciationTextStyle.y}
+                                onChange={(e) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  y: parseInt(e.target.value) || 0
+                                }))}
+                                className="mobile-input touch-manipulation"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Max Width (%)</Label>
+                              <Input
+                                type="number"
+                                min="10"
+                                max="100"
+                                value={appreciationTextStyle.max_width}
+                                onChange={(e) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  max_width: parseInt(e.target.value) || 80
+                                }))}
+                                className="mobile-input touch-manipulation"
+                              />
+                            </div>
+                          </div>
                         </div>
-                        <div className="space-y-2">
-                          <Label>Y Position (%)</Label>
-                          <Input
-                            type="number"
-                            min="0"
-                            max="100"
-                            value={appreciationTextStyle.y}
-                            onChange={(e) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              y: parseInt(e.target.value) || 0
-                            }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Font Size</Label>
-                          <Input
-                            type="number"
-                            min="8"
-                            max="72"
-                            value={appreciationTextStyle.font_size}
-                            onChange={(e) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              font_size: parseInt(e.target.value) || 16
-                            }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Max Width (%)</Label>
-                          <Input
-                            type="number"
-                            min="10"
-                            max="100"
-                            value={appreciationTextStyle.max_width}
-                            onChange={(e) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              max_width: parseInt(e.target.value) || 80
-                            }))}
-                          />
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Font Family</Label>
-                          <Select
-                            value={appreciationTextStyle.font_family}
-                            onValueChange={(value: string) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              font_family: value
-                            }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="Arial">Arial</SelectItem>
-                              <SelectItem value="Helvetica">Helvetica</SelectItem>
-                              <SelectItem value="Times New Roman">Times New Roman</SelectItem>
-                              <SelectItem value="Georgia">Georgia</SelectItem>
-                              <SelectItem value="Verdana">Verdana</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="space-y-2">
-                          <Label>Text Alignment</Label>
-                          <Select
-                            value={appreciationTextStyle.alignment}
-                            onValueChange={(value: "left" | "center" | "right") => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              alignment: value
-                            }))}
-                          >
-                            <SelectTrigger>
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="left">Left</SelectItem>
-                              <SelectItem value="center">Center</SelectItem>
-                              <SelectItem value="right">Right</SelectItem>
-                            </SelectContent>
-                          </Select>
-                        </div>
-                        <div className="col-span-2">
-                          <ColorPicker
-                            label="Text Color"
-                            value={appreciationTextStyle.color || "#000000"}
-                            onChange={(color) => setAppreciationTextStyle(prev => ({
-                              ...prev,
-                              color
-                            }))}
-                          />
+
+                        {/* Typography Section */}
+                        <div>
+                          <h4 className="text-sm font-medium mb-3">Typography</h4>
+                          <div className="grid grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                              <Label>Font Size</Label>
+                              <Input
+                                type="number"
+                                min="8"
+                                max="72"
+                                value={appreciationTextStyle.font_size}
+                                onChange={(e) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  font_size: parseInt(e.target.value) || 16
+                                }))}
+                                className="mobile-input touch-manipulation"
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Font Family</Label>
+                              <Select
+                                value={appreciationTextStyle.font_family}
+                                onValueChange={(value: string) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  font_family: value
+                                }))}
+                              >
+                                <SelectTrigger className="touch-manipulation">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="Arial">Arial</SelectItem>
+                                  <SelectItem value="Times New Roman">Times New Roman</SelectItem>
+                                  <SelectItem value="Georgia">Georgia</SelectItem>
+                                  <SelectItem value="Helvetica">Helvetica</SelectItem>
+                                  <SelectItem value="Verdana">Verdana</SelectItem>
+                                  <SelectItem value="Calibri">Calibri</SelectItem>
+                                  <SelectItem value="Cambria">Cambria</SelectItem>
+                                  <SelectItem value="Great Vibes">Great Vibes</SelectItem>
+                                  <SelectItem value="Pacifico">Pacifico</SelectItem>
+                                  <SelectItem value="Dancing Script">Dancing Script</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Font Weight</Label>
+                              <Select
+                                value={appreciationTextStyle.font_weight}
+                                onValueChange={(value: 'normal' | 'bold' | 'bolder' | 'lighter') => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  font_weight: value
+                                }))}
+                              >
+                                <SelectTrigger className="touch-manipulation">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="normal">Normal</SelectItem>
+                                  <SelectItem value="bold">Bold</SelectItem>
+                                  <SelectItem value="bolder">Bolder</SelectItem>
+                                  <SelectItem value="lighter">Lighter</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Font Style</Label>
+                              <Select
+                                value={appreciationTextStyle.font_style}
+                                onValueChange={(value: 'normal' | 'italic' | 'oblique') => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  font_style: value
+                                }))}
+                              >
+                                <SelectTrigger className="touch-manipulation">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="normal">Normal</SelectItem>
+                                  <SelectItem value="italic">Italic</SelectItem>
+                                  <SelectItem value="oblique">Oblique</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <ColorPicker
+                                label="Text Color"
+                                value={appreciationTextStyle.color || "#000000"}
+                                onChange={(color) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  color
+                                }))}
+                              />
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Text Alignment</Label>
+                              <Select
+                                value={appreciationTextStyle.alignment}
+                                onValueChange={(value: "left" | "center" | "right") => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  alignment: value
+                                }))}
+                              >
+                                <SelectTrigger className="touch-manipulation">
+                                  <SelectValue />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value="left">Left</SelectItem>
+                                  <SelectItem value="center">Center</SelectItem>
+                                  <SelectItem value="right">Right</SelectItem>
+                                </SelectContent>
+                              </Select>
+                            </div>
+                            <div className="space-y-2">
+                              <Label>Line Height</Label>
+                              <Input
+                                type="number"
+                                min="0.5"
+                                max="3"
+                                step="0.1"
+                                value={appreciationTextStyle.line_height}
+                                onChange={(e) => setAppreciationTextStyle(prev => ({
+                                  ...prev,
+                                  line_height: parseFloat(e.target.value) || 1.5
+                                }))}
+                                className="mobile-input touch-manipulation"
+                              />
+                            </div>
+                          </div>
                         </div>
                       </div>
                     </div>
@@ -1361,17 +2222,30 @@ export default function EditCertificateTemplatePage() {
                           </Select>
                         </div>
 
-                        {/* Underline option */}
+                        {/* Field Settings */}
                         <div className="space-y-2">
-                          <div className="flex items-center space-x-2">
-                            <input
-                              type="checkbox"
-                              id={`underline-${field.id}`}
-                              checked={field.underline || false}
-                              onChange={(e) => updateField(field.id, { underline: e.target.checked })}
-                              className="rounded border-gray-300"
-                            />
-                            <Label htmlFor={`underline-${field.id}`}>Underline</Label>
+                          <Label>Field Settings</Label>
+                          <div className="space-y-2">
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`required-${field.id}`}
+                                checked={field.required || false}
+                                onChange={(e) => updateField(field.id, { required: e.target.checked })}
+                                className="rounded border-gray-300 touch-manipulation"
+                              />
+                              <Label htmlFor={`required-${field.id}`} className="text-sm">Required field</Label>
+                            </div>
+                            <div className="flex items-center space-x-2">
+                              <input
+                                type="checkbox"
+                                id={`underline-${field.id}`}
+                                checked={field.underline || false}
+                                onChange={(e) => updateField(field.id, { underline: e.target.checked })}
+                                className="rounded border-gray-300 touch-manipulation"
+                              />
+                              <Label htmlFor={`underline-${field.id}`} className="text-sm">Underline</Label>
+                            </div>
                           </div>
                         </div>
 
@@ -1417,23 +2291,23 @@ export default function EditCertificateTemplatePage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-4">
-        <Button variant="outline" size="icon" asChild>
+    <div className="space-y-4 sm:space-y-6">
+      <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4">
+        <Button variant="outline" size="icon" asChild className="touch-manipulation self-start">
           <Link href="/admin/certificate-templates">
             <ArrowLeft className="h-4 w-4" />
           </Link>
         </Button>
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Edit Certificate Template</h1>
-          <p className="text-muted-foreground">Update the "{template.name}" template</p>
+        <div className="min-w-0 flex-1">
+          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Edit Certificate Template</h1>
+          <p className="text-muted-foreground text-sm sm:text-base">Update the "{template.name}" template</p>
         </div>
       </div>
 
       {/* Progress indicator */}
       <Card>
-        <CardContent className="pt-6">
-          <div className="space-y-4">
+        <CardContent className="mobile-card-content">
+          <div className="space-y-3 sm:space-y-4">
             <div className="flex items-center justify-between">
               <span className="text-sm font-medium">Step {currentStep} of {totalSteps}</span>
               <span className="text-sm text-gray-500">{getStepTitle(currentStep)}</span>
@@ -1445,35 +2319,37 @@ export default function EditCertificateTemplatePage() {
 
       {/* Step content */}
       <Card>
-        <CardHeader>
-          <CardTitle>{getStepTitle(currentStep)}</CardTitle>
-          <CardDescription>
+        <CardHeader className="mobile-card-header">
+          <CardTitle className="text-lg sm:text-xl">{getStepTitle(currentStep)}</CardTitle>
+          <CardDescription className="text-sm">
             {currentStep === 1 && "Update the basic information for your certificate template"}
             {currentStep === 2 && "Update the background image and configure the layout settings"}
             {currentStep === 3 && "Modify the fields that will appear on the certificate"}
           </CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="mobile-card-content">
           {renderStepContent()}
         </CardContent>
       </Card>
 
       {/* Navigation buttons */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
         <Button
           variant="outline"
           onClick={prevStep}
           disabled={currentStep === 1}
+          className="w-full sm:w-auto touch-manipulation"
         >
           <ChevronLeft className="mr-2 h-4 w-4" />
           Previous
         </Button>
 
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           {currentStep < totalSteps ? (
             <Button
               onClick={nextStep}
               disabled={!validateStep(currentStep)}
+              className="w-full sm:w-auto touch-manipulation"
             >
               Next
               <ChevronRight className="ml-2 h-4 w-4" />
@@ -1482,6 +2358,7 @@ export default function EditCertificateTemplatePage() {
             <Button
               onClick={handleSubmit}
               disabled={!validateStep(currentStep) || isSubmitting}
+              className="w-full sm:w-auto touch-manipulation"
             >
               {isSubmitting ? (
                 <>

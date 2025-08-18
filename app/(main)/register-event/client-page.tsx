@@ -884,6 +884,23 @@ export default function RegisterEventClientPage() {
       console.log("Phone:", phone)
       console.log("Child name:", childName)
 
+      // Mobile browser compatibility check
+      if (typeof window !== 'undefined') {
+        console.log("=== MOBILE COMPATIBILITY CHECK ===")
+        console.log("User Agent:", navigator.userAgent)
+        console.log("Screen size:", `${window.innerWidth}x${window.innerHeight}`)
+        console.log("Touch support:", 'ontouchstart' in window)
+        console.log("Crypto API:", window.crypto && window.crypto.subtle ? 'Available' : 'Not available')
+
+        // Check if this is a mobile device
+        const isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        console.log("Mobile device detected:", isMobileDevice)
+
+        if (isMobileDevice && (!window.crypto || !window.crypto.subtle)) {
+          console.warn("⚠️ Mobile device with limited crypto support detected - using fallback implementation")
+        }
+      }
+
       // SINGLE GAME VALIDATION: Ensure exactly one game is selected
       if (selectedGames.length !== 1) {
         throw new Error(`Invalid game selection. Expected exactly 1 game, but found ${selectedGames.length}. Please select exactly one game.`)
@@ -922,7 +939,7 @@ export default function RegisterEventClientPage() {
       console.log("DOB toISOString:", dob?.toISOString());
       console.log("Formatted DOB:", formatDateForAPI(dob));
 
-      if (!selectedGames || selectedGames.length === 0) {
+      if (Array.isArray(selectedGames) && selectedGames.length === 0) {
         throw new Error("Please select at least one game for your child to participate in.")
       }
 
@@ -1133,7 +1150,7 @@ export default function RegisterEventClientPage() {
     } catch (error: any) {
       console.error("Error processing payment and booking:", error)
 
-      // Provide more specific error messages
+      // Provide more specific error messages with mobile-specific handling
       let errorMessage = "Failed to process payment and booking. Please try again."
 
       if (error.message?.includes("User ID not found")) {
@@ -1144,8 +1161,16 @@ export default function RegisterEventClientPage() {
         }, 2000)
       } else if (error.message?.includes("booking")) {
         errorMessage = "Failed to create booking. Please check your details and try again."
-      } else if (error.message?.includes("payment")) {
-        errorMessage = "Failed to initiate payment. Please try again or contact support."
+      } else if (error.message?.includes("payment") || error.message?.includes("hash generation")) {
+        // Check if this is a mobile browser compatibility issue
+        const isMobileDevice = typeof window !== 'undefined' && /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+        if (isMobileDevice && error.message?.includes("digest")) {
+          errorMessage = "Payment processing issue detected on mobile. Please try refreshing the page or use a different browser."
+        } else {
+          errorMessage = "Failed to initiate payment. Please try again or contact support."
+        }
+      } else if (error.message?.includes("digest") || error.message?.includes("crypto")) {
+        errorMessage = "Browser compatibility issue detected. Please try refreshing the page or use a different browser."
       } else if (error.message) {
         errorMessage = error.message
       }
@@ -1353,9 +1378,9 @@ export default function RegisterEventClientPage() {
   }, [apiEvents])
 
   return (
-    <div className="container py-8 px-4 sm:px-6 relative">
-      {/* Decorative background elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none dark:opacity-20">
+    <div className="container py-4 sm:py-8 px-3 sm:px-4 lg:px-6 relative min-h-screen">
+      {/* Decorative background elements - hidden on mobile for better performance */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none dark:opacity-20 hidden sm:block">
         <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-yellow-200 opacity-20 animate-pulse"></div>
         <div className="absolute top-1/4 -right-10 w-32 h-32 rounded-full bg-blue-200 opacity-20 animate-pulse delay-700"></div>
         <div className="absolute bottom-1/4 -left-10 w-36 h-36 rounded-full bg-green-200 opacity-20 animate-pulse delay-1000"></div>
@@ -1487,7 +1512,7 @@ export default function RegisterEventClientPage() {
           </div>
         </div>
 
-        <CardContent className="space-y-4 sm:px-6">
+        <CardContent className="space-y-4 px-3 sm:px-6 py-4 sm:py-6">
           {step === 1 && (
             <>
               {/* City Selection - Moved to the top */}
@@ -1515,7 +1540,7 @@ export default function RegisterEventClientPage() {
                     ) : (
                       <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0}>
                         <SelectTrigger className={cn(
-                          "border-dashed transition-all duration-200",
+                          "border-dashed transition-all duration-200 h-11 sm:h-10 text-base sm:text-sm",
                           selectedCity ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
                         )}>
                           <SelectValue placeholder={cities.length === 0 ? "No cities available" : "Select your city"} />
@@ -1558,7 +1583,7 @@ export default function RegisterEventClientPage() {
                           disabled={getUniqueEventTypes().length === 0}
                         >
                           <SelectTrigger className={cn(
-                            "border-dashed transition-all duration-200",
+                            "border-dashed transition-all duration-200 h-11 sm:h-10 text-base sm:text-sm",
                             selectedEventType ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
                           )}>
                             <SelectValue placeholder="Select an event" />
@@ -1638,7 +1663,7 @@ export default function RegisterEventClientPage() {
                   </div>
                   Parent Information
                 </h3>
-                <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
                   <div className="space-y-2">
                     <Label htmlFor="parent-name" className="flex items-center gap-1">
                       <span>Parent's Full Name</span>
@@ -1650,7 +1675,7 @@ export default function RegisterEventClientPage() {
                       value={parentName}
                       onChange={(e) => setParentName(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50"
+                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1665,7 +1690,7 @@ export default function RegisterEventClientPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50"
+                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1675,11 +1700,12 @@ export default function RegisterEventClientPage() {
                     </Label>
                     <Input
                       id="phone"
+                      type="tel"
                       placeholder="Enter your 10-digit mobile number"
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50"
+                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
                     />
                   </div>
                 </div>
@@ -1697,7 +1723,7 @@ export default function RegisterEventClientPage() {
                   </div>
                   Child Information
                 </h3>
-                <div className="grid gap-4 sm:grid-cols-2">
+                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
                   <div className="space-y-2">
                     <Label htmlFor="child-name" className="flex items-center gap-1">
                       <span>Child's Full Name</span>
@@ -1709,7 +1735,7 @@ export default function RegisterEventClientPage() {
                       value={childName}
                       onChange={(e) => setChildName(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50"
+                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
                     />
                   </div>
                   <div className="space-y-2">
@@ -1722,7 +1748,7 @@ export default function RegisterEventClientPage() {
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal border-dashed transition-all duration-200",
+                            "w-full justify-start text-left font-normal border-dashed transition-all duration-200 h-11 sm:h-10 text-base sm:text-sm touch-manipulation",
                             !dob ? "text-muted-foreground border-muted-foreground/40" : "border-primary/40 bg-primary/5"
                           )}
                           onClick={() => {
@@ -1735,7 +1761,7 @@ export default function RegisterEventClientPage() {
                           }}
                         >
                           <CalendarIcon className={cn("mr-2 h-4 w-4", dob ? "text-primary" : "text-muted-foreground")} />
-                          {dob ? format(dob, "PPP") : "Select date of birth"}
+                          <span className="truncate">{dob ? format(dob, "PPP") : "Select date of birth"}</span>
                         </Button>
                       </PopoverTrigger>
                       <PopoverContent className="w-auto p-0 bg-gradient-to-br from-white to-blue-50 border-2 border-primary/10 shadow-xl">
@@ -1787,7 +1813,7 @@ export default function RegisterEventClientPage() {
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
                     required={childAgeMonths ? childAgeMonths >= 36 : false}
-                    className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50"
+                    className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
                   />
                   {childAgeMonths && childAgeMonths < 36 && (
                     <p className="text-xs text-muted-foreground mt-1">For children under 3 years, you can enter "Home", "Daycare", or the name of their playschool</p>
@@ -1908,7 +1934,7 @@ export default function RegisterEventClientPage() {
                             )}
                           </div>
                         </div>
-                        <div className="grid gap-4 sm:grid-cols-1">
+                        <div className="grid gap-3 sm:gap-4 grid-cols-1">
                         {(() => {
                           // Group games by game_id to show slots for each game
                           const groupedGames = eligibleGames.reduce((acc, game) => {
@@ -1972,7 +1998,7 @@ export default function RegisterEventClientPage() {
                                         <div
                                           key={slot.id}
                                           className={cn(
-                                            "flex items-center justify-between p-3 rounded-lg border transition-all duration-200",
+                                            "flex items-center justify-between p-3 sm:p-4 rounded-lg border transition-all duration-200 touch-manipulation min-h-[60px] sm:min-h-[auto]",
                                             isSelected
                                               ? "border-primary bg-primary/10 shadow-md"
                                               : slot.max_participants <= 0
@@ -2091,7 +2117,7 @@ export default function RegisterEventClientPage() {
 
               <Button
                 className={cn(
-                  "w-full relative overflow-hidden group transition-all duration-300",
+                  "w-full relative overflow-hidden group transition-all duration-300 h-12 sm:h-11 text-base sm:text-sm font-semibold touch-manipulation",
                   (!selectedCity || !dob || !selectedEventType || !selectedEvent || selectedGames.length !== 1 || childAgeMonths === null || !parentName || !email || !phone || !childName ||
                  (childAgeMonths && childAgeMonths >= 36 && !schoolName) || !termsAccepted || isProcessingPayment)
                     ? "opacity-50"
@@ -2252,15 +2278,27 @@ export default function RegisterEventClientPage() {
                 </div>
               )}
 
-              <div className="flex gap-4 mt-6">
-                <Button variant="outline" className="w-full" onClick={() => setStep(1)}>
+              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
+                <Button
+                  variant="outline"
+                  className="w-full h-12 sm:h-10 text-base sm:text-sm touch-manipulation"
+                  onClick={() => setStep(1)}
+                >
                   <ArrowLeft className="mr-2 h-4 w-4" /> Back
                 </Button>
-                <Button className="w-full" onClick={handleContinueToPayment}>
-                  {selectedAddOns.length === 0
-                    ? (isAuthenticated ? "Skip Add-ons & Proceed to Payment" : "Skip Add-ons & Continue (Login Required)")
-                    : (isAuthenticated ? "Proceed to Payment" : "Continue to Payment (Login Required)")
-                  }
+                <Button
+                  className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                  onClick={handleContinueToPayment}
+                >
+                  <span className="hidden sm:inline">
+                    {selectedAddOns.length === 0
+                      ? (isAuthenticated ? "Skip Add-ons & Proceed to Payment" : "Skip Add-ons & Continue (Login Required)")
+                      : (isAuthenticated ? "Proceed to Payment" : "Continue to Payment (Login Required)")
+                    }
+                  </span>
+                  <span className="sm:hidden">
+                    {selectedAddOns.length === 0 ? "Skip & Continue" : "Continue"}
+                  </span>
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -2392,23 +2430,26 @@ export default function RegisterEventClientPage() {
 
                 <div className="space-y-2 mt-6">
                   <Label htmlFor="promo">Promo Code</Label>
-                  <div className="flex space-x-2">
-                    <Input 
-                      id="promo" 
-                      placeholder="Enter promo code" 
+                  <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
+                    <Input
+                      id="promo"
+                      placeholder="Enter promo code"
                       value={promoCode}
                       onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
                       disabled={isApplyingPromocode || !selectedGames.length}
+                      className="h-11 sm:h-10 text-base sm:text-sm"
                     />
-                    <Button 
-                      variant="outline" 
+                    <Button
+                      variant="outline"
                       onClick={handleApplyPromoCode}
                       disabled={isApplyingPromocode || !promoCode || !selectedGames.length}
+                      className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation sm:min-w-[80px]"
                     >
                       {isApplyingPromocode ? (
                         <>
                           <div className="animate-spin mr-2 h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                          Applying...
+                          <span className="hidden sm:inline">Applying...</span>
+                          <span className="sm:hidden">...</span>
                         </>
                       ) : appliedPromoCode ? 'Change' : 'Apply'}
                     </Button>
@@ -2421,7 +2462,7 @@ export default function RegisterEventClientPage() {
                       <div>
                         {/* Only render the Select component when promocodes are available with valid promo_code properties */}
                         <Select onValueChange={(value) => setPromoCode(value)}>
-                          <SelectTrigger className="w-full mt-1 text-sm">
+                          <SelectTrigger className="w-full mt-1 h-11 sm:h-10 text-base sm:text-sm">
                             <SelectValue placeholder="Select a promocode" />
                           </SelectTrigger>
                           <SelectContent>
@@ -2495,10 +2536,15 @@ export default function RegisterEventClientPage() {
                       <div className="flex-shrink-0 bg-red-100 rounded-full p-1">
                         <AlertTriangle className="h-5 w-5 text-red-500" aria-hidden="true" />
                       </div>
-                      <div className="ml-3">
-                        <h3 className="text-sm font-medium text-red-800">Payment Error</h3>
-                        <div className="mt-2 text-sm text-red-700">
+                      <div className="ml-3 flex-1">
+                        <h3 className="text-sm font-medium text-red-800 mb-1">Payment Error</h3>
+                        <div className="text-sm text-red-700 leading-relaxed">
                           <p>{paymentError}</p>
+                          {paymentError.includes("mobile") && (
+                            <p className="mt-2 text-xs text-red-600">
+                              💡 Tip: Try refreshing the page or switching to a different browser if the issue persists.
+                            </p>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -2553,29 +2599,36 @@ export default function RegisterEventClientPage() {
                   </div>
                 </div>
 
-                <div className="flex gap-4 mt-6">
-                  <Button variant="outline" className="w-full" onClick={() => setStep(2)}>
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 mt-6">
+                  <Button
+                    variant="outline"
+                    className="w-full h-12 sm:h-10 text-base sm:text-sm touch-manipulation"
+                    onClick={() => setStep(2)}
+                  >
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                   <Button
-                    className="w-full"
+                    className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
                     onClick={handlePayment}
                     disabled={isProcessingPayment}
                   >
                     {isProcessingPayment ? (
                       <>
                         <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                        Processing...
+                        <span className="text-sm sm:text-base">Processing...</span>
                       </>
                     ) : (
-                      <>Pay with PhonePe ₹{calculateTotalPrice()}</>
+                      <>
+                        <span className="hidden sm:inline">Pay with PhonePe ₹{calculateTotalPrice()}</span>
+                        <span className="sm:hidden">Pay ₹{calculateTotalPrice()}</span>
+                      </>
                     )}
                   </Button>
                 </div>
             </>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2 border-t border-dashed border-primary/10 bg-gradient-to-b from-white/0 to-primary/5 sm:px-6">
+        <CardFooter className="flex flex-col space-y-2 border-t border-dashed border-primary/10 bg-gradient-to-b from-white/0 to-primary/5 px-3 sm:px-6 py-4 sm:py-6">
           <div className="text-center text-sm">
             <div className="flex items-center justify-center gap-2 mb-1">
               <div className="h-1 w-1 rounded-full bg-primary/20"></div>

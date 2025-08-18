@@ -206,9 +206,24 @@ export async function initiatePhonePePayment(
     const payloadString = JSON.stringify(paymentRequest);
     const base64Payload = base64Encode(payloadString);
 
-    // Generate the X-VERIFY header
+    // Generate the X-VERIFY header with mobile-specific error handling
     const dataToHash = base64Payload + '/pg/v1/pay' + PHONEPE_CONFIG.SALT_KEY;
-    const xVerify = await generateSHA256Hash(dataToHash) + '###' + PHONEPE_CONFIG.SALT_INDEX;
+
+    console.log('=== MOBILE PAYMENT DEBUG ===');
+    console.log('User Agent:', typeof window !== 'undefined' ? navigator.userAgent : 'Server');
+    console.log('Crypto API available:', typeof window !== 'undefined' && window.crypto && window.crypto.subtle ? 'Yes' : 'No');
+    console.log('Data to hash length:', dataToHash.length);
+
+    let xVerify: string;
+    try {
+      const hashResult = await generateSHA256Hash(dataToHash);
+      xVerify = hashResult + '###' + PHONEPE_CONFIG.SALT_INDEX;
+      console.log('✅ Hash generation successful');
+      console.log('Hash length:', hashResult.length);
+    } catch (error) {
+      console.error('❌ Hash generation failed:', error);
+      throw new Error(`Payment hash generation failed: ${error instanceof Error ? error.message : 'Unknown error'}`);
+    }
 
     // Use our internal API route to avoid CORS issues
     // Only use this service from client-side to avoid server-to-server issues

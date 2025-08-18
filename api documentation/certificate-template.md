@@ -64,6 +64,63 @@ Response (201 Created)
 ]
 ```
 
+
+-------------------------------------------------
+
+
+{
+  "name": "Employee of the Month Template",
+  "description": "Template for employee recognition certificates",
+  "type": "participation",
+  "certificate_title": "Certificate of Appreciation",
+  "certificate_title_style": {
+    "position": { "x": 150, "y": 200 },
+    "font": { "family": "Arial", "size": 36, "weight": "bold" },
+    "color": "#000000",
+    "alignment": "center"
+  },
+  "background_image": "/images/certificates/template_1_bg.jpg",
+  "background_style": {
+    "type": "gradient",
+    "colors": ["#ffffff", "#f0f0f0"]
+  },
+  "paper_size": "a4",
+  "orientation": "landscape",
+  "fields": [
+    {
+      "id": "1",
+      "name": "Participant Name",
+      "type": "text",
+      "required": true,
+      "x": 50,
+      "y": 40,
+      "font_size": 24,
+      "font_family": "Arial",
+      "color": "#000000"
+    },
+    {
+      "id": "1",
+      "name": "Participant Name",
+      "type": "text",
+      "required": true,
+      "x": 50,
+      "y": 40,
+      "font_size": 24,
+      "font_family": "Arial",
+      "color": "#000000"
+    }
+  ],
+  "appreciation_text": "In recognition of outstanding performance and dedication.",
+  "appreciation_text_style": {
+    "position": { "x": 150, "y": 600 },
+    "font": { "family": "Georgia", "size": 20, "style": "italic" },
+    "color": "#555555",
+    "alignment": "center"
+  },
+  "signature_image": "/images/signatures/director_sig.png"
+}
+
+
 ### Get All Certificate Templates
 
 **GET** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/get-all

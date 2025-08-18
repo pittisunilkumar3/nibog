@@ -529,6 +529,8 @@ CREATE INDEX idx_pending_bookings_expires_at ON pending_bookings(expires_at);
 
 --- Certificate Templates table
 
+
+
 CREATE TABLE certificate_templates (
     id SERIAL PRIMARY KEY,
     name VARCHAR(255) NOT NULL,

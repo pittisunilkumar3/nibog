@@ -464,4 +464,42 @@
   .mobile-flex-wrap {
     @apply flex flex-wrap gap-2 sm:gap-3;
   }
+
+  /* Mobile payment and touch optimizations */
+  .touch-manipulation {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .mobile-payment-button {
+    @apply h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation;
+    min-height: 44px; /* iOS minimum touch target */
+  }
+
+  .mobile-error-text {
+    @apply text-sm leading-relaxed break-words;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Prevent zoom on input focus for iOS */
+  @media screen and (max-width: 768px) {
+    input[type="text"],
+    input[type="email"],
+    input[type="tel"],
+    input[type="password"],
+    select,
+    textarea {
+      font-size: 16px !important;
+    }
+  }
+
+  /* Mobile-specific crypto error styling */
+  .crypto-error-mobile {
+    @apply bg-amber-50 border-amber-200 text-amber-800;
+  }
+
+  .crypto-error-mobile .crypto-error-icon {
+    @apply text-amber-500;
+  }
 }

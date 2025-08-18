@@ -5,11 +5,16 @@ export async function POST(request: NextRequest) {
     const body = await request.json();
 
     // Validate required fields
-    if (!body.name || !body.type || !body.fields) {
+    if (!body.name || !body.type) {
       return NextResponse.json(
-        { error: 'Missing required fields: name, type, fields' },
+        { error: 'Missing required fields: name, type' },
         { status: 400 }
       );
+    }
+
+    // Ensure fields is an array (can be empty)
+    if (body.fields === undefined || body.fields === null) {
+      body.fields = [];
     }
 
     // Forward to n8n webhook

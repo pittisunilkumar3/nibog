@@ -938,7 +938,7 @@ function generateCertificateHTML(
       if (imageUrl && imageUrl !== 'null' && imageUrl !== null) {
         const backgroundImageUrl = imageUrl.startsWith('http')
           ? imageUrl
-          : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+          : `${process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3111')}${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
         backgroundStyle = `background-image: url('${backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;`;
       }
     } else if (template.background_style.type === 'solid' && template.background_style.solid_color) {
@@ -951,7 +951,7 @@ function generateCertificateHTML(
     // Legacy background image support
     const backgroundImageUrl = template.background_image.startsWith('http')
       ? template.background_image
-      : `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}${template.background_image.startsWith('/') ? '' : '/'}${template.background_image}`;
+      : `${process.env.NEXT_PUBLIC_BASE_URL || (typeof window !== 'undefined' ? window.location.origin : 'http://localhost:3111')}${template.background_image.startsWith('/') ? '' : '/'}${template.background_image}`;
     backgroundStyle = `background-image: url('${backgroundImageUrl}'); background-size: cover; background-position: center; background-repeat: no-repeat;`;
   }
 
