@@ -381,17 +381,26 @@ export class ExportService {
 // Utility functions for common export scenarios
 export const createBookingExportColumns = () => [
   { key: 'booking_id' as const, label: 'Booking ID', width: 80 },
+  { key: 'booking_ref' as const, label: 'Booking Ref', width: 120 },
   { key: 'game_name' as const, label: 'Game Name', width: 120 },
   { key: 'parent_name' as const, label: 'Parent Name', width: 120 },
   { key: 'parent_email' as const, label: 'Email', width: 150 },
   { key: 'parent_additional_phone' as const, label: 'Phone Number', width: 120 },
   { key: 'child_full_name' as const, label: 'Child Name', width: 120 },
-  { key: 'child_age' as const, label: 'Child Age', width: 120 },
+  {
+    key: 'child_age' as const,
+    label: 'Child Age',
+    width: 120,
+    format: (value: any) => value || 'N/A'
+  },
+  { key: 'child_gender' as const, label: 'Child Gender', width: 100 },
+  { key: 'child_date_of_birth' as const, label: 'Child DOB', width: 120, format: (value: any) => value ? new Date(value).toLocaleDateString() : 'N/A' },
   { key: 'event_title' as const, label: 'Event', width: 150 },
   { key: 'city_name' as const, label: 'City', width: 100 },
   { key: 'venue_name' as const, label: 'Venue', width: 120 },
   { key: 'total_amount' as const, label: 'Amount', width: 80, format: (value: any) => `₹${value}`, align: 'right' as const },
   { key: 'booking_status' as const, label: 'Status', width: 80 },
+  { key: 'payment_status' as const, label: 'Payment Status', width: 100 },
   { key: 'booking_created_at' as const, label: 'Booking Date', width: 100, format: (value: any) => new Date(value).toLocaleDateString() },
 ]
 

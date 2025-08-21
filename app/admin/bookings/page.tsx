@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Eye, Edit, Check, X, AlertTriangle, Loader2, RefreshCw, CheckCircle, Mail, Phone, Filter, XCircle } from "lucide-react"
+import { Eye, Edit, Check, X, AlertTriangle, Loader2, RefreshCw, CheckCircle, Mail, Phone, Filter, XCircle, Calendar, CalendarDays } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { getAllBookings, getPaginatedBookings, updateBookingStatus, Booking, PaginatedBookingsResponse } from "@/services/bookingService"
 import {
@@ -24,6 +24,9 @@ import { createBookingExportColumns } from "@/lib/export-utils"
 import { EmptyBookings, EmptyError } from "@/components/ui/empty-state"
 import { SkeletonTable } from "@/components/ui/skeleton-loader"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Separator } from "@/components/ui/separator"
 import { getAllEvents } from "@/services/eventService"
 import { getAllBabyGames, type BabyGame } from "@/services/babyGameService"
 
@@ -82,6 +85,7 @@ export default function BookingsPage() {
   const [games, setGames] = useState<BabyGame[]>([])
   const [selectedEventId, setSelectedEventId] = useState<string>("all")
   const [selectedGameId, setSelectedGameId] = useState<string>("all")
+  const [selectedStatus, setSelectedStatus] = useState<string>("all")
   const [isLoadingFilters, setIsLoadingFilters] = useState(false)
 
   // Fetch bookings from API
@@ -135,29 +139,57 @@ export default function BookingsPage() {
     loadFilters()
   }, [])
 
-  // Filter bookings by date, then by event/game
+  // Enhanced filtering logic with better date handling
   const filteredBookings = bookings.filter(b => {
-    // Date filter
+    // Date filter with improved logic
     if (fromDate || toDate) {
       const bookingDate = new Date(b.booking_created_at)
-      if (fromDate && bookingDate < new Date(fromDate)) return false
-      if (toDate && bookingDate > new Date(toDate)) return false
+
+      // Ensure valid date
+      if (isNaN(bookingDate.getTime())) return false
+
+      if (fromDate) {
+        const fromDateTime = new Date(fromDate)
+        fromDateTime.setHours(0, 0, 0, 0) // Start of day
+        if (bookingDate < fromDateTime) return false
+      }
+
+      if (toDate) {
+        const toDateTime = new Date(toDate)
+        toDateTime.setHours(23, 59, 59, 999) // End of day
+        if (bookingDate > toDateTime) return false
+      }
     }
-    // Event filter (match by event_id or event_title fallback)
+
+    // Event filter with improved matching
     if (selectedEventId !== 'all') {
       const evId = Number(selectedEventId)
+      if (isNaN(evId)) return false
+
       const matchesEventId = (b as any).event_id ? (b as any).event_id === evId : false
       const eventFromTitle = events.find(e => e.event_title === b.event_title)
       const matchesEventTitleId = eventFromTitle ? eventFromTitle.id === evId : false
+
       if (!(matchesEventId || matchesEventTitleId)) return false
     }
-    // Game filter (match by game_id or by name)
+
+    // Game filter with improved matching
     if (selectedGameId !== 'all') {
       const gId = Number(selectedGameId)
+      if (isNaN(gId)) return false
+
       const matchesGameId = (b as any).game_id ? (b as any).game_id === gId : false
       const matchesGameName = b.game_name ? games.some(g => (g.id === gId) && g.game_name === b.game_name) : false
+
       if (!(matchesGameId || matchesGameName)) return false
     }
+
+    // Status filter
+    if (selectedStatus !== 'all') {
+      const bookingStatus = b.booking_status?.toLowerCase() || ''
+      if (bookingStatus !== selectedStatus.toLowerCase()) return false
+    }
+
     return true
   })
 
@@ -461,85 +493,207 @@ export default function BookingsPage() {
           </div>
         </div>
 
-        {/* Filters Section */}
-        <div className="flex flex-col gap-4 p-4 bg-muted/50 rounded-lg">
-          <div className="flex items-center gap-2">
-            <Filter className="h-4 w-4" />
-            <span className="text-sm font-medium">Filters</span>
-          </div>
+        {/* Enhanced Filters Section */}
+        <Card className="border-0 shadow-sm">
+          <CardContent className="p-6">
+            <div className="flex items-center justify-between mb-6">
+              <div className="flex items-center gap-2">
+                <Filter className="h-5 w-5 text-primary" />
+                <h3 className="text-lg font-semibold">Filters</h3>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setSelectedEventId('all');
+                  setSelectedGameId('all');
+                  setSelectedStatus('all');
+                  setFromDate('');
+                  setToDate('');
+                }}
+                className="text-muted-foreground hover:text-foreground"
+              >
+                <XCircle className="mr-2 h-4 w-4" />
+                Clear All
+              </Button>
+            </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {/* Date Filters */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Date Range</label>
-              <div className="flex gap-2">
-                <input
-                  type="date"
-                  value={fromDate}
-                  onChange={e => setFromDate(e.target.value)}
-                  className="flex-1 border rounded px-2 py-1 text-sm"
-                  placeholder="From"
-                />
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={e => setToDate(e.target.value)}
-                  className="flex-1 border rounded px-2 py-1 text-sm"
-                  placeholder="To"
-                />
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+              {/* Date Range Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium flex items-center gap-2">
+                  <CalendarDays className="h-4 w-4" />
+                  Date Range
+                </Label>
+                <div className="space-y-2">
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="date"
+                      value={fromDate}
+                      onChange={e => setFromDate(e.target.value)}
+                      className="pl-10"
+                      placeholder="From date"
+                    />
+                  </div>
+                  <div className="relative">
+                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                      type="date"
+                      value={toDate}
+                      onChange={e => setToDate(e.target.value)}
+                      className="pl-10"
+                      placeholder="To date"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Event Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Event</Label>
+                <Select value={selectedEventId} onValueChange={setSelectedEventId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={isLoadingFilters ? "Loading events..." : "Select event"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Events</SelectItem>
+                    {events.map((e) => (
+                      <SelectItem key={e.id} value={String(e.id)}>
+                        {e.event_title}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedEventId !== 'all' && (
+                  <p className="text-xs text-muted-foreground">
+                    {events.find(e => String(e.id) === selectedEventId)?.event_title}
+                  </p>
+                )}
+              </div>
+
+              {/* Game Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Game</Label>
+                <Select value={selectedGameId} onValueChange={setSelectedGameId}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder={isLoadingFilters ? "Loading games..." : "Select game"} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Games</SelectItem>
+                    {games.map((g) => (
+                      <SelectItem key={g.id ?? g.game_name} value={String(g.id)}>
+                        {g.game_name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedGameId !== 'all' && (
+                  <p className="text-xs text-muted-foreground">
+                    {games.find(g => String(g.id) === selectedGameId)?.game_name}
+                  </p>
+                )}
+              </div>
+
+              {/* Status Filter */}
+              <div className="space-y-3">
+                <Label className="text-sm font-medium">Status</Label>
+                <Select value={selectedStatus} onValueChange={setSelectedStatus}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select status" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Statuses</SelectItem>
+                    {statusOptions.map((status) => (
+                      <SelectItem key={status.id} value={status.value}>
+                        {status.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                {selectedStatus !== 'all' && (
+                  <p className="text-xs text-muted-foreground">
+                    {statusOptions.find(s => s.value === selectedStatus)?.name}
+                  </p>
+                )}
+              </div>
+
+              {/* Filter Summary - Hidden on mobile, shown on larger screens */}
+              <div className="hidden lg:block space-y-3">
+                <Label className="text-sm font-medium">Active Filters</Label>
+                <div className="space-y-2">
+                  {(fromDate || toDate) && (
+                    <div className="flex items-center gap-2 text-xs bg-primary/10 text-primary px-2 py-1 rounded">
+                      <Calendar className="h-3 w-3" />
+                      {fromDate && toDate ? `${fromDate} to ${toDate}` :
+                       fromDate ? `From ${fromDate}` : `Until ${toDate}`}
+                    </div>
+                  )}
+                  {selectedEventId !== 'all' && (
+                    <div className="flex items-center gap-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
+                      Event: {events.find(e => String(e.id) === selectedEventId)?.event_title}
+                    </div>
+                  )}
+                  {selectedGameId !== 'all' && (
+                    <div className="flex items-center gap-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">
+                      Game: {games.find(g => String(g.id) === selectedGameId)?.game_name}
+                    </div>
+                  )}
+                  {selectedStatus !== 'all' && (
+                    <div className="flex items-center gap-2 text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded">
+                      Status: {statusOptions.find(s => s.value === selectedStatus)?.name}
+                    </div>
+                  )}
+                  {fromDate === '' && toDate === '' && selectedEventId === 'all' && selectedGameId === 'all' && selectedStatus === 'all' && (
+                    <p className="text-xs text-muted-foreground">No filters applied</p>
+                  )}
+                </div>
               </div>
             </div>
 
-            {/* Event Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Event</label>
-              <Select value={selectedEventId} onValueChange={setSelectedEventId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={isLoadingFilters ? "Loading events..." : "All Events"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Events</SelectItem>
-                  {events.map((e) => (
-                    <SelectItem key={e.id} value={String(e.id)}>
-                      {e.event_title}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            {/* Mobile Filter Summary - Shown only on smaller screens */}
+            <div className="lg:hidden">
+              <div className="flex flex-wrap gap-2 mt-4">
+                {(fromDate || toDate) && (
+                  <Badge variant="secondary" className="text-xs">
+                    <Calendar className="h-3 w-3 mr-1" />
+                    {fromDate && toDate ? `${fromDate} to ${toDate}` :
+                     fromDate ? `From ${fromDate}` : `Until ${toDate}`}
+                  </Badge>
+                )}
+                {selectedEventId !== 'all' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Event: {events.find(e => String(e.id) === selectedEventId)?.event_title}
+                  </Badge>
+                )}
+                {selectedGameId !== 'all' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Game: {games.find(g => String(g.id) === selectedGameId)?.game_name}
+                  </Badge>
+                )}
+                {selectedStatus !== 'all' && (
+                  <Badge variant="secondary" className="text-xs">
+                    Status: {statusOptions.find(s => s.value === selectedStatus)?.name}
+                  </Badge>
+                )}
+              </div>
             </div>
 
-            {/* Game Filter */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground">Game</label>
-              <Select value={selectedGameId} onValueChange={setSelectedGameId}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder={isLoadingFilters ? "Loading games..." : "All Games"} />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Games</SelectItem>
-                  {games.map((g) => (
-                    <SelectItem key={g.id ?? g.game_name} value={String(g.id)}>
-                      {g.game_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+            <Separator className="my-4" />
 
-            {/* Clear Filters */}
-            <div className="flex flex-col gap-2">
-              <label className="text-sm font-medium text-muted-foreground opacity-0">Actions</label>
-              <Button
-                variant="ghost"
-                onClick={() => { setSelectedEventId('all'); setSelectedGameId('all'); setFromDate(''); setToDate(''); }}
-                className="w-full"
-              >
-                <XCircle className="mr-2 h-4 w-4" />
-                Clear Filters
-              </Button>
+            {/* Results Summary */}
+            <div className="flex items-center justify-between text-sm text-muted-foreground">
+              <span>
+                Showing {filteredBookings.length} of {bookings.length} bookings
+              </span>
+              {filteredBookings.length !== bookings.length && (
+                <span className="text-primary font-medium">
+                  {bookings.length - filteredBookings.length} filtered out
+                </span>
+              )}
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
       </div>
 
       {/* Summary Statistics */}
