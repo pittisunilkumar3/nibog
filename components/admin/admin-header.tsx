@@ -59,6 +59,11 @@ const routeMap: Record<string, { label: string; parent?: string }> = {
   "/admin/footer": { label: "Footer Management", parent: "/admin" },
   "/admin/email": { label: "Email Sending", parent: "/admin" },
   "/admin/completed-events": { label: "Completed Events", parent: "/admin" },
+  "/admin/age-groups": { label: "Age Groups", parent: "/admin" },
+  "/admin/age-groups/create": { label: "Add Age Group", parent: "/admin/age-groups" },
+  "/admin/sports": { label: "Sports Programs", parent: "/admin" },
+  "/admin/sports/activities": { label: "Sports Activities", parent: "/admin/sports" },
+  "/admin/sports/categories": { label: "Sports Categories", parent: "/admin/sports" },
 }
 
 function generateBreadcrumbs(pathname: string) {

@@ -31,6 +31,7 @@ import {
   Award,
   Star,
   Layout,
+  Trophy,
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -40,7 +41,21 @@ import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
 
 // Organized admin routes with sections
-const adminRoutes = [
+type AdminRouteItem = {
+  href: string;
+  label: string;
+  icon: React.ReactNode;
+  description: string;
+  badge?: string; // Optional badge property
+  children?: AdminRouteItem[]; // Optional children for nested routes
+};
+
+type AdminRouteSection = {
+  section: string;
+  items: AdminRouteItem[];
+};
+
+const adminRoutes: AdminRouteSection[] = [
   {
     section: "Analytics",
     items: [
@@ -168,6 +183,19 @@ const adminRoutes = [
         description: "Customer reviews",
       },
       {
+        href: "/admin/sports-importance",
+        label: "Sports Importance",
+        icon: <Trophy className="h-4 w-4" />,
+        description: "Why sports are important to children",
+      },
+      {
+        href: "/admin/game-importance",
+        label: "Game Importance",
+        icon: <BarChart3 className="h-4 w-4" />,
+        description: "Why games are important for children",
+      },
+      {
+        href: "#",
         label: "Certificates",
         icon: <Award className="h-4 w-4" />,
         description: "Certificate management",
@@ -175,11 +203,13 @@ const adminRoutes = [
           {
             href: "/admin/certificate-templates",
             label: "Templates",
+            icon: <FileText className="h-4 w-4" />,
             description: "Certificate designs",
           },
           {
             href: "/admin/certificates",
             label: "Generated",
+            icon: <Award className="h-4 w-4" />,
             description: "Issued certificates",
           },
         ],

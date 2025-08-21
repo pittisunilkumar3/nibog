@@ -80,6 +80,18 @@ export const SOCIAL_MEDIA_API = {
   GET: "https://ai.alviongs.com/webhook/v1/nibog/socialmedia/get", // GET
 };
 
+// Sports Importance API endpoints
+export const SPORTS_IMPORTANCE_API = {
+  GET: `${API_BASE_URL}/sports-importance/get`, // GET
+  SAVE: `${API_BASE_URL}/sports-importance/save`, // POST
+};
+
+// Game Importance API endpoints
+export const GAME_IMPORTANCE_API = {
+  GET: `${API_BASE_URL}/game-importance/get`, // GET
+  SAVE: `${API_BASE_URL}/game-importance/save`, // POST
+};
+
 
 
 // Email Settings API endpoints

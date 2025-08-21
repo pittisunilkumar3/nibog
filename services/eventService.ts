@@ -690,30 +690,82 @@ export async function getEventsByCityId(cityId: number): Promise<EventListItem[]
     }
 
     console.log(`Found ${events.length} upcoming events for city ${cityId}`);
-    
+
+    if (events.length > 0) {
+      const firstEvent = events[0];
+      console.log(`First event venue fields: venue_name="${firstEvent.venue_name}", venue="${firstEvent.venue}", venue_id="${firstEvent.venue_id}"`);
+    }
+
+    // Helper function to fetch venue name by venue_id
+    const fetchVenueName = async (venueId: number): Promise<string> => {
+      try {
+        if (!venueId) return 'Event Venue';
+
+        const response = await fetch('/api/venues/get', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ id: venueId }),
+        });
+
+        if (response.ok) {
+          const venueData = await response.json();
+          const venueName = venueData.venue_name || venueData.name || 'Event Venue';
+          if (venueName !== 'Event Venue') {
+            console.log(`Fetched venue ${venueId}: "${venueName}"`);
+          }
+          return venueName;
+        }
+      } catch (error) {
+        console.error('Error fetching venue:', error);
+      }
+      return 'Event Venue';
+    };
+
     // Convert the raw API response to match the expected EventListItem format
-    const formattedEvents: EventListItem[] = events.map((event: any) => ({
-      event_id: event.id,
-      event_title: event.title,
-      event_description: event.description || '',
-      event_date: event.event_date,
-      event_status: event.status || 'Published',
-      event_created_at: event.created_at || new Date().toISOString(),
-      event_updated_at: event.updated_at || new Date().toISOString(),
-      city_id: event.city_id,
-      city_name: '', // Will be filled in if needed by UI
-      state: '',
-      city_is_active: true,
-      city_created_at: new Date().toISOString(),
-      city_updated_at: new Date().toISOString(),
-      venue_id: event.venue_id || 0,
-      venue_name: event.venue_name || 'Event Venue', // Use actual venue name from API or fallback
-      venue_address: '',
-      venue_capacity: 0,
-      venue_is_active: true,
-      venue_created_at: new Date().toISOString(),
-      venue_updated_at: new Date().toISOString(),
-      games: [] // Initialize with empty games array, will be populated separately if needed
+    // First, try to get venue names for events that don't have them
+    const formattedEvents: EventListItem[] = await Promise.all(events.map(async (event: any) => {
+
+      let venueName = event.venue_name || event.venue || event.location || event.address || event.place || event.site || event.event_venue;
+
+      // If no venue name found but we have a venue_id, try to fetch it
+      if (!venueName && event.venue_id) {
+        venueName = await fetchVenueName(event.venue_id);
+      }
+
+      // Final fallback
+      if (!venueName) {
+        venueName = 'Event Venue';
+      }
+
+      if (venueName !== 'Event Venue') {
+        console.log(`Event ${event.id}: Found venue "${venueName}"`);
+      }
+
+      return {
+        event_id: event.id,
+        event_title: event.title,
+        event_description: event.description || '',
+        event_date: event.event_date,
+        event_status: event.status || 'Published',
+        event_created_at: event.created_at || new Date().toISOString(),
+        event_updated_at: event.updated_at || new Date().toISOString(),
+        city_id: event.city_id,
+        city_name: '', // Will be filled in if needed by UI
+        state: '',
+        city_is_active: true,
+        city_created_at: new Date().toISOString(),
+        city_updated_at: new Date().toISOString(),
+        venue_id: event.venue_id || 0,
+        venue_name: venueName,
+        venue_address: '',
+        venue_capacity: 0,
+        venue_is_active: true,
+        venue_created_at: new Date().toISOString(),
+        venue_updated_at: new Date().toISOString(),
+        games: [] // Initialize with empty games array, will be populated separately if needed
+      };
     }));
 
     return formattedEvents;
@@ -767,6 +819,12 @@ export async function getGamesByAgeAndEvent(eventId: number, childAge: number): 
     }
 
     console.log(`Found ${games.length} games for event ${eventId} and age ${childAge} months`);
+
+    if (games.length > 0) {
+      const firstGame = games[0];
+      console.log(`Games API venue fields: venue_name="${firstGame.venue_name}", venue="${firstGame.venue}", venue_id="${firstGame.venue_id}"`);
+    }
+
     return games;
   } catch (error) {
     console.error('Error in getGamesByAgeAndEvent:', error);

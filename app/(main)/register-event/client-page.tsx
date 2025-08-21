@@ -17,6 +17,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { format, addMonths, differenceInMonths, differenceInDays } from "date-fns"
 import { cn, formatDateForAPI } from "@/lib/utils"
 import { createPendingBooking } from "@/services/pendingBookingServices"
+import { getEventWithVenueDetails } from "@/services/bookingService"
 import { Calendar as CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
@@ -370,19 +371,33 @@ export default function RegisterEventClientPage() {
       
       // Convert API events to the format expected by the UI for display purposes
       if (eventsData.length > 0) {
-        const apiEventsMapped = eventsData.map(event => ({
-          id: event.event_id.toString(),
-          title: event.event_title,
-          description: event.event_description,
-          minAgeMonths: 5, // Default min age if not specified in API data
-          maxAgeMonths: 84, // Default max age if not specified in API data
-          date: event.event_date.split('T')[0], // Format the date
-          time: "9:00 AM - 8:00 PM", // Default time
-          venue: event.venue_name || "Venue TBD",
-          city: event.city_name || city,
-          price: 1800, // Default price
-          image: "/images/baby-crawling.jpg" // Default image
-        }));
+        const apiEventsMapped = eventsData.map(event => {
+          // Try multiple possible venue field names
+          const venueValue = event.venue_name ||
+                           event.venue ||
+                           event.location ||
+                           event.address ||
+                           event.place ||
+                           event.site ||
+                           event.event_venue ||
+                           "Venue TBD";
+
+          console.log(`Event ${event.event_id}: venue_name="${event.venue_name}", final venue="${venueValue}"`);
+
+          return {
+            id: event.event_id.toString(),
+            title: event.event_title,
+            description: event.event_description,
+            minAgeMonths: 5, // Default min age if not specified in API data
+            maxAgeMonths: 84, // Default max age if not specified in API data
+            date: event.event_date.split('T')[0], // Format the date
+            time: "9:00 AM - 8:00 PM", // Default time
+            venue: venueValue,
+            city: event.city_name || city,
+            price: 1800, // Default price
+            image: "/images/baby-crawling.jpg" // Default image
+          };
+        });
         
         // Set all events as eligible without age filtering
         setEligibleEvents(apiEventsMapped);
@@ -411,12 +426,12 @@ export default function RegisterEventClientPage() {
   }
 
   // Handle event type change
-  const handleEventTypeChange = (eventType: string) => {
+  const handleEventTypeChange = async (eventType: string) => {
     setSelectedEventType(eventType)
     setSelectedEvent("") // Reset selected event when event type changes
     setEligibleGames([]) // Reset games when event type changes
     setSelectedGames([]) // Reset selected games when event type changes
-    
+
     // Reset promocode when event changes
     setPromoCode('')
     setAppliedPromoCode(null)
@@ -427,9 +442,39 @@ export default function RegisterEventClientPage() {
     const selectedApiEvent = apiEvents.find(event => event.event_title === eventType);
 
     if (selectedApiEvent) {
+      // Try to get proper venue information using the event details API
+      try {
+        console.log(`Fetching detailed event information for event ID: ${selectedApiEvent.event_id}`);
+        const eventWithVenue = await getEventWithVenueDetails(selectedApiEvent.event_id);
+
+        if (eventWithVenue && eventWithVenue.venue && eventWithVenue.venue.venue_name) {
+          console.log(`Successfully fetched venue: ${eventWithVenue.venue.venue_name}`);
+          // Update the selectedApiEvent with proper venue information
+          selectedApiEvent.venue_name = eventWithVenue.venue.venue_name;
+          selectedApiEvent.venue_address = eventWithVenue.venue.address;
+        }
+      } catch (error) {
+        console.error('Error fetching detailed venue information:', error);
+        // Continue with existing venue data
+      }
+    }
+
+    if (selectedApiEvent) {
       console.log("Selected event:", selectedApiEvent);
 
       // Create a mock event from the API event data to maintain compatibility with the rest of the form
+      // Try multiple possible venue field names
+      const venueValue = selectedApiEvent.venue_name ||
+                       selectedApiEvent.venue ||
+                       selectedApiEvent.location ||
+                       selectedApiEvent.address ||
+                       selectedApiEvent.place ||
+                       selectedApiEvent.site ||
+                       selectedApiEvent.event_venue ||
+                       "Venue TBD";
+
+      console.log(`Mock event for ${selectedApiEvent.event_id}: venue="${venueValue}"`);
+
       const mockEvent = {
         id: selectedApiEvent.event_id.toString(),
         title: selectedApiEvent.event_title,
@@ -438,7 +483,7 @@ export default function RegisterEventClientPage() {
         maxAgeMonths: 84, // Default values since API might not have these
         date: selectedApiEvent.event_date.split('T')[0], // Format the date
         time: "9:00 AM - 8:00 PM", // Default time
-        venue: selectedApiEvent.venue_name,
+        venue: venueValue,
         city: selectedApiEvent.city_name,
         price: 1800, // Default price
         image: "/images/baby-crawling.jpg", // Default image
@@ -485,10 +530,20 @@ export default function RegisterEventClientPage() {
 
         // Update event details with correct date and venue from the games API response
         const firstGame = gamesData[0];
-        if (firstGame && firstGame.event_date && firstGame.venue_name) {
+        if (firstGame && firstGame.event_date) {
           console.log('Updating event details with correct date and venue from games API');
           console.log('Event date from games API (corrected):', firstGame.event_date);
-          console.log('Venue name from games API:', firstGame.venue_name);
+
+          // Try multiple possible venue field names from games API
+          const gameVenueValue = firstGame.venue_name ||
+                               firstGame.venue ||
+                               firstGame.location ||
+                               firstGame.address ||
+                               firstGame.place ||
+                               firstGame.site ||
+                               firstGame.event_venue;
+
+          console.log(`Games API venue for event ${eventId}: "${gameVenueValue}"`);
 
           // Since the SQL query now returns the correct date in YYYY-MM-DD format (Asia/Kolkata timezone)
           // we can use it directly without any timezone conversion
@@ -503,6 +558,19 @@ export default function RegisterEventClientPage() {
           if (selectedApiEvent) {
 
             // Update the event details with correct date and venue
+            // Use venue from games API if available, otherwise fall back to original event venue
+            const finalVenueValue = gameVenueValue ||
+                                  selectedApiEvent.venue_name ||
+                                  selectedApiEvent.venue ||
+                                  selectedApiEvent.location ||
+                                  selectedApiEvent.address ||
+                                  selectedApiEvent.place ||
+                                  selectedApiEvent.site ||
+                                  selectedApiEvent.event_venue ||
+                                  "Venue TBD";
+
+            console.log(`Final venue for updated event ${selectedApiEvent.event_id}: "${finalVenueValue}"`);
+
             const updatedEvent = {
               id: selectedApiEvent.event_id.toString(),
               title: selectedApiEvent.event_title,
@@ -511,7 +579,7 @@ export default function RegisterEventClientPage() {
               maxAgeMonths: 84,
               date: correctDate, // Use the correct date from games API (already in correct timezone)
               time: "9:00 AM - 8:00 PM",
-              venue: firstGame.venue_name, // Use the correct venue from games API
+              venue: finalVenueValue, // Use the best available venue information
               city: selectedApiEvent.city_name,
               price: 1800,
               image: "/images/baby-crawling.jpg",
