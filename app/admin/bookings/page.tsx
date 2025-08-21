@@ -218,9 +218,19 @@ export default function BookingsPage() {
       render: (value, row) => (
         <div className="min-w-0">
           <div className="font-medium truncate">{value}</div>
-          {row.child_age && (
-            <div className="text-xs text-muted-foreground">Age: {row.child_age}</div>
-          )}
+          <div className="text-xs text-muted-foreground">{row.child_gender}</div>
+        </div>
+      )
+    },
+    {
+      key: 'child_age',
+      label: 'Child Age',
+      sortable: true,
+      width: '120px',
+      hideOnMobile: true, // Hide on mobile to save space
+      render: (value) => (
+        <div className="min-w-0">
+          <div className="font-medium text-sm">{value || 'N/A'}</div>
         </div>
       )
     },

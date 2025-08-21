@@ -93,6 +93,7 @@ export async function GET(request: Request) {
                 child_created_at: child.child_created_at,
                 child_updated_at: child.child_updated_at,
                 child_id: child.child_id,
+                child_age: child.child_age, // Add the new child_age field
                 game_name
               };
             }

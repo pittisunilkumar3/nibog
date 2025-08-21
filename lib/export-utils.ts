@@ -386,6 +386,7 @@ export const createBookingExportColumns = () => [
   { key: 'parent_email' as const, label: 'Email', width: 150 },
   { key: 'parent_additional_phone' as const, label: 'Phone Number', width: 120 },
   { key: 'child_full_name' as const, label: 'Child Name', width: 120 },
+  { key: 'child_age' as const, label: 'Child Age', width: 120 },
   { key: 'event_title' as const, label: 'Event', width: 150 },
   { key: 'city_name' as const, label: 'City', width: 100 },
   { key: 'venue_name' as const, label: 'Venue', width: 120 },

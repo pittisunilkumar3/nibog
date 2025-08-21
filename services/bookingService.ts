@@ -25,6 +25,7 @@ export interface Booking {
   child_date_of_birth: string;
   child_school_name: string;
   child_gender: string;
+  child_age?: string; // Add the new child_age field (optional since it might not be present in all responses)
   child_is_active: boolean;
   child_created_at: string;
   child_updated_at: string;

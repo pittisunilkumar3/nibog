@@ -617,6 +617,9 @@ export default function BookingDetailPage({ params }: Props) {
                       <p className="text-sm text-muted-foreground">
                         Born: {new Date(booking.child_date_of_birth).toLocaleDateString()}, {booking.child_gender}
                       </p>
+                      {booking.child_age && (
+                        <p className="text-sm text-muted-foreground">Age: {booking.child_age}</p>
+                      )}
                       {booking.child_school_name && (
                         <p className="text-sm text-muted-foreground break-words">School: {booking.child_school_name}</p>
                       )}
