@@ -102,6 +102,12 @@ const adminRoutes: AdminRouteSection[] = [
         badge: "New",
       },
       {
+        href: "/admin/complete-bookings",
+        label: "Complete Bookings",
+        icon: <CheckSquare className="h-4 w-4" />,
+        description: "All booking records",
+      },
+      {
         href: "/admin/users",
         label: "Users",
         icon: <Users className="h-4 w-4" />,

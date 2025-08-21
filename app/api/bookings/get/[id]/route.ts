@@ -15,9 +15,9 @@ export async function GET(
       );
     }
 
-    // For now, we'll get the booking from the get-all endpoint and filter by ID
+    // For now, we'll get the booking from the get-all-active-event endpoint and filter by ID
     // since there's no specific get-by-id endpoint in the API documentation
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all";
+    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all-active-event";
 
     // Create an AbortController for timeout
     const controller = new AbortController();
@@ -77,15 +77,25 @@ export async function GET(
       );
     }
 
-    // Flatten child info if present
+    // Flatten child info if present (handle both old and new API response formats)
     let result = booking;
     if (Array.isArray(booking.children) && booking.children.length > 0) {
       const child = booking.children[0];
       // Extract game name from the first game if available
       let game_name = undefined;
+
+      // Handle different games data structures
       if (Array.isArray(child.games) && child.games.length > 0) {
+        // Old API format: games is an array of objects
         game_name = child.games[0].game_name;
+      } else if (typeof child.games === 'string' && child.games.trim() !== '') {
+        // New API format: games might be a string
+        game_name = child.games;
+      } else {
+        // Fallback: try to extract from booking level or use default
+        game_name = booking.game_name || 'Unknown Game';
       }
+
       result = {
         ...booking,
         child_full_name: child.child_full_name,

@@ -27,8 +27,8 @@ export async function GET(request: Request) {
       return NextResponse.json(cachedData.data, { status: 200 });
     }
 
-    // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all";
+    // Forward the request to the external API with the correct URL (active events only)
+    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all-active-event";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     // Set a timeout for the fetch request
@@ -72,7 +72,7 @@ export async function GET(request: Request) {
         // Try to parse the response as JSON
         const responseData = JSON.parse(responseText);
         const totalBookings = Array.isArray(responseData) ? responseData.length : 0;
-        // Flatten child info for each booking
+        // Flatten child info for each booking (handle both old and new API response formats)
         let flattenedData = [];
         if (Array.isArray(responseData)) {
           flattenedData = responseData.map(booking => {
@@ -80,9 +80,19 @@ export async function GET(request: Request) {
               const child = booking.children[0];
               // Extract game name from the first game if available
               let game_name = undefined;
+
+              // Handle different games data structures
               if (Array.isArray(child.games) && child.games.length > 0) {
+                // Old API format: games is an array of objects
                 game_name = child.games[0].game_name;
+              } else if (typeof child.games === 'string' && child.games.trim() !== '') {
+                // New API format: games might be a string
+                game_name = child.games;
+              } else {
+                // Fallback: try to extract from booking level or use default
+                game_name = booking.game_name || 'Unknown Game';
               }
+
               return {
                 ...booking,
                 child_full_name: child.child_full_name,
