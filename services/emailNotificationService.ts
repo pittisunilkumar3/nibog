@@ -30,6 +30,148 @@ export interface BookingConfirmationData {
 }
 
 /**
+ * Generate admin notification email HTML template
+ */
+function generateAdminNotificationHTML(confirmationData: BookingConfirmationData): string {
+  const gamesList = confirmationData.gameDetails.map(game =>
+    `<li>${game.gameName} - ${game.gameTime} - ₹${game.gamePrice}</li>`
+  ).join('');
+
+  const addOnsList = confirmationData.addOns && confirmationData.addOns.length > 0
+    ? confirmationData.addOns.map(addon =>
+        `<li>${addon.name} (Qty: ${addon.quantity}) - ₹${addon.price}</li>`
+      ).join('')
+    : '';
+
+  return `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>New Booking Notification - NIBOG Admin</title>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .content { background: #f8f9fa; padding: 30px; border-radius: 0 0 10px 10px; }
+        .booking-details { background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #dc3545; }
+        .detail-row { display: flex; justify-content: space-between; margin: 10px 0; padding: 8px 0; border-bottom: 1px solid #eee; }
+        .detail-label { font-weight: bold; color: #495057; }
+        .detail-value { color: #212529; }
+        .games-list { background: #e9ecef; padding: 15px; border-radius: 5px; margin: 15px 0; }
+        .games-list ul { margin: 0; padding-left: 20px; }
+        .payment-info { background: #d4edda; border: 1px solid #c3e6cb; padding: 15px; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 30px; color: #6c757d; font-size: 14px; }
+        .alert-box { background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 5px; margin: 20px 0; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>🚨 New Booking Alert</h1>
+          <p>A new booking has been confirmed and payment completed</p>
+        </div>
+
+        <div class="content">
+          <div class="alert-box">
+            <strong>⚡ Action Required:</strong> A new booking has been successfully processed. Please review the details below and take any necessary follow-up actions.
+          </div>
+
+          <div class="booking-details">
+            <h3>📋 Booking Information</h3>
+            <div class="detail-row">
+              <span class="detail-label">Booking Reference:</span>
+              <span class="detail-value">${confirmationData.bookingRef || `B${String(confirmationData.bookingId).padStart(7, '0')}`}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Booking ID:</span>
+              <span class="detail-value">#${confirmationData.bookingId}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Booking Time:</span>
+              <span class="detail-value">${new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata' })}</span>
+            </div>
+          </div>
+
+          <div class="booking-details">
+            <h3>👨‍👩‍👧‍👦 Customer Information</h3>
+            <div class="detail-row">
+              <span class="detail-label">Parent Name:</span>
+              <span class="detail-value">${confirmationData.parentName}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Parent Email:</span>
+              <span class="detail-value">${confirmationData.parentEmail}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Child Name:</span>
+              <span class="detail-value">${confirmationData.childName}</span>
+            </div>
+          </div>
+
+          <div class="booking-details">
+            <h3>🎪 Event Information</h3>
+            <div class="detail-row">
+              <span class="detail-label">Event:</span>
+              <span class="detail-value">${confirmationData.eventTitle}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Event Date:</span>
+              <span class="detail-value">${confirmationData.eventDate}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Venue:</span>
+              <span class="detail-value">${confirmationData.eventVenue}</span>
+            </div>
+          </div>
+
+          ${gamesList ? `
+          <div class="games-list">
+            <h4>🎮 Games Selected:</h4>
+            <ul>${gamesList}</ul>
+          </div>
+          ` : ''}
+
+          ${addOnsList ? `
+          <div class="games-list">
+            <h4>🎁 Add-ons:</h4>
+            <ul>${addOnsList}</ul>
+          </div>
+          ` : ''}
+
+          <div class="payment-info">
+            <h3>💳 Payment Information</h3>
+            <div class="detail-row">
+              <span class="detail-label">Total Amount:</span>
+              <span class="detail-value"><strong>₹${confirmationData.totalAmount}</strong></span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Payment Method:</span>
+              <span class="detail-value">${confirmationData.paymentMethod}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Transaction ID:</span>
+              <span class="detail-value">${confirmationData.transactionId}</span>
+            </div>
+            <div class="detail-row">
+              <span class="detail-label">Payment Status:</span>
+              <span class="detail-value"><strong style="color: #28a745;">✅ COMPLETED</strong></span>
+            </div>
+          </div>
+
+          <div class="footer">
+            <p>This is an automated notification from the NIBOG booking system.</p>
+            <p>Please log in to the admin panel to view full booking details and manage the booking.</p>
+            <p><strong>NIBOG Admin Team</strong></p>
+          </div>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+}
+
+/**
  * Generate booking confirmation email HTML template
  */
 function generateBookingConfirmationHTML(confirmationData: BookingConfirmationData): string {
@@ -183,7 +325,8 @@ export async function sendBookingConfirmationFromServer(
         to: confirmationData.parentEmail,
         subject: `🎉 Booking Confirmed - ${confirmationData.eventTitle} | NIBOG`,
         html: htmlContent,
-        settings: emailSettings
+        settings: emailSettings,
+        cc: 'phase3entertainments@gmail.com'
       }),
     });
 
@@ -248,7 +391,8 @@ export async function sendBookingConfirmationFromClient(
         to: confirmationData.parentEmail,
         subject: `🎉 Booking Confirmed - ${confirmationData.eventTitle} | NIBOG`,
         html: htmlContent,
-        settings: emailSettings
+        settings: emailSettings,
+        cc: 'phase3entertainments@gmail.com'
       }),
     });
 
@@ -271,6 +415,70 @@ export async function sendBookingConfirmationFromClient(
     return {
       success: false,
       error: error.message || "Failed to send booking confirmation email"
+    };
+  }
+}
+
+/**
+ * Send admin notification email for new bookings
+ * Uses existing email settings and send-receipt-email API
+ */
+export async function sendAdminNotificationEmail(
+  confirmationData: BookingConfirmationData
+): Promise<{ success: boolean; error?: string }> {
+  try {
+    console.log("📧 Sending admin notification email for new booking...");
+    console.log(`Admin Email: phase3entertainments@gmail.com`);
+    console.log(`Booking ID: ${confirmationData.bookingId}`);
+
+    // Get email settings from your existing API
+    const emailSettings = await getEmailSetting();
+
+    if (!emailSettings) {
+      console.error("❌ No email settings found for admin notification");
+      return {
+        success: false,
+        error: "Email settings not configured. Please configure email settings first."
+      };
+    }
+
+    console.log("✅ Email settings retrieved successfully for admin notification");
+
+    // Generate HTML email content for admin
+    const htmlContent = generateAdminNotificationHTML(confirmationData);
+
+    // Use your existing send-receipt-email API
+    const response = await fetch('/api/send-receipt-email', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        to: 'phase3entertainments@gmail.com',
+        subject: `🚨 New Booking Alert - ${confirmationData.eventTitle} | Booking #${confirmationData.bookingId}`,
+        html: htmlContent,
+        settings: emailSettings
+      }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Failed to send admin notification email:', errorData);
+      return {
+        success: false,
+        error: errorData.error || `Failed to send admin email: ${response.status}`
+      };
+    }
+
+    const result = await response.json();
+    console.log("✅ Admin notification email sent successfully:", result.messageId);
+
+    return { success: true };
+  } catch (error: any) {
+    console.error("❌ Error sending admin notification email:", error);
+    return {
+      success: false,
+      error: error.message || "Failed to send admin notification email"
     };
   }
 }
@@ -444,7 +652,8 @@ export async function sendBookingReminder(
         to: confirmationData.parentEmail,
         subject: subject,
         html: htmlContent,
-        settings: emailSettings
+        settings: emailSettings,
+        cc: 'phase3entertainments@gmail.com'
       }),
     });
 

@@ -3,7 +3,7 @@ import nodemailer from 'nodemailer'
 
 export async function POST(request: Request) {
   try {
-    const { to, subject, html, settings } = await request.json()
+    const { to, subject, html, settings, cc } = await request.json()
 
     // Validate required fields
     if (!to || !subject || !html || !settings) {
@@ -44,7 +44,8 @@ export async function POST(request: Request) {
       to: to,
       subject: subject,
       html: html,
-      attachments: [] // Could add PDF attachment in the future
+      attachments: [], // Could add PDF attachment in the future
+      ...(cc && { cc: cc }) // Add CC if provided
     }
 
     // Send email

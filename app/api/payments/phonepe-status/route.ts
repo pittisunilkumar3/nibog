@@ -7,6 +7,18 @@ import { sendBookingConfirmationFromServer } from '@/services/emailNotificationS
 import { sendTicketEmail, TicketEmailData } from '@/services/ticketEmailService';
 import { getTicketDetails, TicketDetails } from '@/services/bookingService';
 
+// Define interface for game details
+interface GameDetail {
+  gameName: string;
+  gameDescription: string;
+  gamePrice: number;
+  gameDuration: number;
+  gameTime: string;
+  slotPrice: number;
+  maxParticipants: number;
+  customPrice: number;
+}
+
 /**
  * Generates a SINGLE booking reference ID in PPT format that should be used CONSISTENTLY
  * throughout the entire system without any reformatting or conversion
@@ -534,7 +546,7 @@ export async function POST(request: Request) {
             console.log(`📧 gameId:`, bookingData?.gameId);
             console.log(`📧 gamePrice:`, bookingData?.gamePrice);
 
-            const gameDetails = [];
+            const gameDetails: GameDetail[] = [];
             if (bookingData?.selectedGamesObj && Array.isArray(bookingData.selectedGamesObj)) {
               console.log(`📧 Using selectedGamesObj with ${bookingData.selectedGamesObj.length} games`);
               bookingData.selectedGamesObj.forEach((game: any, index: number) => {
@@ -545,7 +557,9 @@ export async function POST(request: Request) {
                   gamePrice: gamePrice,
                   gameDuration: game.game_duration_minutes || 0,
                   gameTime: game.start_time && game.end_time ? `${game.start_time} - ${game.end_time}` : 'TBD',
-                  maxParticipants: game.max_participants || 0
+                  slotPrice: game.slot_price || 0,
+                  maxParticipants: game.max_participants || 0,
+                  customPrice: game.custom_price || 0
                 });
               });
             } else if (bookingData?.gameId && bookingData?.gamePrice) {
@@ -561,7 +575,9 @@ export async function POST(request: Request) {
                   gamePrice: gamePrices[index] || 0,
                   gameDuration: 0,
                   gameTime: 'TBD',
-                  maxParticipants: 0
+                  slotPrice: 0,
+                  maxParticipants: 0,
+                  customPrice: 0
                 });
               });
             } else {
@@ -600,7 +616,8 @@ export async function POST(request: Request) {
                 to: bookingData?.email || `customer-${bookingId}@example.com`,
                 subject: `🎉 Booking Confirmed - ${bookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
                 html: htmlContent,
-                settings: settings
+                settings: settings,
+                cc: 'phase3entertainments@gmail.com'
               }),
             });
 
@@ -608,6 +625,36 @@ export async function POST(request: Request) {
 
             if (emailResponse.ok) {
               console.log(`📧 Booking confirmation email sent successfully`);
+
+              // Send admin notification email
+              try {
+                console.log(`📧 Sending admin notification email...`);
+                const { sendAdminNotificationEmail } = await import('@/services/emailNotificationService');
+
+                const adminNotificationResult = await sendAdminNotificationEmail({
+                  bookingId: parseInt(bookingId.toString()),
+                  bookingRef: bookingRef,
+                  parentName: bookingData?.parentName || 'Valued Customer',
+                  parentEmail: bookingData?.email || `customer-${bookingId}@example.com`,
+                  childName: bookingData?.childName || 'Child',
+                  eventTitle: bookingData?.eventTitle || 'NIBOG Event',
+                  eventDate: bookingData?.eventDate || new Date().toLocaleDateString(),
+                  eventVenue: bookingData?.eventVenue || 'Main Stadium',
+                  totalAmount: amount / 100,
+                  paymentMethod: 'PhonePe',
+                  transactionId: transactionId,
+                  gameDetails: gameDetails
+                });
+
+                if (adminNotificationResult.success) {
+                  console.log(`📧 Admin notification email sent successfully`);
+                } else {
+                  console.error(`📧 Admin notification email failed:`, adminNotificationResult.error);
+                }
+              } catch (adminEmailError) {
+                console.error(`📧 Failed to send admin notification email:`, adminEmailError);
+                // Don't fail the entire process if admin email fails
+              }
 
               // After successful booking confirmation email, send ticket email separately
               console.log(`🎫 Starting ticket email process...`);
@@ -736,18 +783,7 @@ async function sendBookingConfirmationWithExistingData(
     // Use the event and venue data we already have from the booking process
     // No need to make additional API calls - we have everything we need!
 
-    // Define interface for game details
-    interface GameDetail {
-      gameName: string;
-      gameDescription: string;
-      gamePrice: number;
-      gameDuration: number;
-      gameTime: string;
-      slotPrice: number;
-      maxParticipants: number;
-      customPrice: number;
-    }
-    
+
     // Extract game details from the rich booking data - no API calls needed!
     const gameDetails: GameDetail[] = [];
 
@@ -846,7 +882,8 @@ async function sendBookingConfirmationWithExistingData(
         to: emailData.parentEmail,
         subject: `🎉 Booking Confirmed - ${emailData.eventTitle} | NIBOG`,
         html: htmlContent,
-        settings: settings
+        settings: settings,
+        cc: 'phase3entertainments@gmail.com'
       }),
     });
 

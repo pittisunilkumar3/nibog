@@ -733,12 +733,43 @@ async function createBookingAndPayment(
           to: bookingData?.email || `customer-${bookingId}@example.com`,
           subject: `🎉 Booking Confirmed - ${bookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
           html: htmlContent,
-          settings: settings
+          settings: settings,
+          cc: 'phase3entertainments@gmail.com'
         }),
       });
 
       if (emailResponse.ok) {
         console.log(`📧 Booking confirmation email sent successfully`);
+
+        // Send admin notification email
+        try {
+          console.log(`📧 Sending admin notification email...`);
+          const { sendAdminNotificationEmail } = await import('@/services/emailNotificationService');
+
+          const adminNotificationResult = await sendAdminNotificationEmail({
+            bookingId: parseInt(bookingId.toString()),
+            bookingRef: bookingRef,
+            parentName: bookingData?.parentName || 'Valued Customer',
+            parentEmail: bookingData?.email || `customer-${bookingId}@example.com`,
+            childName: bookingData?.childName || 'Child',
+            eventTitle: bookingData?.eventTitle || 'NIBOG Event',
+            eventDate: bookingData?.eventDate || new Date().toLocaleDateString(),
+            eventVenue: bookingData?.eventVenue || 'Main Stadium',
+            totalAmount: amount / 100,
+            paymentMethod: 'PhonePe',
+            transactionId: merchantTransactionId,
+            gameDetails: bookingData?.gameDetails || []
+          });
+
+          if (adminNotificationResult.success) {
+            console.log(`📧 Admin notification email sent successfully`);
+          } else {
+            console.error(`📧 Admin notification email failed:`, adminNotificationResult.error);
+          }
+        } catch (adminEmailError) {
+          console.error(`📧 Failed to send admin notification email:`, adminEmailError);
+          // Don't fail the entire process if admin email fails
+        }
       } else {
         const errorData = await emailResponse.json();
         console.error(`📧 Email sending failed:`, errorData);
@@ -891,12 +922,43 @@ export async function POST(request: Request) {
               to: pendingBookingData?.email || `customer-${transactionId.slice(-6)}@example.com`,
               subject: `🎉 Booking Confirmed - ${pendingBookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
               html: htmlContent,
-              settings: settings
+              settings: settings,
+              cc: 'phase3entertainments@gmail.com'
             }),
           });
 
           if (emailResponse.ok) {
             console.log(`📧 Booking confirmation email sent successfully`);
+
+            // Send admin notification email
+            try {
+              console.log(`📧 Sending admin notification email...`);
+              const { sendAdminNotificationEmail } = await import('@/services/emailNotificationService');
+
+              const adminNotificationResult = await sendAdminNotificationEmail({
+                bookingId: bookingResult.bookingId,
+                bookingRef: bookingRef,
+                parentName: pendingBookingData?.parentName || 'Valued Customer',
+                parentEmail: pendingBookingData?.email || `customer-${transactionId.slice(-6)}@example.com`,
+                childName: pendingBookingData?.childName || 'Child',
+                eventTitle: pendingBookingData?.eventTitle || 'NIBOG Event',
+                eventDate: pendingBookingData?.eventDate || new Date().toLocaleDateString(),
+                eventVenue: pendingBookingData?.eventVenue || 'Main Stadium',
+                totalAmount: amount / 100,
+                paymentMethod: 'PhonePe',
+                transactionId: transactionId,
+                gameDetails: pendingBookingData?.gameDetails || []
+              });
+
+              if (adminNotificationResult.success) {
+                console.log(`📧 Admin notification email sent successfully`);
+              } else {
+                console.error(`📧 Admin notification email failed:`, adminNotificationResult.error);
+              }
+            } catch (adminEmailError) {
+              console.error(`📧 Failed to send admin notification email:`, adminEmailError);
+              // Don't fail the entire process if admin email fails
+            }
           } else {
             const errorData = await emailResponse.json();
             console.error(`📧 Email sending failed:`, errorData);

@@ -1087,6 +1087,24 @@ export default function NewBookingPage() {
 
         if (emailResult.success) {
           console.log("✅ Booking confirmation email sent successfully");
+
+          // Send admin notification email for manual booking
+          try {
+            console.log("📧 Sending admin notification email for manual booking...");
+            const { sendAdminNotificationEmail } = await import('@/services/emailNotificationService');
+
+            const adminNotificationResult = await sendAdminNotificationEmail(confirmationData);
+
+            if (adminNotificationResult.success) {
+              console.log("✅ Admin notification email sent successfully");
+            } else {
+              console.error("❌ Admin notification email failed:", adminNotificationResult.error);
+            }
+          } catch (adminEmailError) {
+            console.error("❌ Error sending admin notification email:", adminEmailError);
+            // Don't fail the process if admin email fails
+          }
+
           toast({
             title: "Email Sent",
             description: "Booking confirmation email sent to customer",
