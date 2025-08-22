@@ -32,6 +32,7 @@ import {
   Star,
   Layout,
   Trophy,
+
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet"
@@ -199,6 +200,18 @@ const adminRoutes: AdminRouteSection[] = [
         label: "Game Importance",
         icon: <BarChart3 className="h-4 w-4" />,
         description: "Why games are important for children",
+      },
+      {
+        href: "/admin/privacy-policy",
+        label: "Privacy Policy",
+        icon: <FileText className="h-4 w-4" />,
+        description: "Manage privacy policy content",
+      },
+      {
+        href: "/admin/terms-conditions",
+        label: "Terms & Conditions",
+        icon: <FileText className="h-4 w-4" />,
+        description: "Manage terms & conditions content",
       },
       {
         href: "#",
