@@ -57,7 +57,7 @@ export const BASIC_EVENT_API = {
 export const EVENT_API = {
   CREATE: `${API_BASE_URL}/event-registration/create`, // POST - This is the correct endpoint for creating events with games and slots
   // GET: `${API_BASE_URL}/event-registration/get`,   // POST with id in body
-  GET: `${API_BASE_URL}/event-registration-new/get`,
+  GET: `${API_BASE_URL}/event-registration/get`,
   GET_ALL: `${API_BASE_URL}/event-registration/get-all`, // GET
   UPDATE: `${API_BASE_URL}/event-registration/update`, // POST with full event data
   DELETE:  `${API_BASE_URL}/event-registration/delete`, // POST with id in body

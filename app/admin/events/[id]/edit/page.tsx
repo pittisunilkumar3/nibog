@@ -111,6 +111,7 @@ export default function EditEventPage({ params }: Props) {
     customTitle?: string;
     customDescription?: string;
     customPrice?: number;
+    note?: string;
     slots: Array<{
       id: string;
       startTime: string;
@@ -152,43 +153,27 @@ export default function EditEventPage({ params }: Props) {
 
         // Format games data for the form
         const formattedGames = event.games.map((game: any) => {
-          // Check if the game has multiple slots (new API format)
-          if (game.slots && Array.isArray(game.slots) && game.slots.length > 0) {
-            // New API format with multiple slots
-            const slots = game.slots.map((slot: any, index: number) => ({
-              id: `game-${game.game_id}-slot-${index + 1}`,
-              startTime: slot.start_time.substring(0, 5), // Format HH:MM
-              endTime: slot.end_time.substring(0, 5), // Format HH:MM
-              price: slot.slot_price,
-              maxParticipants: slot.max_participants
-            }))
-
-            // Use the first slot's data for game-level customization
-            const firstSlot = game.slots[0]
-            return {
-              templateId: game.game_id.toString(),
-              customTitle: firstSlot.custom_title,
-              customDescription: firstSlot.custom_description,
-              customPrice: firstSlot.custom_price,
-              slots: slots
-            }
-          } else {
-            // Old API format with single slot
-            return {
-              templateId: game.game_id.toString(),
-              customTitle: game.custom_title,
-              customDescription: game.custom_description,
-              customPrice: game.custom_price,
-              slots: [{
-                id: `game-${game.game_id}-slot-1`,
-                startTime: game.start_time.substring(0, 5), // Format HH:MM
-                endTime: game.end_time.substring(0, 5), // Format HH:MM
-                price: game.slot_price,
-                maxParticipants: game.max_participants
-              }]
-            }
+          // The correct API returns flat structure with note field directly in game object
+          return {
+            templateId: game.game_id.toString(),
+            customTitle: game.custom_title || game.game_title,
+            customDescription: game.custom_description || game.game_description,
+            customPrice: game.custom_price || 0,
+            note: game.note || "",
+            slots: [{
+              id: `game-${game.game_id}-slot-1`,
+              startTime: game.start_time ? game.start_time.substring(0, 5) : "09:00",
+              endTime: game.end_time ? game.end_time.substring(0, 5) : "10:00",
+              price: game.slot_price || game.custom_price || 0,
+              maxParticipants: game.max_participants || 50
+            }]
           }
         })
+        
+        console.log("=== FINAL FORMATTED GAMES ===");
+        console.log("Formatted games with notes:", JSON.stringify(formattedGames, null, 2));
+        console.log("First game note value:", formattedGames[0]?.note);
+        console.log("=== END FINAL FORMATTED GAMES ===");
         setSelectedGames(formattedGames)
         if (formattedGames.length > 0) {
           setActiveGameIndex(0)
@@ -398,6 +383,7 @@ export default function EditEventPage({ params }: Props) {
       customTitle: template.name,
       customDescription: template.description,
       customPrice: template.suggestedPrice,
+      note: "",
       slots: [{
         id: `game-${templateId}-slot-1`,
         startTime: "10:00",
@@ -1001,6 +987,28 @@ export default function EditEventPage({ params }: Props) {
                           />
                           <p className="text-xs text-muted-foreground">
                             Suggested price: ₹{template.suggestedPrice}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="gameNote">Note (Optional)</Label>
+                          <Textarea
+                            id="gameNote"
+                            value={game.note || ""}
+                            onChange={(e) => {
+                              console.log("=== NOTE FIELD UI DEBUG ===");
+                              console.log("Current game object:", JSON.stringify(game, null, 2));
+                              console.log("Current note value in UI:", game.note);
+                              console.log("New note value:", e.target.value);
+                              console.log("Active game index:", activeGameIndex);
+                              console.log("=== END NOTE FIELD UI DEBUG ===");
+                              updateGame(activeGameIndex, "note", e.target.value);
+                            }}
+                            placeholder="Add any special notes or instructions for this game..."
+                            rows={3}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            This note will be visible to organizers and can include special instructions or requirements.
                           </p>
                         </div>
                       </div>

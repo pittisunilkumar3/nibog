@@ -82,6 +82,7 @@ export default function NewEventPage() {
     customTitle?: string;
     customDescription?: string;
     customPrice?: number;
+    note?: string;
     slots: Array<{
       id: string;
       startTime: string;
@@ -277,6 +278,7 @@ export default function NewEventPage() {
       customTitle: template.name,
       customDescription: template.description,
       customPrice: template.suggestedPrice,
+      note: "",
       slots: [{
         id: `game-${templateId}-slot-1`,
         startTime: "10:00",
@@ -781,6 +783,20 @@ export default function NewEventPage() {
                           />
                           <p className="text-xs text-muted-foreground">
                             Suggested price: ₹{template.suggestedPrice}
+                          </p>
+                        </div>
+
+                        <div className="space-y-2">
+                          <Label htmlFor="gameNote">Note (Optional)</Label>
+                          <Textarea
+                            id="gameNote"
+                            value={game.note || ""}
+                            onChange={(e) => updateGame(activeGameIndex, "note", e.target.value)}
+                            placeholder="Add any special notes or instructions for this game..."
+                            rows={3}
+                          />
+                          <p className="text-xs text-muted-foreground">
+                            This note will be visible to organizers and can include special instructions or requirements.
                           </p>
                         </div>
                       </div>

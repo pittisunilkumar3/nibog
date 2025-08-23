@@ -89,6 +89,7 @@ export async function POST(request: Request) {
       // Try to parse the response as JSON
       const responseData = JSON.parse(responseText);
       console.log("Server API route: Retrieved event:", responseData);
+      console.log("Server API route: Games data structure:", responseData.games || (Array.isArray(responseData) && responseData[0] ? responseData[0].games : 'No games found'));
 
       return NextResponse.json(responseData, { status: 200 });
     } catch (parseError) {

@@ -20,6 +20,7 @@ export interface EventGame {
   custom_title?: string;
   custom_description?: string;
   custom_price?: number;
+  note?: string;
   start_time: string;
   end_time: string;
   slot_price: number;
@@ -124,6 +125,7 @@ export function formatEventDataForAPI(formData: {
     customTitle?: string;
     customDescription?: string;
     customPrice?: number;
+    note?: string;
     slots: Array<{
       id: string;
       startTime: string;
@@ -149,6 +151,7 @@ export function formatEventDataForAPI(formData: {
         custom_title: game.customTitle,
         custom_description: game.customDescription,
         custom_price: game.customPrice,
+        note: game.note,
         start_time: slot.startTime + ":00", // Add seconds
         end_time: slot.endTime + ":00", // Add seconds
         slot_price: slot.price,
@@ -256,6 +259,7 @@ export async function getEventById(id: number): Promise<EventListItem> {
 
     const data = await response.json();
     console.log("Retrieved event:", data);
+    console.log("Event games structure:", data.games || (Array.isArray(data) && data[0] ? data[0].games : 'No games found'));
 
     // The API returns an array with a single event, so we need to extract it
     if (Array.isArray(data) && data.length > 0) {
@@ -603,6 +607,7 @@ export function formatEventDataForUpdate(
       customTitle?: string;
       customDescription?: string;
       customPrice?: number;
+      note?: string;
       slots: Array<{
         id: string;
         startTime: string;
@@ -629,6 +634,7 @@ export function formatEventDataForUpdate(
         custom_title: game.customTitle || "",
         custom_description: game.customDescription || "",
         custom_price: typeof game.customPrice === 'number' ? game.customPrice : 0,
+        note: game.note,
         start_time: slot.startTime + ":00", // Add seconds
         end_time: slot.endTime + ":00", // Add seconds
         slot_price: typeof slot.price === 'number' ? slot.price : 0,
