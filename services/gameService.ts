@@ -19,6 +19,8 @@ export interface Game {
   max_participants?: number;
   // Store slot_id separately for reference (this is the time slot identifier)
   slot_id?: number;
+  // Note field for slot-specific instructions
+  note?: string;
 }
 
 /**

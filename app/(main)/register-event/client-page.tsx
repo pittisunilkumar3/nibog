@@ -18,7 +18,7 @@ import { format, addMonths, differenceInMonths, differenceInDays } from "date-fn
 import { cn, formatDateForAPI } from "@/lib/utils"
 import { createPendingBooking } from "@/services/pendingBookingServices"
 import { getEventWithVenueDetails } from "@/services/bookingService"
-import { Calendar as CalendarIcon, Info, ArrowRight, ArrowLeft, MapPin, AlertTriangle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Calendar as CalendarIcon, ArrowLeft, ChevronRight, MapPin, AlertTriangle, AlertCircle, Loader2, Info, CheckCircle } from "lucide-react"
 import { useState, useEffect, useMemo, useCallback, memo } from "react"
 import { useRouter } from "next/navigation"
 import { useAuth } from "@/contexts/auth-context"
@@ -372,14 +372,14 @@ export default function RegisterEventClientPage() {
       // Convert API events to the format expected by the UI for display purposes
       if (eventsData.length > 0) {
         const apiEventsMapped = eventsData.map(event => {
-          // Try multiple possible venue field names
+          const eventAny = event as any;
           const venueValue = event.venue_name ||
-                           event.venue ||
-                           event.location ||
-                           event.address ||
-                           event.place ||
-                           event.site ||
-                           event.event_venue ||
+                           eventAny.venue ||
+                           eventAny.location ||
+                           eventAny.address ||
+                           eventAny.place ||
+                           eventAny.site ||
+                           eventAny.event_venue ||
                            "Venue TBD";
 
           console.log(`Event ${event.event_id}: venue_name="${event.venue_name}", final venue="${venueValue}"`);
@@ -464,13 +464,14 @@ export default function RegisterEventClientPage() {
 
       // Create a mock event from the API event data to maintain compatibility with the rest of the form
       // Try multiple possible venue field names
+      const selectedApiEventAny = selectedApiEvent as any;
       const venueValue = selectedApiEvent.venue_name ||
-                       selectedApiEvent.venue ||
-                       selectedApiEvent.location ||
-                       selectedApiEvent.address ||
-                       selectedApiEvent.place ||
-                       selectedApiEvent.site ||
-                       selectedApiEvent.event_venue ||
+                       selectedApiEventAny.venue ||
+                       selectedApiEventAny.location ||
+                       selectedApiEventAny.address ||
+                       selectedApiEventAny.place ||
+                       selectedApiEventAny.site ||
+                       selectedApiEventAny.event_venue ||
                        "Venue TBD";
 
       console.log(`Mock event for ${selectedApiEvent.event_id}: venue="${venueValue}"`);
@@ -535,52 +536,52 @@ export default function RegisterEventClientPage() {
           console.log('Event date from games API (corrected):', firstGame.event_date);
 
           // Try multiple possible venue field names from games API
-          const gameVenueValue = firstGame.venue_name ||
-                               firstGame.venue ||
-                               firstGame.location ||
-                               firstGame.address ||
-                               firstGame.place ||
-                               firstGame.site ||
-                               firstGame.event_venue;
+          const firstGameAny = firstGame as any;
+          const gameVenueValue = firstGameAny.venue_name ||
+                               firstGameAny.venue ||
+                               firstGameAny.location ||
+                               firstGameAny.address ||
+                               firstGameAny.place ||
+                               firstGameAny.site ||
+                               firstGameAny.event_venue ||
+                               "Venue TBD";
 
           console.log(`Games API venue for event ${eventId}: "${gameVenueValue}"`);
 
-          // Since the SQL query now returns the correct date in YYYY-MM-DD format (Asia/Kolkata timezone)
-          // we can use it directly without any timezone conversion
-          const correctDate = firstGame.event_date; // e.g., "2025-07-30"
-
-          // Parse the date components to create a proper Date object
-          const [year, month, day] = correctDate.split('-').map(Number);
-          console.log('Parsed date components:', { year, month, day });
-
-          // Find the current selected event and update it with correct information
-          const selectedApiEvent = apiEvents.find(event => event.event_id === eventId);
-          if (selectedApiEvent) {
-
-            // Update the event details with correct date and venue
+          // Find the current selected event from API events
+          const currentSelectedApiEvent = apiEvents.find(event => event.event_id === eventId);
+          
+          // Update the event details with correct date and venue
+          if (selectedEvent && currentSelectedApiEvent) {
+            const currentSelectedApiEventAny = currentSelectedApiEvent as any;
+            
             // Use venue from games API if available, otherwise fall back to original event venue
             const finalVenueValue = gameVenueValue ||
-                                  selectedApiEvent.venue_name ||
-                                  selectedApiEvent.venue ||
-                                  selectedApiEvent.location ||
-                                  selectedApiEvent.address ||
-                                  selectedApiEvent.place ||
-                                  selectedApiEvent.site ||
-                                  selectedApiEvent.event_venue ||
+                                  currentSelectedApiEvent.venue_name ||
+                                  currentSelectedApiEventAny.venue ||
+                                  currentSelectedApiEventAny.location ||
+                                  currentSelectedApiEventAny.address ||
+                                  currentSelectedApiEventAny.place ||
+                                  currentSelectedApiEventAny.site ||
+                                  currentSelectedApiEventAny.event_venue ||
                                   "Venue TBD";
 
-            console.log(`Final venue for updated event ${selectedApiEvent.event_id}: "${finalVenueValue}"`);
+            console.log(`Final venue for updated event ${eventId}: "${finalVenueValue}"`);
+
+            // Parse the date from the games API response
+            const correctDate = firstGame.event_date.split('T')[0]; // Get just the date part
+            const [year, month, day] = correctDate.split('-').map(Number);
 
             const updatedEvent = {
-              id: selectedApiEvent.event_id.toString(),
-              title: selectedApiEvent.event_title,
-              description: selectedApiEvent.event_description,
+              id: currentSelectedApiEvent.event_id.toString(),
+              title: currentSelectedApiEvent.event_title,
+              description: currentSelectedApiEvent.event_description,
               minAgeMonths: 5,
               maxAgeMonths: 84,
               date: correctDate, // Use the correct date from games API (already in correct timezone)
               time: "9:00 AM - 8:00 PM",
               venue: finalVenueValue, // Use the best available venue information
-              city: selectedApiEvent.city_name,
+              city: currentSelectedApiEvent.city_name,
               price: 1800,
               image: "/images/baby-crawling.jpg",
             };
@@ -624,7 +625,9 @@ export default function RegisterEventClientPage() {
                 custom_description: game.description || '',
                 max_participants: slot.max_participants || 0,
                 // Store slot_id separately for reference
-                slot_id: Number(slot.slot_id || 0)
+                slot_id: Number(slot.slot_id || 0),
+                // Handle the new note field from slot
+                note: slot.note || null
               });
             });
           }
@@ -1007,7 +1010,8 @@ export default function RegisterEventClientPage() {
       console.log("DOB toISOString:", dob?.toISOString());
       console.log("Formatted DOB:", formatDateForAPI(dob));
 
-      if (Array.isArray(selectedGames) && selectedGames.length === 0) {
+      // Note: Game selection validation already handled above (exactly 1 game required)
+      if (false) { // Unreachable code - keeping structure for safety
         throw new Error("Please select at least one game for your child to participate in.")
       }
 
@@ -2094,6 +2098,12 @@ export default function RegisterEventClientPage() {
                                                   : `Max ${slot.max_participants} participants`
                                                 }
                                               </div>
+                                              {slot.note && (
+                                                <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 flex items-center gap-1">
+                                                  <Info className="h-3 w-3" />
+                                                  {slot.note}
+                                                </div>
+                                              )}
                                             </div>
                                           </div>
                                           <div className="text-right">
@@ -2204,7 +2214,7 @@ export default function RegisterEventClientPage() {
                   ) : (
                     <>
                       {isAuthenticated ? "Continue to Add-ons" : "Continue (Login Required)"}
-                      <ArrowRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
                     </>
                   )}
                 </span>
@@ -2367,7 +2377,7 @@ export default function RegisterEventClientPage() {
                   <span className="sm:hidden">
                     {selectedAddOns.length === 0 ? "Skip & Continue" : "Continue"}
                   </span>
-                  <ArrowRight className="ml-2 h-4 w-4" />
+                  <ChevronRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
             </>

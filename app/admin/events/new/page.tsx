@@ -44,7 +44,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 6,
     maxAgeMonths: 18,
     durationMinutes: 90,
-    suggestedPrice: 1799
+    suggestedPrice: 1799,
+    categories: ["sensory", "development"]
   },
   {
     id: "2",
@@ -53,7 +54,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 12,
     maxAgeMonths: 36,
     durationMinutes: 90,
-    suggestedPrice: 1799
+    suggestedPrice: 1799,
+    categories: ["music", "movement"]
   },
   {
     id: "3",
@@ -62,7 +64,8 @@ const fallbackGameTemplates = [
     minAgeMonths: 8,
     maxAgeMonths: 24,
     durationMinutes: 120,
-    suggestedPrice: 1799
+    suggestedPrice: 1799,
+    categories: ["olympics", "motor-skills"]
   },
 ]
 
