@@ -119,19 +119,47 @@ export default function TermsConditionsPage() {
   const [termsContent, setTermsContent] = useState<TermsConditionsContent>(mockTermsContent)
 
   useEffect(() => {
-    // Simulate loading data
+    // Load terms & conditions content from API
     const loadTermsContent = async () => {
       setIsLoading(true)
       try {
-        // TODO: Replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setTermsContent(mockTermsContent)
+        // Fetch existing terms & conditions content from API
+        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandconditionsget', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`API returned error status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('Fetched terms & conditions data:', data)
+
+        // Check if data exists and has content
+        if (data && Array.isArray(data) && data.length > 0 && data[0].html_content) {
+          const fetchedContent = data[0].html_content
+          setTermsContent({
+            websiteContent: fetchedContent,
+            mobileAppContent: fetchedContent, // Use same content for both tabs initially
+            lastUpdated: data[0].created_at || new Date().toISOString(),
+            version: "1.0"
+          })
+        } else {
+          // Fallback to mock data if no content found
+          setTermsContent(mockTermsContent)
+        }
+
         setHasChanges(false)
       } catch (error) {
         console.error("Failed to load terms & conditions content:", error)
+        // Fallback to mock data on error
+        setTermsContent(mockTermsContent)
         toast({
-          title: "Error",
-          description: "Failed to load terms & conditions content. Using default values.",
+          title: "Warning",
+          description: "Failed to load saved terms & conditions content. Using default values.",
           variant: "destructive",
         })
       } finally {
@@ -145,15 +173,35 @@ export default function TermsConditionsPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      // Get the content from the currently active tab
+      const contentToSave = activeTab === "website"
+        ? termsContent.websiteContent
+        : termsContent.mobileAppContent
+
+      // Call the external API
+      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandcondition', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: contentToSave
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API returned error status: ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log('Terms & conditions saved successfully:', result)
+
       // Update last updated timestamp
       setTermsContent(prev => ({
         ...prev,
         lastUpdated: new Date().toISOString()
       }))
-      
+
       setHasChanges(false)
       toast({
         title: "Success",
