@@ -4,23 +4,17 @@ import { useState, useEffect } from "react"
 import { useToast } from "@/components/ui/use-toast"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Label } from "@/components/ui/label"
-import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import {
-  Save,
+  Check,
   RefreshCw,
-  Globe,
-  Smartphone,
   FileText,
   Clock,
-  AlertCircle,
-  Scale
+  AlertTriangle
 } from "lucide-react"
 import { PageTransition, FadeIn } from "@/components/ui/animated-components"
 import { RichTextEditor } from "@/components/ui/rich-text-editor"
-import { cn } from "@/lib/utils"
 import { MobileTestHelper } from "@/components/admin/mobile-test-helper"
 
 // Types for terms & conditions content
@@ -114,7 +108,7 @@ export default function TermsConditionsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [hasChanges, setHasChanges] = useState(false)
-  const [activeTab, setActiveTab] = useState("website")
+
   
   const [termsContent, setTermsContent] = useState<TermsConditionsContent>(mockTermsContent)
 
@@ -173,10 +167,8 @@ export default function TermsConditionsPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // Get the content from the currently active tab
-      const contentToSave = activeTab === "website"
-        ? termsContent.websiteContent
-        : termsContent.mobileAppContent
+      // Get the content to save
+      const contentToSave = termsContent.websiteContent
 
       // Call the external API
       const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandcondition', {
@@ -233,10 +225,7 @@ export default function TermsConditionsPage() {
     setHasChanges(true)
   }
 
-  const handleMobileContentChange = (content: string) => {
-    setTermsContent(prev => ({ ...prev, mobileAppContent: content }))
-    setHasChanges(true)
-  }
+
 
   if (isLoading) {
     return (
@@ -259,7 +248,7 @@ export default function TermsConditionsPage() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div className="space-y-1">
               <h1 className="text-2xl sm:text-3xl font-bold tracking-tight flex items-center gap-2">
-                <Scale className="h-6 w-6 sm:h-8 sm:w-8" />
+                <FileText className="h-6 w-6 sm:h-8 sm:w-8" />
                 Terms & Conditions Management
               </h1>
               <p className="text-muted-foreground text-sm sm:text-base">
@@ -288,7 +277,7 @@ export default function TermsConditionsPage() {
                   </>
                 ) : (
                   <>
-                    <Save className="mr-2 h-4 w-4" />
+                    <Check className="mr-2 h-4 w-4" />
                     Save Changes
                   </>
                 )}
@@ -320,7 +309,7 @@ export default function TermsConditionsPage() {
                 </div>
                 <div className="space-y-1">
                   <div className="flex items-center justify-center sm:justify-start gap-2">
-                    <AlertCircle className="h-4 w-4 text-muted-foreground" />
+                    <AlertTriangle className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-medium">Status</span>
                   </div>
                   <Badge variant={hasChanges ? "destructive" : "secondary"} className="text-xs">
@@ -332,74 +321,31 @@ export default function TermsConditionsPage() {
           </Card>
         </FadeIn>
 
-        {/* Content Tabs */}
+        {/* Content */}
         <FadeIn delay={0.3}>
-          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-            <TabsList className="grid w-full grid-cols-2 touch-manipulation">
-              <TabsTrigger value="website" className="flex items-center gap-2">
-                <Globe className="h-4 w-4" />
-                <span className="hidden sm:inline">Website</span>
-                <span className="sm:hidden">Web</span>
-              </TabsTrigger>
-              <TabsTrigger value="mobile" className="flex items-center gap-2">
-                <Smartphone className="h-4 w-4" />
-                <span className="hidden sm:inline">Mobile App</span>
-                <span className="sm:hidden">App</span>
-              </TabsTrigger>
-            </TabsList>
-
-            <TabsContent value="website" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Globe className="h-5 w-5" />
-                    Website Terms & Conditions
-                  </CardTitle>
-                  <CardDescription>
-                    Terms & conditions content displayed on the website at /terms
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Label>Content</Label>
-                    <RichTextEditor
-                      content={termsContent.websiteContent}
-                      onChange={handleWebsiteContentChange}
-                      placeholder="Enter website terms & conditions content..."
-                      className="min-h-[500px]"
-                      disabled={isSaving}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-
-            <TabsContent value="mobile" className="space-y-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
-                    <Smartphone className="h-5 w-5" />
-                    Mobile App Terms & Conditions
-                  </CardTitle>
-                  <CardDescription>
-                    Terms & conditions content specific to the mobile application
-                  </CardDescription>
-                </CardHeader>
-                <CardContent>
-                  <div className="space-y-2">
-                    <Label>Content</Label>
-                    <RichTextEditor
-                      content={termsContent.mobileAppContent}
-                      onChange={handleMobileContentChange}
-                      placeholder="Enter mobile app terms & conditions content..."
-                      className="min-h-[500px]"
-                      disabled={isSaving}
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            </TabsContent>
-          </Tabs>
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <FileText className="h-5 w-5" />
+                Terms & Conditions Content
+              </CardTitle>
+              <CardDescription>
+                Terms & conditions content displayed on the website at /terms
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-2">
+                <Label>Content</Label>
+                <RichTextEditor
+                  content={termsContent.websiteContent}
+                  onChange={handleWebsiteContentChange}
+                  placeholder="Enter terms & conditions content..."
+                  className="min-h-[500px]"
+                  disabled={isSaving}
+                />
+              </div>
+            </CardContent>
+          </Card>
         </FadeIn>
 
         {/* Mobile Test Helper */}
