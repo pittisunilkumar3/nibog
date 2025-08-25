@@ -629,3 +629,20 @@ CREATE TABLE footer_settings (
     newsletter_enabled BOOLEAN DEFAULT TRUE,
     copyright_text TEXT
 );
+
+
+
+
+-- Terms & Conditions
+CREATE TABLE terms_conditions (
+    id SERIAL PRIMARY KEY,
+    html_content TEXT NOT NULL,      -- full HTML content
+    created_at TIMESTAMPTZ DEFAULT now()
+);
+
+-- Privacy Policy
+CREATE TABLE privacy_policy (
+    id SERIAL PRIMARY KEY,
+    html_content TEXT NOT NULL,      -- full HTML content
+    created_at TIMESTAMPTZ DEFAULT now()
+);

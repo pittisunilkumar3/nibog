@@ -76,19 +76,47 @@ export default function PrivacyPolicyPage() {
   const [privacyContent, setPrivacyContent] = useState<PrivacyPolicyContent>(mockPrivacyPolicyContent)
 
   useEffect(() => {
-    // Simulate loading data
+    // Load privacy policy content from API
     const loadPrivacyContent = async () => {
       setIsLoading(true)
       try {
-        // TODO: Replace with actual API call
-        await new Promise(resolve => setTimeout(resolve, 1000))
-        setPrivacyContent(mockPrivacyPolicyContent)
+        // Fetch existing privacy policy content from API
+        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/privacyandpolicyget', {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+          }
+        })
+
+        if (!response.ok) {
+          throw new Error(`API returned error status: ${response.status}`)
+        }
+
+        const data = await response.json()
+        console.log('Fetched privacy policy data:', data)
+
+        // Check if data exists and has content
+        if (data && Array.isArray(data) && data.length > 0 && data[0].html_content) {
+          const fetchedContent = data[0].html_content
+          setPrivacyContent({
+            websiteContent: fetchedContent,
+            mobileAppContent: fetchedContent, // Use same content for both tabs initially
+            lastUpdated: data[0].created_at || new Date().toISOString(),
+            version: "1.0"
+          })
+        } else {
+          // Fallback to mock data if no content found
+          setPrivacyContent(mockPrivacyPolicyContent)
+        }
+
         setHasChanges(false)
       } catch (error) {
         console.error("Failed to load privacy policy content:", error)
+        // Fallback to mock data on error
+        setPrivacyContent(mockPrivacyPolicyContent)
         toast({
-          title: "Error",
-          description: "Failed to load privacy policy content. Using default values.",
+          title: "Warning",
+          description: "Failed to load saved privacy policy content. Using default values.",
           variant: "destructive",
         })
       } finally {
@@ -102,15 +130,35 @@ export default function PrivacyPolicyPage() {
   const handleSave = async () => {
     setIsSaving(true)
     try {
-      // TODO: Replace with actual API call
-      await new Promise(resolve => setTimeout(resolve, 1500))
-      
+      // Get the content from the currently active tab
+      const contentToSave = activeTab === "website"
+        ? privacyContent.websiteContent
+        : privacyContent.mobileAppContent
+
+      // Call the external API
+      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/privacyandpolicy', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          text: contentToSave
+        })
+      })
+
+      if (!response.ok) {
+        throw new Error(`API returned error status: ${response.status}`)
+      }
+
+      const result = await response.json()
+      console.log('Privacy policy saved successfully:', result)
+
       // Update last updated timestamp
       setPrivacyContent(prev => ({
         ...prev,
         lastUpdated: new Date().toISOString()
       }))
-      
+
       setHasChanges(false)
       toast({
         title: "Success",
