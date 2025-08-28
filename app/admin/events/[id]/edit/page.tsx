@@ -723,7 +723,13 @@ export default function EditEventPage({ params }: Props) {
                         selected={selectedDate || undefined}
                         onSelect={(date: any) => handleDateChange(date)}
                         initialFocus
-                        disabled={(date: Date) => date < new Date()}
+                        disabled={(date: Date) => {
+                          const minDate = new Date(2000, 0, 1);
+                          const maxDate = new Date(new Date().getFullYear() + 20, 11, 31);
+                          return date < minDate || date > maxDate;
+                        }}
+                        fromYear={2000}
+                        toYear={new Date().getFullYear() + 20}
                       />
                     </PopoverContent>
                   </Popover>

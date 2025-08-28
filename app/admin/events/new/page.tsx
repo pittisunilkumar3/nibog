@@ -573,7 +573,13 @@ export default function NewEventPage() {
                         selected={selectedDate}
                         onSelect={setSelectedDate}
                         initialFocus
-                        disabled={(date) => date < new Date()}
+                        disabled={(date) => {
+                          const minDate = new Date(2000, 0, 1);
+                          const maxDate = new Date(new Date().getFullYear() + 20, 11, 31);
+                          return date < minDate || date > maxDate;
+                        }}
+                        fromYear={2000}
+                        toYear={new Date().getFullYear() + 20}
                       />
                     </PopoverContent>
                   </Popover>

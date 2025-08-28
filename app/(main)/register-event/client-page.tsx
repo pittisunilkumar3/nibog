@@ -1854,14 +1854,13 @@ export default function RegisterEventClientPage() {
                               handleDobChange(date);
                             }}
                             disabled={(date) => {
-                              const today = new Date();
-                              today.setHours(0, 0, 0, 0);
                               const minDate = new Date(2000, 0, 1);
-                              return date > today || date < minDate;
+                              const maxDate = new Date(new Date().getFullYear() + 10, 11, 31);
+                              return date < minDate || date > maxDate;
                             }}
                             initialFocus
                             fromYear={2000}
-                            toYear={new Date().getFullYear()}
+                            toYear={new Date().getFullYear() + 10}
                             captionLayout="dropdown"
                             defaultMonth={dob || new Date()}
                             className="p-3"

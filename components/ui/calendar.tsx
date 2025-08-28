@@ -35,7 +35,7 @@ function Calendar({
     // Generate years from fromYear to toYear, or use a reasonable default range
     const currentYearNum = new Date().getFullYear()
     const startYear = typeof fromYear === 'number' ? fromYear : 2000
-    const endYear = typeof toYear === 'number' ? toYear : currentYearNum
+    const endYear = typeof toYear === 'number' ? toYear : currentYearNum + 10
     // Create array in reverse order (newest years first) for better UX
     const years = Array.from(
       { length: endYear - startYear + 1 }, 
