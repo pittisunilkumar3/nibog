@@ -89,8 +89,8 @@ export default function RefundPolicyPage() {
             </p>
             <p>
               Email: newindababyolympics@gmail.com<br />
-              Phone: +91 9000125959<br />
-              Address: Gachibowli Indoor Stadium, Hyderabad, Telangana 500032
+              Phone: +91-8977939614/15<br />
+              Address: NIBOG, P.No:18, H.NO 33-30/4, Officers Colony, R.K Puram, Hyderabad - 500056.
             </p>
           </section>
         </div>

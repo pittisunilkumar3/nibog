@@ -156,48 +156,66 @@
 
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 84% 4.9%;
+    /* NIBOG Baby Olympics Theme - Light Mode */
+    --background: 0 0% 99.6%; /* Soft white */
+    --foreground: 0 0% 18.4%; /* Charcoal for text */
     --card: 0 0% 100%;
-    --card-foreground: 222.2 84% 4.9%;
+    --card-foreground: 0 0% 18.4%;
     --popover: 0 0% 100%;
-    --popover-foreground: 222.2 84% 4.9%;
-    --primary: 262.1 83.3% 57.8%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
+    --popover-foreground: 0 0% 18.4%;
+    --primary: 51 100% 50%; /* Sunshine yellow */
+    --primary-foreground: 0 0% 18.4%;
+    --secondary: 197 71% 73%; /* Sky blue */
+    --secondary-foreground: 0 0% 18.4%;
+    --muted: 0 0% 96.1%; /* Warm gray */
+    --muted-foreground: 220 8.9% 46.1%; /* Medium gray */
+    --accent: 120 93% 79%; /* Mint green */
+    --accent-foreground: 0 0% 18.4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
-    --ring: 262.1 83.3% 57.8%;
-    --radius: 0.5rem;
+    --border: 220 13% 91%; /* Light border */
+    --input: 220 13% 91%;
+    --ring: 51 100% 50%; /* Sunshine yellow focus ring */
+    --radius: 1rem; /* More rounded for baby-friendly feel */
+
+    /* Custom NIBOG colors */
+    --sunshine: 51 100% 50%;
+    --coral: 0 100% 75%;
+    --mint: 120 93% 79%;
+    --lavender: 240 67% 94%;
+    --rainbow-orange: 39 100% 50%;
+    --bubblegum: 351 100% 86%;
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
-    --primary: 263.4 70% 50.4%;
-    --primary-foreground: 210 40% 98%;
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
+    /* NIBOG Baby Olympics Theme - Dark Mode */
+    --background: 224 71% 4%;
+    --foreground: 213 31% 91%;
+    --card: 224 71% 4%;
+    --card-foreground: 213 31% 91%;
+    --popover: 224 71% 4%;
+    --popover-foreground: 213 31% 91%;
+    --primary: 51 100% 50%; /* Keep sunshine yellow bright */
+    --primary-foreground: 0 0% 18.4%;
+    --secondary: 197 71% 25%; /* Darker sky blue */
+    --secondary-foreground: 213 31% 91%;
+    --muted: 223 47% 11%;
+    --muted-foreground: 215.4 16.3% 56.9%;
+    --accent: 120 93% 25%; /* Darker mint */
+    --accent-foreground: 213 31% 91%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 263.4 70% 50.4%;
+    --border: 223 47% 11%;
+    --input: 223 47% 11%;
+    --ring: 51 100% 50%;
+
+    /* Custom NIBOG colors for dark mode */
+    --sunshine: 51 100% 50%;
+    --coral: 0 100% 65%;
+    --mint: 120 93% 35%;
+    --lavender: 240 67% 25%;
+    --rainbow-orange: 39 100% 45%;
+    --bubblegum: 351 100% 76%;
   }
 }
 
@@ -266,7 +284,132 @@
 }
 
 /* Google Fonts import for Comic Neue and Poppins */
-@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Comic+Neue:wght@400;700&family=Poppins:wght@300;400;500;600;700;800&display=swap');
+
+/* NIBOG Baby Olympics Design System */
+@layer base {
+  body {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: 'Poppins', sans-serif;
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .font-playful {
+    font-family: 'Comic Neue', cursive;
+  }
+}
+
+/* Baby Olympics themed animations */
+@keyframes bounce-gentle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+@keyframes rainbow-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes sparkle {
+  0%, 100% { opacity: 0; transform: scale(0); }
+  50% { opacity: 1; transform: scale(1); }
+}
+
+@keyframes medal-shine {
+  0% { transform: rotate(0deg) scale(1); }
+  25% { transform: rotate(5deg) scale(1.05); }
+  50% { transform: rotate(0deg) scale(1); }
+  75% { transform: rotate(-5deg) scale(1.05); }
+  100% { transform: rotate(0deg) scale(1); }
+}
+
+.animate-bounce-gentle {
+  animation: bounce-gentle 2s ease-in-out infinite;
+}
+
+.animate-rainbow-shift {
+  animation: rainbow-shift 8s ease infinite;
+  background-size: 200% 200%;
+}
+
+.animate-sparkle {
+  animation: sparkle 1.5s ease-in-out infinite;
+}
+
+.animate-medal-shine {
+  animation: medal-shine 3s ease-in-out infinite;
+}
+
+/* Additional floating animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(-10px) rotate(1deg); }
+  66% { transform: translateY(5px) rotate(-1deg); }
+}
+
+@keyframes float-delayed {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  33% { transform: translateY(8px) rotate(-1deg); }
+  66% { transform: translateY(-6px) rotate(1deg); }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-15px) rotate(2deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-float-delayed {
+  animation: float-delayed 8s ease-in-out infinite;
+}
+
+.animate-float-slow {
+  animation: float-slow 10s ease-in-out infinite;
+}
+
+/* Baby-friendly button styles */
+.btn-baby-primary {
+  @apply bg-gradient-to-r from-sunshine-400 to-sunshine-600 hover:from-sunshine-500 hover:to-sunshine-700;
+  @apply text-neutral-charcoal font-semibold rounded-2xl px-8 py-4;
+  @apply shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+  @apply border-2 border-sunshine-500 hover:border-sunshine-600;
+}
+
+.btn-baby-secondary {
+  @apply bg-gradient-to-r from-coral-400 to-coral-600 hover:from-coral-500 hover:to-coral-700;
+  @apply text-white font-semibold rounded-2xl px-8 py-4;
+  @apply shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+}
+
+.btn-baby-accent {
+  @apply bg-gradient-to-r from-mint-400 to-mint-600 hover:from-mint-500 hover:to-mint-700;
+  @apply text-neutral-charcoal font-semibold rounded-2xl px-8 py-4;
+  @apply shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
+}
+
+/* Card styles with baby theme */
+.card-baby {
+  @apply bg-white/90 backdrop-blur-sm rounded-3xl shadow-lg hover:shadow-2xl;
+  @apply border-2 border-transparent hover:border-sunshine-300;
+  @apply transform hover:scale-105 transition-all duration-300;
+}
+
+.card-baby-gradient {
+  @apply bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50;
+  @apply rounded-3xl shadow-lg hover:shadow-2xl;
+  @apply border-2 border-white/50 hover:border-sunshine-300;
+  @apply transform hover:scale-105 transition-all duration-300;
+}
 
 /* Enhanced responsive table styles */
 @layer utilities {

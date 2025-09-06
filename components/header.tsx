@@ -69,8 +69,8 @@ export default function Header() {
   ]
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-pink-200/50 dark:border-purple-800/50 bg-gradient-to-r from-blue-100/90 via-purple-100/90 to-pink-100/90 dark:from-blue-900/90 dark:via-purple-900/90 dark:to-pink-900/90 backdrop-blur-lg supports-[backdrop-filter]:bg-transparent shadow-lg transition-all duration-300 hover:shadow-xl">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(120,190,255,0.2),transparent_70%),radial-gradient(circle_at_85%_30%,rgba(255,182,193,0.2),transparent_70%)] animate-gradient-shift" />
+    <header className="sticky top-0 z-50 w-full border-b-4 border-sunshine-300/50 dark:border-sunshine-600/50 bg-gradient-to-r from-sunshine-100/95 via-coral-100/95 to-mint-100/95 dark:from-sunshine-900/95 dark:via-coral-900/95 dark:to-mint-900/95 backdrop-blur-lg supports-[backdrop-filter]:bg-transparent shadow-2xl transition-all duration-300 hover:shadow-3xl">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_15%_50%,rgba(255,215,0,0.3),transparent_70%),radial-gradient(circle_at_85%_30%,rgba(255,127,127,0.3),transparent_70%),radial-gradient(circle_at_50%_80%,rgba(152,251,152,0.2),transparent_70%)] animate-rainbow-shift" />
       <div className="container flex h-20 md:h-24 items-center justify-between relative z-10">
         <div className="flex items-center gap-6 md:gap-10">
           <Link href="/" className="flex items-center h-full py-2">
@@ -82,17 +82,18 @@ export default function Header() {
                 key={route.href}
                 href={route.href}
                 className={cn(
-                  "relative px-5 py-2.5 text-sm font-medium rounded-xl transition-all duration-300 group overflow-hidden",
-                  "hover:bg-white/30 dark:hover:bg-white/10 hover:scale-105 hover:shadow-lg hover:shadow-purple-200/40 dark:hover:shadow-purple-800/30",
-                  route.active 
+                  "relative px-6 py-3 text-sm font-semibold rounded-2xl transition-all duration-300 group overflow-hidden",
+                  "hover:bg-white/40 dark:hover:bg-white/20 hover:scale-110 hover:shadow-xl hover:shadow-sunshine-200/50 dark:hover:shadow-sunshine-800/30",
+                  route.active
                     ? [
-                        "text-white font-semibold shadow-lg",
-                        "bg-gradient-to-r from-purple-600 via-pink-500 to-purple-600",
-                        "bg-[length:200%_auto] animate-gradient",
-                        "shadow-purple-400/40 dark:shadow-purple-600/40",
-                        "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/20 before:via-white/0 before:to-white/20 before:animate-shine"
+                        "text-neutral-charcoal font-bold shadow-xl",
+                        "bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400",
+                        "bg-[length:200%_auto] animate-rainbow-shift",
+                        "shadow-sunshine-400/50 dark:shadow-sunshine-600/50",
+                        "border-2 border-white/50",
+                        "before:absolute before:inset-0 before:bg-gradient-to-r before:from-white/30 before:via-white/0 before:to-white/30 before:animate-shine"
                       ].join(' ')
-                    : "text-blue-700 dark:text-blue-300 hover:text-purple-700 dark:hover:text-purple-300",
+                    : "text-neutral-charcoal dark:text-white hover:text-sunshine-700 dark:hover:text-sunshine-300 font-medium",
                 )}
               >
                 <span className="relative z-10 flex items-center gap-2">

@@ -14,7 +14,7 @@ I conducted a thorough investigation of the company name display issue in the fo
   {
     "company_name": "Nibog Pvt Ltd",
     "company_description": "Nibog is a premium organizer of children's events...",
-    "address": "1st Floor, Plot No 123, Madhapur, Hyderabad, Telangana, 500081",
+    "address": "NIBOG, P.No:18, H.NO 33-30/4, Officers Colony, R.K Puram, Hyderabad - 500056.",
     "phone": "+916303727148",
     "email": "support@nibog.comm",
     "newsletter_enabled": true,

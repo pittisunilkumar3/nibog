@@ -95,9 +95,9 @@ const defaultFooterContent: FooterContent = {
     { id: "2", label: "Privacy Policy", url: "/privacy", enabled: true },
     { id: "3", label: "FAQ", url: "/faq", enabled: true },
   ],
-  contactInfo: {
-    address: "ΗΝΟ.33-30/4, PN018,SATGURU OFF COLONY\nSECUNDERABAD, MEDCHAL\nPIN:500056, TELANGANA, INDIA",
-    phone: "+91 9000125959",
+    contactInfo: {
+    address: "NIBOG, P.No:18, H.NO 33-30/4, Officers Colony, R.K Puram, Hyderabad - 500056.",
+    phone: "+91-8977939614/15",
     email: "newindababyolympics@gmail.com"
   },
   newsletterEnabled: true,

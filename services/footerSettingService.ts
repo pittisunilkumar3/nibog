@@ -78,7 +78,9 @@ export async function saveFooterSetting(footerData: FooterSettingPayload): Promi
  * @returns Promise with footer settings data or null if not found
  */
 export async function getFooterSetting(): Promise<FooterSetting | null> {
-  console.log("Fetching footer settings...");
+  if (process.env.NODE_ENV === 'development') {
+    console.log("Fetching footer settings...");
+  }
 
   try {
     // Create an AbortController for timeout
@@ -95,7 +97,10 @@ export async function getFooterSetting(): Promise<FooterSetting | null> {
     });
 
     clearTimeout(timeoutId);
-    console.log(`Get footer settings response status: ${response.status}`);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log(`Get footer settings response status: ${response.status}`);
+    }
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -103,7 +108,9 @@ export async function getFooterSetting(): Promise<FooterSetting | null> {
       
       // If 404, return null instead of throwing an error
       if (response.status === 404) {
-        console.log("No footer settings found (404)");
+        if (process.env.NODE_ENV === 'development') {
+          console.log("No footer settings found (404)");
+        }
         return null;
       }
       
@@ -111,7 +118,10 @@ export async function getFooterSetting(): Promise<FooterSetting | null> {
     }
 
     const data = await response.json();
-    console.log("Footer settings fetched successfully:", data);
+    
+    if (process.env.NODE_ENV === 'development') {
+      console.log("Footer settings fetched successfully:", data);
+    }
 
     // The API returns an array, so we take the first item
     if (Array.isArray(data) && data.length > 0) {
@@ -144,8 +154,8 @@ export async function getFooterSettingWithFallback(): Promise<FooterSetting> {
     return {
       company_name: "NIBOG",
       company_description: "India's biggest baby Olympic games platform, executing in 21 cities across India. NIBOG is focused exclusively on conducting baby games for children aged 5-84 months.",
-      address: "ΗΝΟ.33-30/4, PN018,SATGURU OFF COLONY\nSECUNDERABAD, MEDCHAL\nPIN:500056, TELANGANA, INDIA",
-      phone: "+91 9000125959",
+      address: "NIBOG, P.No:18, H.NO 33-30/4, Officers Colony,\nR.K Puram, Hyderabad - 500056.",
+      phone: "+91-8977939614/15",
       email: "newindababyolympics@gmail.com",
       newsletter_enabled: true,
       copyright_text: "© {year} NIBOG. All rights reserved. India's Biggest Baby Olympic Games Platform.",
@@ -155,14 +165,16 @@ export async function getFooterSettingWithFallback(): Promise<FooterSetting> {
       youtube_url: "https://youtube.com"
     };
   } catch (error) {
-    console.error("Error fetching footer settings, using fallback:", error);
+    if (process.env.NODE_ENV === 'development') {
+      console.error("Error fetching footer settings, using fallback:", error);
+    }
     
     // Return fallback values on error
     return {
       company_name: "NIBOG",
       company_description: "India's biggest baby Olympic games platform, executing in 21 cities across India. NIBOG is focused exclusively on conducting baby games for children aged 5-84 months.",
-      address: "ΗΝΟ.33-30/4, PN018,SATGURU OFF COLONY\nSECUNDERABAD, MEDCHAL\nPIN:500056, TELANGANA, INDIA",
-      phone: "+91 9000125959",
+      address: "NIBOG, P.No:18, H.NO 33-30/4, Officers Colony,\nR.K Puram, Hyderabad - 500056.",
+      phone: "+91-8977939614/15",
       email: "newindababyolympics@gmail.com",
       newsletter_enabled: true,
       copyright_text: "© {year} NIBOG. All rights reserved. India's Biggest Baby Olympic Games Platform.",

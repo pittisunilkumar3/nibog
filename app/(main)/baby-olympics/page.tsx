@@ -127,89 +127,166 @@ export default function BabyOlympicsPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-100 via-amber-100 to-yellow-50 opacity-40" />
         </div>
-        <div className="container relative flex flex-col items-center justify-center gap-4 py-16 text-center md:py-24 lg:py-32">
-          <Badge className="bg-yellow-500 px-3.5 py-1.5 text-sm font-medium">New India Baby Olympics Games</Badge>
-          <h1 className="text-3xl font-bold tracking-tighter sm:text-4xl md:text-5xl lg:text-6xl dark:text-black">
-            NIBOG - <span className="text-yellow-500">Game of Baby Thrones</span>
-          </h1>
-          <p className="max-w-[700px] text-muted-foreground md:text-xl">
-            Step into the World of Baby Games and watch while they Kick, Crawl, Conquer. India's biggest baby Olympic games in 21 cities.
+        <div className="container relative flex flex-col items-center justify-center gap-8 py-20 text-center md:py-28 lg:py-36">
+          {/* Floating decorative elements */}
+          <div className="absolute top-10 left-10 w-16 h-16 bg-sunshine-400 rounded-full opacity-30 animate-bounce-gentle"></div>
+          <div className="absolute top-20 right-20 w-12 h-12 bg-coral-400 rounded-full opacity-40 animate-float-delayed"></div>
+          <div className="absolute bottom-20 left-20 w-20 h-20 bg-mint-400 rounded-full opacity-35 animate-float-slow"></div>
+
+          <Badge className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-4 border-white/50">
+            🏆 New India Baby Olympics Games 🏆
+          </Badge>
+
+          <div className="space-y-6">
+            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
+              <span className="block text-neutral-charcoal dark:text-white font-extrabold mb-4">
+                NIBOG
+              </span>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-500 via-coral-500 to-mint-500 bg-[length:200%_auto] animate-rainbow-shift">
+                Game of Baby Thrones
+              </span>
+            </h1>
+
+            {/* Fun emoji decorations */}
+            <div className="flex justify-center gap-6 text-4xl">
+              <span className="animate-bounce-gentle">👑</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '0.5s'}}>👶</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1s'}}>🏆</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1.5s'}}>⚔️</span>
+            </div>
+          </div>
+
+          <p className="max-w-[800px] text-lg md:text-xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed">
+            Step into the World of Baby Games and watch while they <span className="font-bold text-sunshine-600">Kick</span>,
+            <span className="font-bold text-coral-600"> Crawl</span>,
+            <span className="font-bold text-mint-600"> Conquer</span>.
+            India's biggest baby Olympic games in <span className="font-bold text-sunshine-600">21 cities</span>.
           </p>
-          <div className="w-full max-w-md space-y-4">
+
+          <div className="w-full max-w-lg space-y-6">
             <div className="flex flex-col gap-4">
-              <Button 
-                size="lg" 
-                className="w-full py-6 text-lg font-bold bg-yellow-500 hover:bg-yellow-600 text-white shadow-lg transform transition-all hover:scale-105"
+              <Button
+                size="lg"
+                className="w-full py-8 text-xl font-bold bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400 hover:from-sunshine-500 hover:via-coral-500 hover:to-mint-500 text-neutral-charcoal shadow-2xl transform transition-all hover:scale-110 rounded-3xl border-4 border-white/50 animate-medal-shine"
                 asChild
               >
                 <Link href="/register-event">
-                  Register Now for NIBOG 2025
+                  👑 Claim Your Baby's Throne - Register Now!
                 </Link>
               </Button>
-              
+
+              <div className="flex gap-3">
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-sunshine-400 text-sunshine-700 hover:text-sunshine-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  asChild
+                >
+                  <Link href="/events">
+                    📅 View Events
+                  </Link>
+                </Button>
+                <Button
+                  variant="outline"
+                  size="lg"
+                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-coral-400 text-coral-700 hover:text-coral-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  asChild
+                >
+                  <Link href="/about">
+                    📖 Learn More
+                  </Link>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
       {/* About Section */}
-      <section className="container">
-        <div className="grid gap-8 md:grid-cols-2 md:gap-12">
-          <div className="flex flex-col justify-center space-y-4">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl dark:text-white">What is NIBOG?</h2>
-            <p className="text-muted-foreground">
-              NIBOG (New India Baby Olympics Games) is India's biggest baby Olympic games platform, executing in 21 cities across India. Our games are designed to encourage physical development, confidence, and social interaction in a fun, competitive environment for babies and young children.
-            </p>
-            <div className="space-y-2">
-              <div className="flex items-start gap-2">
-                <div className="rounded-full bg-yellow-500/10 p-1">
-                  <Trophy className="h-5 w-5 text-yellow-500" />
+      <section className="relative py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
+
+        <div className="container relative z-10">
+          <div className="grid gap-12 md:grid-cols-2 md:gap-16">
+          <div className="flex flex-col justify-center space-y-6">
+            <div className="space-y-4">
+              <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full w-fit">
+                🎯 About NIBOG
+              </Badge>
+              <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
+                  What is NIBOG?
+                </span>
+              </h2>
+              <p className="text-lg text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">
+                NIBOG (New India Baby Olympics Games) is India's biggest baby Olympic games platform, executing in 21 cities across India. Our games are designed to encourage physical development, confidence, and social interaction in a fun, competitive environment for babies and young children.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-sunshine-400 to-sunshine-600 rounded-full p-3 shadow-lg animate-medal-shine">
+                  <Trophy className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-medium dark:text-white">16 Different Games</h3>
-                  <p className="text-sm text-muted-foreground">From crawling races to running races, we have games for all ages from 5-84 months</p>
+                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🎮 16 Different Games</h3>
+                  <p className="text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">From crawling races to running races, we have games for all ages from 5-84 months</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="rounded-full bg-yellow-500/10 p-1">
-                  <Medal className="h-5 w-5 text-yellow-500" />
+
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-coral-400 to-coral-600 rounded-full p-3 shadow-lg animate-medal-shine">
+                  <Medal className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-medium dark:text-white">21 Cities Across India</h3>
-                  <p className="text-sm text-muted-foreground">NIBOG events are held in 21 cities across India, making it accessible to families nationwide</p>
+                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🏙️ 21 Cities Across India</h3>
+                  <p className="text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">NIBOG events are held in 21 cities across India, making it accessible to families nationwide</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="rounded-full bg-yellow-500/10 p-1">
-                  <Award className="h-5 w-5 text-yellow-500" />
+
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-mint-400 to-mint-600 rounded-full p-3 shadow-lg animate-medal-shine">
+                  <Award className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-medium dark:text-white">Medals & Certificates</h3>
-                  <p className="text-sm text-muted-foreground">Every participant receives a medal and certificate, recognizing their achievement</p>
+                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🏆 Medals & Certificates</h3>
+                  <p className="text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">Every participant receives a medal and certificate, recognizing their achievement</p>
                 </div>
               </div>
-              <div className="flex items-start gap-2">
-                <div className="rounded-full bg-yellow-500/10 p-1">
-                  <Star className="h-5 w-5 text-yellow-500" />
+
+              <div className="flex items-start gap-4">
+                <div className="bg-gradient-to-br from-lavender-400 to-lavender-600 rounded-full p-3 shadow-lg animate-medal-shine">
+                  <Star className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="font-medium dark:text-white">Professional Photography</h3>
-                  <p className="text-sm text-muted-foreground">Capture these precious moments with our professional photographers at every event</p>
+                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">📸 Professional Photography</h3>
+                  <p className="text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">Capture these precious moments with our professional photographers at every event</p>
                 </div>
               </div>
             </div>
           </div>
           <div className="flex items-center justify-center">
-            <div className="relative h-80 w-full overflow-hidden rounded-lg">
-            <Image
-              src="/images/baby-olympics/about-image.jpg"
-              alt="NIBOG Baby Olympics"
-              fill
-              className="object-cover object-[10%_30%]"
-            />
+            <div className="relative h-96 w-full overflow-hidden rounded-3xl shadow-2xl border-4 border-white/50 group">
+              <Image
+                src="/images/baby-olympics/about-image.jpg"
+                alt="NIBOG Baby Olympics"
+                fill
+                className="object-cover object-[10%_30%] transition-transform group-hover:scale-110 duration-500"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent"></div>
+              <div className="absolute bottom-4 left-4 right-4">
+                <div className="bg-white/90 backdrop-blur-sm rounded-2xl p-4 shadow-lg">
+                  <p className="text-neutral-charcoal font-bold text-center">
+                    🌟 Where Champions Are Born! 🌟
+                  </p>
+                </div>
+              </div>
             </div>
           </div>
         </div>
+      </div>
       </section>
 
       {/* Events Section */}

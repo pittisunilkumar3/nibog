@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
 import { CheckCircle2, Users, Trophy, Calendar, MapPin, Heart, ChevronLeft, ChevronRight } from "lucide-react"
@@ -19,79 +20,126 @@ export default function AboutPage() {
   return (
     <AnimatedBackground variant="about">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-blue-50 to-white py-16 dark:from-blue-950/20 dark:to-background md:py-24">
+      <section className="relative overflow-hidden bg-gradient-to-br from-sunshine-100 via-coral-100 to-mint-100 dark:from-sunshine-900/20 dark:via-coral-900/20 dark:to-mint-900/20 py-20 md:py-28">
+        {/* Floating decorative elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-sunshine-300 rounded-full opacity-20 animate-float"></div>
+        <div className="absolute top-20 right-20 w-16 h-16 bg-coral-300 rounded-full opacity-20 animate-float-delayed"></div>
+        <div className="absolute bottom-20 left-20 w-24 h-24 bg-mint-300 rounded-full opacity-20 animate-bounce-gentle"></div>
+        <div className="absolute bottom-10 right-10 w-18 h-18 bg-lavender-300 rounded-full opacity-20 animate-float-slow"></div>
+
         <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl">About NIBOG</h1>
-            <p className="mt-4 text-xl text-muted-foreground">
-              India's biggest baby Olympic games, celebrating the joy of childhood through play and competition
+          <div className="mx-auto max-w-4xl text-center space-y-8">
+            <Badge className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-4 border-white/50">
+              📖 About NIBOG
+            </Badge>
+
+            <h1 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-500 via-coral-500 to-mint-500 bg-[length:200%_auto] animate-rainbow-shift">
+                About NIBOG
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
+              India's biggest baby Olympic games, celebrating the <span className="font-bold text-sunshine-600">joy of childhood</span> through
+              <span className="font-bold text-coral-600"> play</span> and
+              <span className="font-bold text-mint-600"> competition</span> ✨
             </p>
+
+            {/* Fun emoji decorations */}
+            <div className="flex justify-center gap-6 text-4xl">
+              <span className="animate-bounce-gentle">📚</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '0.5s'}}>👶</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1s'}}>🏆</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1.5s'}}>❤️</span>
+            </div>
           </div>
-        </div>
-        <div className="absolute inset-0 z-0 opacity-20">
-          <Image
-            src="/images/about/pattern-bg.jpg"
-            alt="Background pattern"
-            fill
-            className="object-cover"
-            priority
-          />
         </div>
       </section>
 
       {/* Mission & Vision */}
-      <section className="py-16 md:py-24">
-        <div className="container">
-          <div className="grid gap-12 md:grid-cols-2">
-            <div className="space-y-4">
-              <div className="inline-block rounded-lg bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
-                Our Mission
+      <section className="relative py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
+
+        <div className="container relative z-10">
+          <div className="grid gap-16 md:grid-cols-2">
+            <div className="space-y-6">
+              <div className="space-y-4">
+                <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full w-fit">
+                  🎯 Our Mission
+                </Badge>
+                <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
+                    Nurturing India's Future Champions
+                  </span>
+                </h2>
+                <p className="text-lg text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">
+                  At NIBOG, our mission is to create a platform that celebrates the natural abilities and
+                  enthusiasm of children through age-appropriate competitive events. We believe in fostering
+                  physical activity, social skills, and confidence in children from an early age.
+                </p>
               </div>
-              <h2 className="text-3xl font-bold tracking-tight">Nurturing India's Future Champions</h2>
-              <p className="text-muted-foreground">
-                At NIBOG, our mission is to create a platform that celebrates the natural abilities and
-                enthusiasm of children through age-appropriate competitive events. We believe in fostering
-                physical activity, social skills, and confidence in children from an early age.
-              </p>
-              <ul className="space-y-2">
+
+              <ul className="space-y-4">
                 {[
-                  "Promote physical activity and healthy competition",
-                  "Build confidence and social skills in children",
-                  "Create memorable experiences for families",
-                  "Celebrate childhood achievements",
+                  { text: "Promote physical activity and healthy competition", emoji: "💪", color: "sunshine" },
+                  { text: "Build confidence and social skills in children", emoji: "🌟", color: "coral" },
+                  { text: "Create memorable experiences for families", emoji: "❤️", color: "mint" },
+                  { text: "Celebrate childhood achievements", emoji: "🏆", color: "lavender" },
                 ].map((item, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <CheckCircle2 className="mt-1 h-5 w-5 flex-shrink-0 text-green-500" />
-                    <span>{item}</span>
+                  <li key={i} className="flex items-start gap-4">
+                    <div className={`bg-gradient-to-br from-${item.color}-400 to-${item.color}-600 rounded-full p-2 shadow-lg animate-medal-shine`}>
+                      <span className="text-lg">{item.emoji}</span>
+                    </div>
+                    <div className="flex-1">
+                      <span className="text-lg font-semibold text-neutral-charcoal dark:text-white">{item.text}</span>
+                    </div>
                   </li>
                 ))}
               </ul>
             </div>
-            <ImageSlideshow
-              images={[
-                {
-                  src: "/images/about/children/children-1.jpg",
-                  alt: "Children playing together happily"
-                },
-                {
-                  src: "/images/about/children/children-2.jpg",
-                  alt: "Kids participating in fun activities"
-                },
-                {
-                  src: "/images/about/children/children-3.jpg",
-                  alt: "Children laughing and having fun"
-                },
-                {
-                  src: "/images/about/children/children-4.jpg",
-                  alt: "Kids playing outdoor games"
-                },
-                {
-                  src: "/images/about/children/children-5.jpg",
-                  alt: "Children celebrating together"
-                }
-              ]}
-              interval={4000}
-            />
+            <div className="relative">
+              <div className="card-baby-gradient rounded-3xl p-6 shadow-2xl border-4 border-white/50">
+                <ImageSlideshow
+                  images={[
+                    {
+                      src: "/images/about/children/children-1.jpg",
+                      alt: "Children playing together happily"
+                    },
+                    {
+                      src: "/images/about/children/children-2.jpg",
+                      alt: "Kids participating in fun activities"
+                    },
+                    {
+                      src: "/images/about/children/children-3.jpg",
+                      alt: "Children laughing and having fun"
+                    },
+                    {
+                      src: "/images/about/children/children-4.jpg",
+                      alt: "Kids playing outdoor games"
+                    },
+                    {
+                      src: "/images/about/children/children-5.jpg",
+                      alt: "Children celebrating together"
+                    }
+                  ]}
+                  interval={4000}
+                />
+                <div className="mt-4 text-center">
+                  <p className="text-neutral-charcoal font-bold">
+                    🌈 Happy Moments at NIBOG Events 🌈
+                  </p>
+                </div>
+              </div>
+
+              {/* Floating decorative elements around the slideshow */}
+              <div className="absolute -top-4 -left-4 w-8 h-8 bg-sunshine-400 rounded-full animate-bounce-gentle"></div>
+              <div className="absolute -top-4 -right-4 w-6 h-6 bg-coral-400 rounded-full animate-sparkle"></div>
+              <div className="absolute -bottom-4 -left-4 w-6 h-6 bg-mint-400 rounded-full animate-sparkle" style={{animationDelay: '1s'}}></div>
+              <div className="absolute -bottom-4 -right-4 w-8 h-8 bg-lavender-400 rounded-full animate-bounce-gentle" style={{animationDelay: '0.5s'}}></div>
+            </div>
           </div>
         </div>
       </section>
@@ -195,6 +243,14 @@ export default function AboutPage() {
               {
                 src: "/images/about/gallery-8.jpg",
                 alt: "Group photo of participants",
+              },
+              {
+                src: "/images/about/gallery-9.jpg",
+                alt: "Joyful moment at NIBOG event",
+              },
+              {
+                src: "/images/about/gallery-10.jpg",
+                alt: "Kids having fun at NIBOG",
               },
             ].map((image, i) => (
               <div key={i} className="relative aspect-square overflow-hidden rounded-lg">

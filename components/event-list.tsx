@@ -164,64 +164,133 @@ import { EventListItem } from "@/types"
 
 // Memoized EventCard component to prevent unnecessary re-renders
 const EventCard = memo(({ event }: { event: EventListItem }) => {
+  // Get age-appropriate emoji and colors
+  const getAgeTheme = (minAge: number, maxAge: number) => {
+    if (maxAge <= 13) {
+      return {
+        emoji: "🍼",
+        gradient: "from-sunshine-400 to-coral-400",
+        bgGradient: "from-sunshine-50 to-coral-50",
+        borderColor: "border-sunshine-300",
+        textColor: "text-sunshine-700"
+      }
+    } else if (minAge >= 13 && maxAge <= 36) {
+      return {
+        emoji: "🚶‍♀️",
+        gradient: "from-coral-400 to-mint-400",
+        bgGradient: "from-coral-50 to-mint-50",
+        borderColor: "border-coral-300",
+        textColor: "text-coral-700"
+      }
+    } else {
+      return {
+        emoji: "🏃‍♂️",
+        gradient: "from-mint-400 to-lavender-400",
+        bgGradient: "from-mint-50 to-lavender-50",
+        borderColor: "border-mint-300",
+        textColor: "text-mint-700"
+      }
+    }
+  }
+
+  const theme = getAgeTheme(event.minAgeMonths, event.maxAgeMonths)
+
   return (
-    <Card className="group overflow-hidden transition-all hover:shadow-md">
-      <div className="relative h-48">
-        <Image 
-          src={event.image || "/placeholder.svg"} 
-          alt={event.title} 
-          fill 
-          className="object-cover" 
+    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 rounded-3xl bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.borderColor} hover:border-sunshine-400`}>
+      <div className="relative h-52">
+        <Image
+          src={event.image || "/placeholder.svg"}
+          alt={event.title}
+          fill
+          className="object-cover transition-transform group-hover:scale-110 duration-500 rounded-t-3xl"
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
           loading="lazy"
           placeholder="blur"
           blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlZWVlIi8+PC9zdmc+"
         />
-        <div className="absolute right-2 top-2 flex gap-2">
-          {event.isOlympics && <Badge className="bg-yellow-500 hover:bg-yellow-600">NIBOG Olympics</Badge>}
+        <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-t-3xl`} />
+
+        {/* Floating decorative elements */}
+        <div className="absolute top-3 left-3">
+          <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 text-2xl animate-bounce-gentle shadow-lg">
+            {theme.emoji}
+          </div>
         </div>
+
+        <div className="absolute top-3 right-3 space-y-2">
+          <Badge className={`bg-gradient-to-r ${theme.gradient} text-white font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white/50`}>
+            {event.isOlympics ? "🏆 Olympics" : "🎮 Regular"}
+          </Badge>
+        </div>
+
+        <div className="absolute bottom-3 left-3 right-3">
+          <Badge className="bg-white/90 backdrop-blur-sm text-neutral-charcoal font-bold px-3 py-2 rounded-full shadow-lg">
+            👶 {event.minAgeMonths}-{event.maxAgeMonths} months
+          </Badge>
+        </div>
+
         <Button
           variant="ghost"
           size="icon"
-          className="absolute right-2 top-2 h-8 w-8 rounded-full bg-background/80 opacity-0 transition-opacity group-hover:opacity-100"
+          className="absolute bottom-3 right-3 h-10 w-10 rounded-full bg-white/20 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100 hover:bg-white/30"
           aria-label="Save event"
         >
-          <Heart className="h-4 w-4" />
+          <Heart className="h-5 w-5 text-white" />
         </Button>
       </div>
-      <CardContent className="p-4">
-        <div className="space-y-2">
-          <h3 className="font-semibold group-hover:text-primary">{event.title}</h3>
-          <p className="line-clamp-2 text-sm text-muted-foreground">{event.description}</p>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <Calendar className="h-3 w-3" />
-            <span>{event.date}</span>
-            <Clock className="ml-2 h-3 w-3" />
-            <span>{event.time}</span>
-          </div>
-          <div className="flex items-center gap-1 text-xs text-muted-foreground">
-            <MapPin className="h-3 w-3" />
-            <span>
-              {event.venue}, {event.city}
-            </span>
+
+      <CardContent className="p-6 space-y-4">
+        <div className="space-y-3">
+          <h3 className="text-xl font-bold leading-tight tracking-tight text-neutral-charcoal group-hover:text-sunshine-700 transition-colors">{event.title}</h3>
+          <p className="text-sm text-neutral-charcoal/70 line-clamp-2 leading-relaxed">{event.description}</p>
+
+          <div className="flex items-center justify-between">
+            <span className={`text-lg font-bold ${theme.textColor}`}>{formatPrice(event.price)}</span>
           </div>
 
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="bg-sunshine-100 rounded-full p-1">
+                <Calendar className="h-3 w-3 text-sunshine-600" />
+              </div>
+              <span className="font-medium">{event.date}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="bg-coral-100 rounded-full p-1">
+                <Clock className="h-3 w-3 text-coral-600" />
+              </div>
+              <span className="font-medium">{event.time}</span>
+            </div>
+            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="bg-mint-100 rounded-full p-1">
+                <MapPin className="h-3 w-3 text-mint-600" />
+              </div>
+              <span className="font-medium">{event.venue}, {event.city}</span>
+            </div>
+          </div>
         </div>
       </CardContent>
-      <CardFooter className="flex items-center justify-between border-t bg-muted/50 p-4">
-        <div className="text-xs text-muted-foreground">
-          <span className={event.spotsLeft <= 3 ? "text-red-500 font-medium" : ""}>
-            {event.spotsLeft} spots left
+
+      <CardFooter className="flex items-center justify-between border-t-2 border-white/50 bg-white/50 backdrop-blur-sm p-6 rounded-b-3xl">
+        <div className="space-y-2">
+          <span className={`text-sm font-bold ${event.spotsLeft <= 3 ? "text-red-600" : "text-mint-600"}`}>
+            {event.spotsLeft <= 3 ? "⚡ Only " : "✅ "}{event.spotsLeft} spots left
           </span>
-          <div className="mt-1 h-1.5 w-16 rounded-full bg-muted">
+          <div className="h-2 w-20 rounded-full bg-gray-200 overflow-hidden">
             <div
-              className={`h-full rounded-full ${event.spotsLeft <= 3 ? "bg-red-500" : "bg-primary"}`}
+              className={`h-full rounded-full transition-all duration-300 ${event.spotsLeft <= 3 ? "bg-gradient-to-r from-red-400 to-red-600" : "bg-gradient-to-r from-mint-400 to-mint-600"}`}
               style={{ width: `${(event.spotsLeft / event.totalSpots) * 100}%` }}
             />
           </div>
         </div>
-        <Button size="sm" asChild>
-          <Link href={`/register-event?city=${event.city}`}>Register Now</Link>
+        <Button
+          size="sm"
+          className={`bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-bold px-6 py-2 rounded-full border-2 border-white/50 transform hover:scale-105 transition-all duration-300`}
+          asChild
+        >
+          <Link href={`/register-event?city=${event.city}`}>
+            🎯 Register Now
+          </Link>
         </Button>
       </CardFooter>
     </Card>

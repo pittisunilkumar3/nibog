@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
@@ -20,100 +21,128 @@ export default function ContactPage() {
   return (
     <AnimatedBackground variant="contact">
       {/* Hero Section */}
-      <section className="relative overflow-hidden py-16 md:py-24">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-50 to-white dark:from-slate-900 dark:to-background -z-10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(120,190,255,0.2),transparent_50%),radial-gradient(circle_at_75%_75%,rgba(255,182,193,0.2),transparent_50%)] blur-xl opacity-70 dark:opacity-30 -z-10"></div>
+      <section className="relative overflow-hidden bg-gradient-to-br from-sunshine-100 via-coral-100 to-mint-100 dark:from-sunshine-900/20 dark:via-coral-900/20 dark:to-mint-900/20 py-20 md:py-28">
+        {/* Floating decorative elements */}
+        <div className="absolute top-10 left-10 w-20 h-20 bg-sunshine-300 rounded-full opacity-20 animate-float"></div>
+        <div className="absolute top-20 right-20 w-16 h-16 bg-coral-300 rounded-full opacity-20 animate-float-delayed"></div>
+        <div className="absolute bottom-20 left-20 w-24 h-24 bg-mint-300 rounded-full opacity-20 animate-bounce-gentle"></div>
+        <div className="absolute bottom-10 right-10 w-18 h-18 bg-lavender-300 rounded-full opacity-20 animate-float-slow"></div>
+
         <div className="container relative z-10">
-          <div className="mx-auto max-w-3xl text-center">
-            <h1 className="text-4xl font-bold tracking-tight md:text-5xl dark:text-black">Contact Us</h1>
-            <p className="mt-4 text-xl text-slate-700 dark:text-white font-medium dark:text-gray-500">
-              We'd love to hear from you! Reach out to the NIBOG team with any questions or inquiries.
+          <div className="mx-auto max-w-4xl text-center space-y-8">
+            <Badge className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-4 border-white/50">
+              📞 Contact NIBOG
+            </Badge>
+
+            <h1 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-500 via-coral-500 to-mint-500 bg-[length:200%_auto] animate-rainbow-shift">
+                Contact Us
+              </span>
+            </h1>
+
+            <p className="text-xl md:text-2xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
+              We'd love to hear from you! Reach out to the <span className="font-bold text-sunshine-600">NIBOG team</span> with any
+              <span className="font-bold text-coral-600"> questions</span> or
+              <span className="font-bold text-mint-600"> inquiries</span> 💬
             </p>
+
+            {/* Fun emoji decorations */}
+            <div className="flex justify-center gap-6 text-4xl">
+              <span className="animate-bounce-gentle">📞</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '0.5s'}}>💬</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1s'}}>📧</span>
+              <span className="animate-bounce-gentle" style={{animationDelay: '1.5s'}}>🤝</span>
+            </div>
           </div>
-        </div>
-        <div className="absolute inset-0 z-0 [opacity-0.1]">
-          <Image
-            src="/images/contact/pattern-bg.jpg"
-            alt="Background pattern"
-            fill
-            className="object-cover blur-sm"
-            priority
-          />
         </div>
       </section>
 
       {/* Contact Information */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-bl from-green-50/50 via-white to-blue-50/50 dark:from-green-950/10 dark:via-background dark:to-blue-950/10 -z-10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_75%,rgba(134,239,172,0.15),transparent_50%),radial-gradient(circle_at_75%_25%,rgba(147,197,253,0.15),transparent_50%)] blur-xl opacity-70 dark:opacity-20 -z-10"></div>
-        <div className="container">
-          <div className="grid gap-12 md:grid-cols-2">
+      <section className="relative py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
+        {/* Decorative background elements */}
+        <div className="absolute top-0 left-0 w-32 h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
+        <div className="absolute bottom-0 right-0 w-40 h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
+        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
+
+        <div className="container relative z-10">
+          <div className="grid gap-16 md:grid-cols-2">
             <div className="space-y-8">
-              <div>
-                <h2 className="text-3xl font-bold tracking-tight">Get in Touch</h2>
-                <p className="mt-2 text-slate-700 dark:text-white font-medium">
+              <div className="space-y-4">
+                <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full w-fit">
+                  💬 Get in Touch
+                </Badge>
+                <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+                  <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
+                    Get in Touch
+                  </span>
+                </h2>
+                <p className="text-lg text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">
                   Have questions about our events, registration process, or anything else? Our team is here to help!
                 </p>
               </div>
 
-              <div className="space-y-5 mt-6">
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-white/70 dark:bg-slate-800/90 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-700 dark:text-purple-100 shadow-sm">
-                    <Phone className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-200">Phone</h3>
-                    <p className="text-slate-700 dark:text-white font-medium mt-1">+91 9000125959</p>
-                  </div>
-                </div>
-
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-white/70 dark:bg-slate-800/90 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-blue-100 text-blue-700 dark:bg-blue-700 dark:text-blue-100 shadow-sm">
-                    <Mail className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200">Email</h3>
-                    <p className="text-slate-700 dark:text-white font-medium mt-1">newindababyolympics@gmail.com </p>
+              <div className="space-y-6">
+                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-sunshine-400 to-sunshine-600 rounded-full p-4 shadow-lg animate-medal-shine">
+                      <Phone className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">📞 Phone</h3>
+                      <p className="text-lg font-semibold text-sunshine-700 mt-2">+91-8977939614/15</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Call us for immediate assistance</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-white/70 dark:bg-slate-800/90 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-green-100 text-green-700 dark:bg-green-700 dark:text-green-100 shadow-sm">
-                    <MapPin className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-green-800 dark:text-green-200">Head Office</h3>
-                    <p className="text-slate-700 dark:text-white font-medium mt-1">
-                      123 Jubilee Hills, Road No. 5<br />
-                      Hyderabad, Telangana 500033<br />
-                      India
-                    </p>
+                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-coral-400 to-coral-600 rounded-full p-4 shadow-lg animate-medal-shine">
+                      <Mail className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">📧 Email</h3>
+                      <p className="text-lg font-semibold text-coral-700 mt-2">newindababyolympics@gmail.com</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Send us your queries anytime</p>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-start gap-4 p-4 rounded-lg bg-white/70 dark:bg-slate-800/90 shadow-sm">
-                  <div className="flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 text-orange-700 dark:bg-orange-700 dark:text-orange-100 shadow-sm">
-                    <Clock className="h-5 w-5" />
+                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-mint-400 to-mint-600 rounded-full p-4 shadow-lg animate-medal-shine">
+                      <MapPin className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🏢 Head Office</h3>
+                      <p className="text-lg font-semibold text-mint-700 mt-2">
+                        NIBOG, P.No:18, H.NO 33-30/4,<br />
+                        Officers Colony, R.K Puram,<br />
+                        Hyderabad - 500056
+                      </p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Visit us at our headquarters</p>
+                    </div>
                   </div>
-                  <div>
-                    <h3 className="text-lg font-semibold text-orange-800 dark:text-orange-200">Office Hours</h3>
-                    <p className="text-slate-700 dark:text-white font-medium mt-1">
-                      Monday - Friday: 9:00 AM - 6:00 PM<br />
-                      Saturday: 10:00 AM - 2:00 PM<br />
-                      Sunday: Closed
-                    </p>
+                </div>
+
+                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
+                  <div className="flex items-start gap-4">
+                    <div className="bg-gradient-to-br from-lavender-400 to-lavender-600 rounded-full p-4 shadow-lg animate-medal-shine">
+                      <Clock className="h-6 w-6 text-white" />
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🕒 Office Hours</h3>
+                      <p className="text-lg font-semibold text-lavender-700 mt-2">
+                        Monday - Sunday<br />
+                        10:00 AM - 6:00 PM
+                      </p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">We're here to help every day!</p>
+                    </div>
                   </div>
                 </div>
               </div>
 
-              <div className="relative aspect-video overflow-hidden rounded-xl">
-                <Image
-                  src="/images/contact/office-image.jpg"
-                  alt="NIBOG Office"
-                  fill
-                  className="object-cover"
-                />
-              </div>
+              
             </div>
 
             <div className="relative">
@@ -181,11 +210,11 @@ export default function ContactPage() {
               },
               {
                 question: "What age groups can participate in NIBOG events?",
-                answer: "NIBOG events are designed for children aged 5 months to 12 years. Different events have specific age categories, and children can only participate in events appropriate for their age group.",
+                answer: "NIBOG events are designed for children aged 5 months to 7 years. Different events have specific age categories, and children can only participate in events appropriate for their age group.",
               },
               {
                 question: "How are winners determined in the competitions?",
-                answer: "Winners are determined based on the specific rules of each event. For races, the fastest time wins. For other events, judges evaluate based on predetermined criteria appropriate for the age group and activity.",
+                answer: "At NIBOG, every child is a winner! We focus on participation, growth, and enjoyment. All participants receive a medal and a certificate to celebrate their involvement and build confidence. Our events foster inclusivity and camaraderie, making the experience memorable and motivating for every child.",
               },
               {
                 question: "What should my child wear to the event?",
@@ -193,7 +222,7 @@ export default function ContactPage() {
               },
               {
                 question: "Can parents accompany their children during the events?",
-                answer: "Yes, parents can accompany very young children (especially in the baby crawling and baby walker categories). For older children, parents will be seated in the designated viewing area.",
+                answer: "Yes, parents can accompany very young children (especially in the baby crawling and baby walker categories). For older children, parents will be seated in the designated viewing area. A maximum of 4 family members are allowed with one child.",
               },
               {
                 question: "What happens if my child doesn't want to participate on the day?",
@@ -224,88 +253,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* City Offices */}
-      <section className="relative py-16 md:py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-bl from-green-50/50 via-white to-blue-50/50 dark:from-green-950/10 dark:via-background dark:to-blue-950/10 -z-10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_75%,rgba(134,239,172,0.15),transparent_50%),radial-gradient(circle_at_75%_25%,rgba(147,197,253,0.15),transparent_50%)] blur-xl opacity-70 dark:opacity-20 -z-10"></div>
-        <div className="container">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-block rounded-lg bg-green-100 px-3 py-1 text-sm font-medium text-green-800 dark:bg-green-900/50 dark:text-green-300">
-              Our Presence
-            </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">NIBOG City Offices</h2>
-            <p className="mt-4 text-slate-600 dark:text-slate-300">
-              Find us in 21 cities across India
-            </p>
-          </div>
-
-          <div className="mt-12 grid gap-6 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4">
-            {[
-              {
-                city: "Hyderabad",
-                address: "123 Jubilee Hills, Road No. 5",
-                image: "/images/contact/hyderabad.jpg",
-              },
-              {
-                city: "Bangalore",
-                address: "456 Indiranagar, 12th Main",
-                image: "/images/contact/bangalore.jpg",
-              },
-              {
-                city: "Mumbai",
-                address: "789 Bandra West, Linking Road",
-                image: "/images/contact/mumbai.jpg",
-              },
-              {
-                city: "Delhi",
-                address: "101 Connaught Place, Block A",
-                image: "/images/contact/delhi.jpg",
-              },
-              {
-                city: "Chennai",
-                address: "202 T. Nagar, Venkatanarayana Road",
-                image: "/images/contact/chennai.jpg",
-              },
-              {
-                city: "Kolkata",
-                address: "303 Park Street, Near Park Hotel",
-                image: "/images/contact/kolkata.jpg",
-              },
-              {
-                city: "Pune",
-                address: "404 Koregaon Park, Lane 7",
-                image: "/images/contact/pune.jpg",
-              },
-              {
-                city: "Ahmedabad",
-                address: "505 Navrangpura, CG Road",
-                image: "/images/contact/ahmedabad.jpg",
-              },
-            ].map((office, i) => (
-              <Card key={i} className="overflow-hidden bg-white dark:bg-slate-800/90">
-                <div className="relative h-40">
-                  <Image
-                    src={office.image}
-                    alt={`${office.city} Office`}
-                    fill
-                    className="object-cover"
-                  />
-                </div>
-                <CardContent className="pt-4">
-                  <h3 className="font-bold">{office.city}</h3>
-                  <p className="text-sm text-slate-600 dark:text-slate-300">{office.address}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-8 text-center">
-            <Button variant="outline" asChild>
-              <Link href="/locations">View All Locations</Link>
-            </Button>
-          </div>
-        </div>
-      </section>
+      
 
       {/* CTA */}
       <section className="bg-purple-600 py-16 text-white dark:bg-purple-900 md:py-24">

@@ -43,7 +43,7 @@ export default function FAQPage() {
               <AccordionItem value="item-2">
                 <AccordionTrigger>What age groups can participate in NIBOG events?</AccordionTrigger>
                 <AccordionContent>
-                  NIBOG events are designed for children aged 5 months to 12 years. Different events have specific age categories, and children can only participate in events appropriate for their age group. The age of the child on the event date will be considered for determining eligibility.
+                  NIBOG events are designed for children aged 5 months to 7 years. Different events have specific age categories, and children can only participate in events appropriate for their age group. The age of the child on the event date will be considered for determining eligibility.
                 </AccordionContent>
               </AccordionItem>
               
@@ -64,7 +64,7 @@ export default function FAQPage() {
               <AccordionItem value="item-5">
                 <AccordionTrigger>Who can I contact for more information?</AccordionTrigger>
                 <AccordionContent>
-                  You can contact our customer support team at newindababyolympics@gmail.com.in or call us at +91 9000125959. Our office hours are Monday to Friday, 9:00 AM to 6:00 PM, and Saturday, 10:00 AM to 2:00 PM. You can also visit our Contact page for more information.
+                  You can contact our customer support team at newindababyolympics@gmail.com.in or call us at +91-8977939614/15. Our office hours are Monday to Sunday, 10:00 AM to 6:00 PM. You can also visit our Contact page for more information.
                 </AccordionContent>
               </AccordionItem>
             </Accordion>
@@ -159,7 +159,7 @@ export default function FAQPage() {
               <AccordionItem value="item-4">
                 <AccordionTrigger>Can parents accompany their children during the events?</AccordionTrigger>
                 <AccordionContent>
-                  Yes, parents can accompany very young children (especially in the baby crawling and baby walker categories). For older children, parents will be seated in the designated viewing area. One parent/guardian must be present at the venue throughout the event.
+                  Yes, parents can accompany very young children (especially in the baby crawling and baby walker categories). For older children, parents will be seated in the designated viewing area. A maximum of 4 family members are allowed with one child.
                 </AccordionContent>
               </AccordionItem>
               
@@ -208,7 +208,7 @@ export default function FAQPage() {
               <AccordionItem value="item-3">
                 <AccordionTrigger>How are winners determined?</AccordionTrigger>
                 <AccordionContent>
-                  Winners are determined based on the specific rules of each event. For races, the fastest time wins. For other events, judges evaluate based on predetermined criteria appropriate for the age group and activity. All decisions by the judges are final.
+                  At NIBOG, every child is a winner! We focus on participation, growth, and enjoyment. All participants receive a medal and a certificate to celebrate their involvement and build confidence. Our events foster inclusivity and camaraderie, making the experience memorable and motivating for every child.
                 </AccordionContent>
               </AccordionItem>
               

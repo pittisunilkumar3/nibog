@@ -55,7 +55,7 @@ export default function SettingsPanel({ className }: SettingsPanelProps) {
     // Profile settings
     adminName: "Admin User",
     adminEmail: "admin@nibog.com",
-    adminPhone: "+91 9000125959",
+    adminPhone: "+91-8977939614/15",
     
     // Notification settings
     emailNotifications: true,

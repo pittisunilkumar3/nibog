@@ -1,22 +1,14 @@
 'use client';
 
-import dynamic from 'next/dynamic';
-
-// Dynamically import the StagewiseToolbar component with SSR disabled
-const StagewiseToolbar = dynamic(
-  () => import('@stagewise/toolbar-next').then((mod) => mod.StagewiseToolbar),
-  { ssr: false }
-);
-
-// Stagewise toolbar configuration
-const stagewiseConfig = {
-  plugins: []
-};
-
+/**
+ * StagewiseToolbar component wrapper
+ * 
+ * Note: @stagewise/toolbar-next is deprecated and has been replaced by the stagewise CLI.
+ * This component is kept for backward compatibility but doesn't render anything.
+ * See: https://stagewise.io/docs
+ */
 export default function StagewiseToolbarWrapper() {
-  if (process.env.NODE_ENV !== 'development') {
-    return null;
-  }
-
-  return <StagewiseToolbar config={stagewiseConfig} />;
+  // The stagewise toolbar package is deprecated, so we return null
+  // to prevent any errors while maintaining component compatibility
+  return null;
 }
