@@ -326,7 +326,7 @@ export async function sendBookingConfirmationFromServer(
         subject: `🎉 Booking Confirmed - ${confirmationData.eventTitle} | NIBOG`,
         html: htmlContent,
         settings: emailSettings,
-        cc: 'phase3entertainments@gmail.com'
+        cc: 'newindababyolympics@gmail.com'
       }),
     });
 
@@ -392,7 +392,7 @@ export async function sendBookingConfirmationFromClient(
         subject: `🎉 Booking Confirmed - ${confirmationData.eventTitle} | NIBOG`,
         html: htmlContent,
         settings: emailSettings,
-        cc: 'phase3entertainments@gmail.com'
+        cc: 'newindababyolympics@gmail.com'
       }),
     });
 
@@ -428,7 +428,7 @@ export async function sendAdminNotificationEmail(
 ): Promise<{ success: boolean; error?: string }> {
   try {
     console.log("📧 Sending admin notification email for new booking...");
-    console.log(`Admin Email: phase3entertainments@gmail.com`);
+    console.log(`Admin Email: newindababyolympics@gmail.com`);
     console.log(`Booking ID: ${confirmationData.bookingId}`);
 
     // Get email settings from your existing API
@@ -454,7 +454,7 @@ export async function sendAdminNotificationEmail(
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: 'phase3entertainments@gmail.com',
+        to: 'newindababyolympics@gmail.com',
         subject: `🚨 New Booking Alert - ${confirmationData.eventTitle} | Booking #${confirmationData.bookingId}`,
         html: htmlContent,
         settings: emailSettings
@@ -653,7 +653,7 @@ export async function sendBookingReminder(
         subject: subject,
         html: htmlContent,
         settings: emailSettings,
-        cc: 'phase3entertainments@gmail.com'
+        cc: 'newindababyolympics@gmail.com'
       }),
     });
 

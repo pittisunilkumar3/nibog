@@ -39,7 +39,7 @@ const testAdminEmailNotification = async () => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        to: 'phase3entertainments@gmail.com',
+        to: 'newindababyolympics@gmail.com',
         subject: `🚨 New Booking Alert - ${testBookingData.eventTitle} | Booking #${testBookingData.bookingId}`,
         html: generateTestAdminHTML(testBookingData),
         settings: {
@@ -66,7 +66,7 @@ const testAdminEmailNotification = async () => {
   }
 
   console.log('\n📋 Test Summary:');
-  console.log('- Admin email recipient: phase3entertainments@gmail.com');
+  console.log('- Admin email recipient: newindababyolympics@gmail.com');
   console.log('- Email includes booking details, customer info, and payment info');
   console.log('- Email is sent after successful customer confirmation email');
   console.log('- Admin email failures do not affect booking completion');

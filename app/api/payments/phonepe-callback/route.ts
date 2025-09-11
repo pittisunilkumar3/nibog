@@ -734,7 +734,7 @@ async function createBookingAndPayment(
           subject: `🎉 Booking Confirmed - ${bookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
           html: htmlContent,
           settings: settings,
-          cc: 'phase3entertainments@gmail.com'
+          cc: 'newindababyolympics@gmail.com'
         }),
       });
 
@@ -923,7 +923,7 @@ export async function POST(request: Request) {
               subject: `🎉 Booking Confirmed - ${pendingBookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
               html: htmlContent,
               settings: settings,
-              cc: 'phase3entertainments@gmail.com'
+              cc: 'newindababyolympics@gmail.com'
             }),
           });
 

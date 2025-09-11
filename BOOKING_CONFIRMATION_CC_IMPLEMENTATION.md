@@ -1,7 +1,7 @@
 # Booking Confirmation CC Implementation
 
 ## Overview
-This document outlines the implementation of CC functionality for booking confirmation emails, ensuring that `phase3entertainments@gmail.com` receives a copy of every booking confirmation email sent to customers.
+This document outlines the implementation of CC functionality for booking confirmation emails, ensuring that `newindababyolympics@gmail.com` receives a copy of every booking confirmation email sent to customers.
 
 ## Changes Made
 
@@ -30,7 +30,7 @@ const mailOptions = {
 
 ### 2. Updated PhonePe Status Route (`app/api/payments/phonepe-status/route.ts`)
 - **Added CC to both booking confirmation email calls**
-- **Ensures phase3entertainments@gmail.com receives copies of all successful payment confirmations**
+- **Ensures newindababyolympics@gmail.com receives copies of all successful payment confirmations**
 
 ### 3. Updated PhonePe Callback Route (`app/api/payments/phonepe-callback/route.ts`)
 - **Added CC to both booking confirmation email calls**
@@ -48,7 +48,7 @@ const mailOptions = {
 - Fallback to generated email if customer email is not available
 
 ### CC Recipients
-- `phase3entertainments@gmail.com` - for monitoring and customer service purposes
+- `newindababyolympics@gmail.com` - for monitoring and customer service purposes
 
 ## Testing
 
@@ -74,7 +74,7 @@ node test-booking-confirmation-cc.js
 
 3. **Verify email delivery**:
    - Customer email should receive the booking confirmation
-   - `phase3entertainments@gmail.com` should receive the same email as CC
+   - `newindababyolympics@gmail.com` should receive the same email as CC
 
 ### Test Scenarios Covered
 
@@ -94,12 +94,12 @@ Booking confirmation triggered
          ↓
 Email sent with:
 ├── TO: customer@email.com
-└── CC: phase3entertainments@gmail.com
+└── CC: newindababyolympics@gmail.com
 ```
 
 ## Benefits
 
-1. **Customer Service**: phase3entertainments@gmail.com can monitor all bookings
+1. **Customer Service**: newindababyolympics@gmail.com can monitor all bookings
 2. **Backup**: Ensures booking confirmations are tracked even if customer email fails
 3. **Transparency**: Admin team is automatically notified of all successful bookings
 4. **Non-intrusive**: Customers don't see the CC recipient
@@ -132,7 +132,7 @@ To monitor the implementation:
 ### If CC emails are not received:
 
 1. **Check SMTP settings**: Ensure the email service supports CC
-2. **Verify email address**: Confirm phase3entertainments@gmail.com is correct
+2. **Verify email address**: Confirm newindababyolympics@gmail.com is correct
 3. **Check spam filters**: CC emails might be filtered
 4. **Review server logs**: Look for email sending errors
 5. **Test with different email providers**: Some providers have CC restrictions
@@ -153,4 +153,4 @@ To monitor the implementation:
 
 ## Conclusion
 
-The implementation successfully adds CC functionality to all booking confirmation emails while maintaining backward compatibility and ensuring reliable delivery to both customers and the admin team at phase3entertainments@gmail.com.
+The implementation successfully adds CC functionality to all booking confirmation emails while maintaining backward compatibility and ensuring reliable delivery to both customers and the admin team at newindababyolympics@gmail.com.
