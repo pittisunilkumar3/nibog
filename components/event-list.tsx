@@ -15,6 +15,10 @@ import { EventListItem } from "@/types"
 
 // Memoized EventCard component to prevent unnecessary re-renders
 const EventCard = memo(({ event }: { event: EventListItem }) => {
+  // Use static age range for all events (5-84 months)
+  const minAgeMonths = 5;
+  const maxAgeMonths = 84;
+
   // Check if event is in the past
   const isEventComplete = useMemo(() => {
     const eventDate = new Date(event.date);
@@ -52,7 +56,7 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
     }
   }
 
-  const theme = getAgeTheme(event.minAgeMonths, event.maxAgeMonths)
+  const theme = getAgeTheme(minAgeMonths, maxAgeMonths)
 
   return (
     <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 rounded-3xl bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.borderColor} hover:border-sunshine-400`}>
@@ -92,7 +96,7 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
 
         <div className="absolute bottom-3 left-3 right-3">
           <Badge className="bg-white/90 backdrop-blur-sm text-neutral-charcoal font-bold px-3 py-2 rounded-full shadow-lg">
-            👶 {event.minAgeMonths}-{event.maxAgeMonths} months
+            👶 {minAgeMonths}-{maxAgeMonths} months
           </Badge>
         </div>
 
@@ -179,9 +183,9 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
                 </div>
                 <div>
                   <span className="font-medium text-neutral-charcoal">Age Range:</span>
-                  <span className="ml-1">{event.minAgeMonths}-{event.maxAgeMonths} months</span>
+                  <span className="ml-1">{minAgeMonths}-{maxAgeMonths} months</span>
                   <span className="ml-1 text-xs text-neutral-charcoal/50">
-                    ({Math.floor(event.minAgeMonths/12)}-{Math.floor(event.maxAgeMonths/12)} years)
+                    ({Math.floor(minAgeMonths/12)}-{Math.floor(maxAgeMonths/12)} years)
                   </span>
                 </div>
               </div>
@@ -232,9 +236,16 @@ export default function EventList() {
     const date = searchParams.get('date');
 
     const filtered = events.filter((event) => {
+      // Use default age range if not provided
+      // const eventMinAge = event.minAgeMonths || 5;
+      // const eventMaxAge = event.maxAgeMonths || 84;
+      
+      const eventMinAge = 5;
+      const eventMaxAge = 84;
+
       if (city && event.city.toLowerCase() !== city.toLowerCase()) return false;
-      if (minAge && event.minAgeMonths < parseInt(minAge)) return false;
-      if (maxAge && event.maxAgeMonths > parseInt(maxAge)) return false;
+      if (minAge && eventMinAge < parseInt(minAge)) return false;
+      if (maxAge && eventMaxAge > parseInt(maxAge)) return false;
       if (date && event.date !== date) return false;
       return true;
     });

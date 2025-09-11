@@ -27,7 +27,7 @@ export default function EventsPage() {
             </Badge>
             <h1 className="text-4xl font-bold tracking-tight md:text-5xl lg:text-6xl">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
-                NIBOG Baby Games
+                NIBOG Events
               </span>
             </h1>
             <p className="text-lg text-neutral-charcoal/70 dark:text-white/70 max-w-2xl mx-auto leading-relaxed">
