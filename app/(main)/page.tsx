@@ -443,7 +443,7 @@ export default function Home() {
                 className="btn-baby-primary text-lg px-8 py-4"
                 asChild
               >
-                <Link href="/events">
+                <Link href="/baby-olympics">
                   🎮 Explore All Games
                 </Link>
               </Button>
