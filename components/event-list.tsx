@@ -7,163 +7,22 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Calendar, Clock, MapPin, Heart } from "lucide-react"
-import { formatPrice } from "@/lib/utils"
 import { useSearchParams } from "next/navigation"
 import { useEvents } from "@/lib/swr-hooks"
-
-// For backup fallback only in case API fails
-const fallbackEvents = [
-  {
-    id: "1",
-    title: "Baby Crawling",
-    description: "Let your little crawler compete in a fun and safe environment.",
-    minAgeMonths: 5,
-    maxAgeMonths: 13,
-    date: "2025-10-26",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Gachibowli Indoor Stadium",
-    city: "Hyderabad",
-    price: 1800,
-    image: "/images/baby-crawling.jpg",
-    spotsLeft: 5,
-    totalSpots: 12,
-    isOlympics: true,
-  },
-  {
-    id: "2",
-    title: "Baby Walker",
-    description: "Fun-filled baby walker race in a safe environment.",
-    minAgeMonths: 5,
-    maxAgeMonths: 13,
-    date: "2025-10-26",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Gachibowli Indoor Stadium",
-    city: "Hyderabad",
-    price: 1800,
-    image: "/images/baby-walker.jpg",
-    spotsLeft: 8,
-    totalSpots: 15,
-    isOlympics: true,
-  },
-  {
-    id: "3",
-    title: "Running Race",
-    description: "Exciting running race for toddlers in a fun and safe environment.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-10-26",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Gachibowli Indoor Stadium",
-    city: "Hyderabad",
-    price: 1800,
-    image: "/images/running-race.jpg",
-    spotsLeft: 3,
-    totalSpots: 10,
-    isOlympics: true,
-  },
-  {
-    id: "4",
-    title: "Hurdle Toddle",
-    description: "Fun hurdle race for toddlers to develop coordination and balance.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-03-16",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Indoor Stadium",
-    city: "Chennai",
-    price: 1800,
-    image: "/images/hurdle-toddle.jpg",
-    spotsLeft: 12,
-    totalSpots: 20,
-    isOlympics: true,
-  },
-  {
-    id: "5",
-    title: "Cycle Race",
-    description: "Exciting cycle race for children to showcase their skills.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-08-15",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Sports Complex",
-    city: "Vizag",
-    price: 1800,
-    image: "/images/cycle-race.jpg",
-    spotsLeft: 6,
-    totalSpots: 12,
-    isOlympics: true,
-  },
-  {
-    id: "6",
-    title: "Ring Holding",
-    description: "Fun ring holding game to develop hand-eye coordination.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-10-12",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Indoor Stadium",
-    city: "Bangalore",
-    price: 1800,
-    image: "/images/ring-holding.jpg",
-    spotsLeft: 8,
-    totalSpots: 15,
-    isOlympics: true,
-  },
-  {
-    id: "7",
-    title: "Ball Throw",
-    description: "Develop throwing skills and hand-eye coordination in a fun competitive environment.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-09-18",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Indoor Stadium",
-    city: "Mumbai",
-    price: 1800,
-    image: "/images/ball-throw.jpg",
-    spotsLeft: 12,
-    totalSpots: 15,
-    isOlympics: true,
-  },
-  {
-    id: "8",
-    title: "Balancing Beam",
-    description: "Fun balancing activities to develop coordination and confidence.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-11-15",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Sports Complex",
-    city: "Delhi",
-    price: 1800,
-    image: "/images/balancing-beam.jpg",
-    spotsLeft: 8,
-    totalSpots: 12,
-    isOlympics: true,
-  },
-  {
-    id: "9",
-    title: "Frog Jump",
-    description: "Exciting jumping competition for toddlers in a fun and safe environment.",
-    minAgeMonths: 13,
-    maxAgeMonths: 84,
-    date: "2025-12-10",
-    time: "9:00 AM - 8:00 PM",
-    venue: "Indoor Stadium",
-    city: "Kolkata",
-    price: 1800,
-    image: "/images/frog-jump.jpg",
-    spotsLeft: 10,
-    totalSpots: 15,
-    isOlympics: true,
-  },
-]
 
 // Import EventListItem type for proper typing
 import { EventListItem } from "@/types"
 
 // Memoized EventCard component to prevent unnecessary re-renders
 const EventCard = memo(({ event }: { event: EventListItem }) => {
+  // Check if event is in the past
+  const isEventComplete = useMemo(() => {
+    const eventDate = new Date(event.date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to start of day for accurate comparison
+    return eventDate < today;
+  }, [event.date]);
+
   // Get age-appropriate emoji and colors
   const getAgeTheme = (minAge: number, maxAge: number) => {
     if (maxAge <= 13) {
@@ -218,6 +77,14 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
         </div>
 
         <div className="absolute top-3 right-3 space-y-2">
+          {/* Complete Event Status Indicator */}
+          {isEventComplete && (
+            <Badge className="bg-gradient-to-r from-gray-500 to-gray-600 text-white font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white/50">
+              ✅ Complete Event
+            </Badge>
+          )}
+
+          {/* Olympics/Regular Badge */}
           <Badge className={`bg-gradient-to-r ${theme.gradient} text-white font-bold px-3 py-1 rounded-full shadow-lg border-2 border-white/50`}>
             {event.isOlympics ? "🏆 Olympics" : "🎮 Regular"}
           </Badge>
@@ -240,58 +107,108 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
       </div>
 
       <CardContent className="p-6 space-y-4">
-        <div className="space-y-3">
+        <div className="space-y-4">
           <h3 className="text-xl font-bold leading-tight tracking-tight text-neutral-charcoal group-hover:text-sunshine-700 transition-colors">{event.title}</h3>
-          <p className="text-sm text-neutral-charcoal/70 line-clamp-2 leading-relaxed">{event.description}</p>
-
-          <div className="flex items-center justify-between">
-            <span className={`text-lg font-bold ${theme.textColor}`}>{formatPrice(event.price)}</span>
-          </div>
-
-          <div className="space-y-2">
-            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
-              <div className="bg-sunshine-100 rounded-full p-1">
-                <Calendar className="h-3 w-3 text-sunshine-600" />
-              </div>
-              <span className="font-medium">{event.date}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
-              <div className="bg-coral-100 rounded-full p-1">
-                <Clock className="h-3 w-3 text-coral-600" />
-              </div>
-              <span className="font-medium">{event.time}</span>
-            </div>
-            <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
-              <div className="bg-mint-100 rounded-full p-1">
-                <MapPin className="h-3 w-3 text-mint-600" />
-              </div>
-              <span className="font-medium">{event.venue}, {event.city}</span>
-            </div>
-          </div>
+          <p className="text-sm text-neutral-charcoal/70 leading-relaxed">{event.description}</p>
         </div>
       </CardContent>
 
-      <CardFooter className="flex items-center justify-between border-t-2 border-white/50 bg-white/50 backdrop-blur-sm p-6 rounded-b-3xl">
-        <div className="space-y-2">
-          <span className={`text-sm font-bold ${event.spotsLeft <= 3 ? "text-red-600" : "text-mint-600"}`}>
-            {event.spotsLeft <= 3 ? "⚡ Only " : "✅ "}{event.spotsLeft} spots left
-          </span>
-          <div className="h-2 w-20 rounded-full bg-gray-200 overflow-hidden">
-            <div
-              className={`h-full rounded-full transition-all duration-300 ${event.spotsLeft <= 3 ? "bg-gradient-to-r from-red-400 to-red-600" : "bg-gradient-to-r from-mint-400 to-mint-600"}`}
-              style={{ width: `${(event.spotsLeft / event.totalSpots) * 100}%` }}
-            />
+      <CardFooter className="border-t-2 border-white/50 bg-white/80 backdrop-blur-sm p-6 rounded-b-3xl">
+        <div className="w-full space-y-4">
+          {/* Complete Event Details */}
+          <div className="space-y-3 bg-gray-50 p-3 rounded-lg">
+            <h4 className="text-sm font-bold text-neutral-charcoal uppercase tracking-wide">Event Details</h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+                <div className="bg-sunshine-100 rounded-full p-1 flex-shrink-0">
+                  <Calendar className="h-3 w-3 text-sunshine-600" />
+                </div>
+                <div>
+                  <span className="font-medium text-neutral-charcoal">Date:</span>
+                  <span className="ml-1">
+                    {(() => {
+                      try {
+                        return new Date(event.date).toLocaleDateString('en-US', {
+                          weekday: 'short',
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric'
+                        });
+                      } catch (error) {
+                        return event.date; // Fallback to original date string
+                      }
+                    })()}
+                  </span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+                <div className="bg-coral-100 rounded-full p-1 flex-shrink-0">
+                  <Clock className="h-3 w-3 text-coral-600" />
+                </div>
+                <div>
+                  <span className="font-medium text-neutral-charcoal">Time:</span>
+                  <span className="ml-1">{event.time}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+                <div className="bg-mint-100 rounded-full p-1 flex-shrink-0">
+                  <MapPin className="h-3 w-3 text-mint-600" />
+                </div>
+                <div>
+                  <span className="font-medium text-neutral-charcoal">Venue:</span>
+                  <span className="ml-1">{event.venue}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+                <div className="bg-lavender-100 rounded-full p-1 flex-shrink-0">
+                  <MapPin className="h-3 w-3 text-lavender-600" />
+                </div>
+                <div>
+                  <span className="font-medium text-neutral-charcoal">City:</span>
+                  <span className="ml-1">{event.city}</span>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70 sm:col-span-2">
+                <div className="bg-sunshine-100 rounded-full p-1 flex-shrink-0">
+                  <span className="text-xs font-bold text-sunshine-600">👶</span>
+                </div>
+                <div>
+                  <span className="font-medium text-neutral-charcoal">Age Range:</span>
+                  <span className="ml-1">{event.minAgeMonths}-{event.maxAgeMonths} months</span>
+                  <span className="ml-1 text-xs text-neutral-charcoal/50">
+                    ({Math.floor(event.minAgeMonths/12)}-{Math.floor(event.maxAgeMonths/12)} years)
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Register Button */}
+          <div className="pt-2">
+            {isEventComplete ? (
+              <Button
+                disabled
+                className="w-full bg-gray-400 text-white font-bold py-3 rounded-full border-2 border-white/50 cursor-not-allowed opacity-60"
+              >
+                📅 Event Completed
+              </Button>
+            ) : (
+              <Button
+                className={`w-full bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-bold py-3 rounded-full border-2 border-white/50 transform hover:scale-105 transition-all duration-300`}
+                asChild
+              >
+                <Link href={`/register-event?city=${event.city}`}>
+                  🎯 Register for Event
+                </Link>
+              </Button>
+            )}
           </div>
         </div>
-        <Button
-          size="sm"
-          className={`bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-bold px-6 py-2 rounded-full border-2 border-white/50 transform hover:scale-105 transition-all duration-300`}
-          asChild
-        >
-          <Link href={`/register-event?city=${event.city}`}>
-            🎯 Register Now
-          </Link>
-        </Button>
       </CardFooter>
     </Card>
   )
@@ -305,27 +222,48 @@ export default function EventList() {
   const ITEMS_PER_PAGE = 6;
 
   // Use SWR hook to fetch events data with caching
-  const { events, isLoading, isError } = useEvents(fallbackEvents);
+  const { events, isLoading, isError } = useEvents();
   
-  // Filter events based on URL params
+  // Filter and sort events based on URL params, with completed events at bottom
   const filteredEvents = useMemo(() => {
     const city = searchParams.get('city');
     const minAge = searchParams.get('minAge');
     const maxAge = searchParams.get('maxAge');
     const date = searchParams.get('date');
 
-    return events.filter((event) => {
+    const filtered = events.filter((event) => {
       if (city && event.city.toLowerCase() !== city.toLowerCase()) return false;
       if (minAge && event.minAgeMonths < parseInt(minAge)) return false;
       if (maxAge && event.maxAgeMonths > parseInt(maxAge)) return false;
       if (date && event.date !== date) return false;
       return true;
     });
+
+    // Sort events: upcoming events first, completed events at bottom
+    return filtered.sort((a, b) => {
+      const aDate = new Date(a.date);
+      const bDate = new Date(b.date);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      
+      const aIsComplete = aDate < today;
+      const bIsComplete = bDate < today;
+      
+      // If one is complete and other is not, put complete at bottom
+      if (aIsComplete && !bIsComplete) return 1;
+      if (!aIsComplete && bIsComplete) return -1;
+      
+      // If both have same completion status, sort by date
+      // For upcoming events: earliest first
+      // For completed events: most recent first
+      if (!aIsComplete && !bIsComplete) {
+        return aDate.getTime() - bDate.getTime();
+      } else {
+        return bDate.getTime() - aDate.getTime();
+      }
+    });
   }, [searchParams, events]);
 
-  // Calculate pagination logic
-  const totalPages = Math.ceil(filteredEvents.length / ITEMS_PER_PAGE);
-  
   // Get paginated events based on current page
   const visibleEvents = useMemo(() => {
     return filteredEvents.slice(0, page * ITEMS_PER_PAGE);
@@ -340,6 +278,60 @@ export default function EventList() {
   useEffect(() => {
     setPage(1);
   }, [searchParams]);
+
+  // Show loading state
+  if (isLoading) {
+    return (
+      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 6 }).map((_, index) => (
+          <div key={index} className="animate-pulse">
+            <div className="bg-gray-200 rounded-3xl h-52 mb-4"></div>
+            <div className="space-y-2">
+              <div className="bg-gray-200 rounded h-4 w-3/4"></div>
+              <div className="bg-gray-200 rounded h-4 w-1/2"></div>
+              <div className="bg-gray-200 rounded h-4 w-2/3"></div>
+            </div>
+          </div>
+        ))}
+      </div>
+    )
+  }
+
+  // Show error state
+  if (isError) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="text-6xl">😔</div>
+        <h3 className="text-xl font-semibold text-neutral-charcoal">Unable to Load Events</h3>
+        <p className="text-muted-foreground text-center max-w-md">
+          We're having trouble connecting to our servers. Please check your internet connection and try again.
+        </p>
+        <Button
+          variant="outline"
+          onClick={() => window.location.reload()}
+          className="mt-4"
+        >
+          Try Again
+        </Button>
+      </div>
+    )
+  }
+
+  // Show no events state
+  if (events.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center py-12 space-y-4">
+        <div className="text-6xl">🎮</div>
+        <h3 className="text-xl font-semibold text-neutral-charcoal">No Events Available</h3>
+        <p className="text-muted-foreground text-center max-w-md">
+          There are currently no baby games events scheduled. Check back soon for exciting new events!
+        </p>
+        <Button variant="outline" className="mt-4" asChild>
+          <Link href="/">Go Home</Link>
+        </Button>
+      </div>
+    )
+  }
 
   return (
     <div>
@@ -357,9 +349,13 @@ export default function EventList() {
         </div>
       )}
 
-      {filteredEvents.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-12">
-          <p className="text-muted-foreground">No events found matching your criteria.</p>
+      {filteredEvents.length === 0 && events.length > 0 && (
+        <div className="flex flex-col items-center justify-center py-12 space-y-4">
+          <div className="text-6xl">🔍</div>
+          <h3 className="text-xl font-semibold text-neutral-charcoal">No Matching Events</h3>
+          <p className="text-muted-foreground text-center max-w-md">
+            No events found matching your search criteria. Try adjusting your filters or search terms.
+          </p>
           <Button variant="outline" className="mt-4" asChild>
             <Link href="/events">Clear Filters</Link>
           </Button>

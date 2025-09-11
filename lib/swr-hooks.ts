@@ -87,24 +87,76 @@ function transformEventsData(apiEvents: any[]): EventListItem[] {
     // Calculate age range from games if available
     let minAgeMonths = 6; // default
     let maxAgeMonths = 84; // default
-    let price = 799; // default
-    let totalSpots = 20; // default
-    let spotsLeft = 15; // default
 
-    // Extract information from games if available
+    // Extract age range information from games if available
     if (event.games && event.games.length > 0) {
-      const prices = event.games.map((game: any) => game.custom_price || game.slot_price || 799);
-      price = Math.min(...prices); // Use lowest price
+      // Extract age ranges from games
+      const minAges = event.games.map((game: any) => game.min_age || 6).filter(age => age > 0);
+      const maxAges = event.games.map((game: any) => game.max_age || 84).filter(age => age > 0);
 
-      const maxParticipants = event.games.map((game: any) => game.max_participants || 20);
-      totalSpots = Math.max(...maxParticipants); // Use highest capacity
-      spotsLeft = Math.floor(totalSpots * 0.75); // Assume 75% availability
+      if (minAges.length > 0) {
+        minAgeMonths = Math.min(...minAges);
+      }
+      if (maxAges.length > 0) {
+        maxAgeMonths = Math.max(...maxAges);
+      }
     }
 
     // Format date and time
     const eventDate = new Date(event.event_date);
     const formattedDate = eventDate.toISOString().split('T')[0]; // YYYY-MM-DD format
-    const formattedTime = "9:00 AM - 8:00 PM"; // Default time range
+
+    // Extract time from games if available, otherwise use default
+    let formattedTime = "9:00 AM - 8:00 PM"; // Default time range
+    if (event.games && event.games.length > 0) {
+      const startTimes = event.games.map((game: any) => game.start_time).filter(t => t);
+      const endTimes = event.games.map((game: any) => game.end_time).filter(t => t);
+
+      if (startTimes.length > 0 && endTimes.length > 0) {
+        const earliestStart = startTimes.sort()[0];
+        const latestEnd = endTimes.sort().reverse()[0];
+
+        // Format times to 12-hour format
+        const formatTime = (time: string) => {
+          try {
+            const [hours, minutes] = time.split(':');
+            const hour = parseInt(hours);
+            const ampm = hour >= 12 ? 'PM' : 'AM';
+            const displayHour = hour === 0 ? 12 : hour > 12 ? hour - 12 : hour;
+            return `${displayHour}:${minutes} ${ampm}`;
+          } catch {
+            return time;
+          }
+        };
+
+        formattedTime = `${formatTime(earliestStart)} - ${formatTime(latestEnd)}`;
+      }
+    }
+
+    // Determine appropriate image based on age range and game types
+    let image = '/images/baby-crawling.jpg'; // default
+    if (event.games && event.games.length > 0) {
+      const gameTitle = event.games[0].game_title || event.games[0].custom_title || '';
+      const lowerTitle = gameTitle.toLowerCase();
+
+      if (lowerTitle.includes('walker')) {
+        image = '/images/baby-walker.jpg';
+      } else if (lowerTitle.includes('running') || lowerTitle.includes('race')) {
+        image = '/images/running-race.jpg';
+      } else if (lowerTitle.includes('hurdle')) {
+        image = '/images/hurdle-toddle.jpg';
+      } else if (lowerTitle.includes('cycle')) {
+        image = '/images/cycle-race.jpg';
+      } else if (lowerTitle.includes('ring')) {
+        image = '/images/ring-holding.jpg';
+      } else if (lowerTitle.includes('ball') || lowerTitle.includes('throw')) {
+        image = '/images/ball-throw.jpg';
+      } else if (lowerTitle.includes('balance')) {
+        image = '/images/balancing-beam.jpg';
+      } else if (lowerTitle.includes('jump') || lowerTitle.includes('frog')) {
+        image = '/images/frog-jump.jpg';
+      }
+    }
 
     return {
       id: event.event_id?.toString() || Math.random().toString(),
@@ -116,10 +168,10 @@ function transformEventsData(apiEvents: any[]): EventListItem[] {
       time: formattedTime,
       venue: event.venue?.venue_name || 'Indoor Stadium',
       city: event.city?.city_name || 'Unknown City',
-      price,
-      image: '/images/baby-crawling.jpg', // Default image
-      spotsLeft,
-      totalSpots,
+      price: 0, // Not displayed but kept for compatibility
+      image,
+      spotsLeft: 0, // Not displayed but kept for compatibility
+      totalSpots: 0, // Not displayed but kept for compatibility
       isOlympics: true, // Default to Olympics event
     };
   });
@@ -153,10 +205,10 @@ export function useEvents(initialData?: EventListItem[]) {
           time: "9:00 AM - 8:00 PM",
           venue: event.venue_name || 'Indoor Stadium',
           city: event.city_name || 'Unknown City',
-          price: 799,
+          price: 0, // Not displayed but kept for compatibility
           image: '/images/baby-crawling.jpg',
-          spotsLeft: 15,
-          totalSpots: 20,
+          spotsLeft: 0, // Not displayed but kept for compatibility
+          totalSpots: 0, // Not displayed but kept for compatibility
           isOlympics: true,
         }));
       }
