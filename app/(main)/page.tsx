@@ -284,11 +284,11 @@ export default function Home() {
             <span className="font-bold text-sunshine-600">5-84 months</span>.
           </p>
 
-          <div className="w-full max-w-lg space-y-6">
-            <div className="flex flex-col gap-4">
+          <div className="w-full max-w-lg space-y-4 sm:space-y-6">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <Button
                 size="lg"
-                className="w-full py-8 text-xl font-bold bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400 hover:from-sunshine-500 hover:via-coral-500 hover:to-mint-500 text-neutral-charcoal shadow-2xl transform transition-all hover:scale-110 rounded-3xl border-4 border-white/50 animate-medal-shine"
+                className="w-full py-6 sm:py-8 text-lg sm:text-xl font-bold bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400 hover:from-sunshine-500 hover:via-coral-500 hover:to-mint-500 text-neutral-charcoal shadow-2xl transform transition-all hover:scale-105 sm:hover:scale-110 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-white/50 animate-medal-shine touch-manipulation"
                 asChild
               >
                 <Link href="/register-event">
@@ -296,11 +296,11 @@ export default function Home() {
                 </Link>
               </Button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-sunshine-400 text-sunshine-700 hover:text-sunshine-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  className="flex-1 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-sunshine-400 text-sunshine-700 hover:text-sunshine-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all touch-manipulation"
                   asChild
                 >
                   <Link href="/events">
@@ -310,7 +310,7 @@ export default function Home() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-coral-400 text-coral-700 hover:text-coral-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  className="flex-1 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-coral-400 text-coral-700 hover:text-coral-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all touch-manipulation"
                   asChild
                 >
                   <Link href="/baby-olympics">
@@ -795,10 +795,10 @@ export default function Home() {
               </p>
             </div>
 
-            <div className="flex flex-col gap-6 sm:flex-row sm:justify-center sm:gap-4">
+            <div className="flex flex-col gap-4 sm:gap-6 sm:flex-row sm:justify-center">
               <Button
                 size="lg"
-                className="btn-baby-primary text-xl px-12 py-6 shadow-2xl hover:shadow-3xl"
+                className="btn-baby-primary text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 shadow-2xl hover:shadow-3xl touch-manipulation"
                 asChild
               >
                 <Link href="/register-event">
@@ -807,7 +807,7 @@ export default function Home() {
               </Button>
               <Button
                 size="lg"
-                className="btn-baby-secondary text-xl px-12 py-6 shadow-2xl hover:shadow-3xl"
+                className="btn-baby-secondary text-lg sm:text-xl px-8 sm:px-12 py-4 sm:py-6 shadow-2xl hover:shadow-3xl touch-manipulation"
                 asChild
               >
                 <Link href="/events">

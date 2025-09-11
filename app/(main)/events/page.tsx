@@ -47,24 +47,26 @@ export default function EventsPage() {
         <EventFilters />
 
         <Tabs defaultValue="grid" className="w-full">
-          <div className="flex items-center justify-between bg-gradient-to-r from-lavender-100 to-mint-100 dark:from-lavender-900/20 dark:to-mint-900/20 rounded-2xl p-6 shadow-lg">
-            <div className="text-lg font-semibold text-neutral-charcoal dark:text-white">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 bg-gradient-to-r from-lavender-100 to-mint-100 dark:from-lavender-900/20 dark:to-mint-900/20 rounded-2xl p-4 sm:p-6 shadow-lg">
+            <div className="text-base sm:text-lg font-semibold text-neutral-charcoal dark:text-white text-center sm:text-left">
               🎯 Showing <span className="font-bold text-sunshine-600">16</span> amazing baby games
             </div>
-            <TabsList className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-white/50">
+            <TabsList className="bg-white/80 backdrop-blur-sm rounded-xl shadow-lg border-2 border-white/50 w-full sm:w-auto">
               <TabsTrigger
                 value="grid"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sunshine-400 data-[state=active]:to-coral-400 data-[state=active]:text-white font-semibold rounded-lg px-4 py-2"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-sunshine-400 data-[state=active]:to-coral-400 data-[state=active]:text-white font-semibold rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base flex-1 sm:flex-none touch-manipulation"
               >
-                <Grid3X3 className="mr-2 h-4 w-4" />
-                🎮 Grid View
+                <Grid3X3 className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">🎮 Grid View</span>
+                <span className="xs:hidden">🎮 Grid</span>
               </TabsTrigger>
               <TabsTrigger
                 value="calendar"
-                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral-400 data-[state=active]:to-mint-400 data-[state=active]:text-white font-semibold rounded-lg px-4 py-2"
+                className="data-[state=active]:bg-gradient-to-r data-[state=active]:from-coral-400 data-[state=active]:to-mint-400 data-[state=active]:text-white font-semibold rounded-lg px-3 sm:px-4 py-2 text-sm sm:text-base flex-1 sm:flex-none touch-manipulation"
               >
-                <CalendarRange className="mr-2 h-4 w-4" />
-                📅 Calendar View
+                <CalendarRange className="mr-1 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+                <span className="hidden xs:inline">📅 Calendar View</span>
+                <span className="xs:hidden">📅 Calendar</span>
               </TabsTrigger>
             </TabsList>
           </div>

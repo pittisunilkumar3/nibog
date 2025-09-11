@@ -127,19 +127,20 @@ export default function BabyOlympicsPage() {
           />
           <div className="absolute inset-0 bg-gradient-to-r from-yellow-100 via-amber-100 to-yellow-50 opacity-40" />
         </div>
-        <div className="container relative flex flex-col items-center justify-center gap-8 py-20 text-center md:py-28 lg:py-36">
-          {/* Floating decorative elements */}
-          <div className="absolute top-10 left-10 w-16 h-16 bg-sunshine-400 rounded-full opacity-30 animate-bounce-gentle"></div>
-          <div className="absolute top-20 right-20 w-12 h-12 bg-coral-400 rounded-full opacity-40 animate-float-delayed"></div>
-          <div className="absolute bottom-20 left-20 w-20 h-20 bg-mint-400 rounded-full opacity-35 animate-float-slow"></div>
+        <div className="container relative flex flex-col items-center justify-center gap-6 sm:gap-8 py-16 sm:py-20 md:py-28 lg:py-36 text-center px-4 sm:px-6">
+          {/* Floating decorative elements - hidden on mobile for better performance */}
+          <div className="hidden sm:block absolute top-10 left-10 w-12 sm:w-16 h-12 sm:h-16 bg-sunshine-400 rounded-full opacity-30 animate-bounce-gentle"></div>
+          <div className="hidden sm:block absolute top-20 right-20 w-10 sm:w-12 h-10 sm:h-12 bg-coral-400 rounded-full opacity-40 animate-float-delayed"></div>
+          <div className="hidden sm:block absolute bottom-20 left-20 w-16 sm:w-20 h-16 sm:h-20 bg-mint-400 rounded-full opacity-35 animate-float-slow"></div>
 
-          <Badge className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-4 border-white/50">
-            🏆 New India Baby Olympics Games 🏆
+          <Badge className="px-4 sm:px-8 py-3 sm:py-4 text-lg sm:text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-2 sm:border-4 border-white/50">
+            <span className="hidden sm:inline">🏆 New India Baby Olympics Games 🏆</span>
+            <span className="sm:hidden">🏆 NIBOG Games 🏆</span>
           </Badge>
 
-          <div className="space-y-6">
-            <h1 className="text-4xl font-bold tracking-tight sm:text-5xl md:text-6xl lg:text-7xl">
-              <span className="block text-neutral-charcoal dark:text-white font-extrabold mb-4">
+          <div className="space-y-4 sm:space-y-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
+              <span className="block text-neutral-charcoal dark:text-white font-extrabold mb-2 sm:mb-4">
                 NIBOG
               </span>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-500 via-coral-500 to-mint-500 bg-[length:200%_auto] animate-rainbow-shift">
@@ -148,7 +149,7 @@ export default function BabyOlympicsPage() {
             </h1>
 
             {/* Fun emoji decorations */}
-            <div className="flex justify-center gap-6 text-4xl">
+            <div className="flex justify-center gap-3 sm:gap-6 text-2xl sm:text-4xl">
               <span className="animate-bounce-gentle">👑</span>
               <span className="animate-bounce-gentle" style={{animationDelay: '0.5s'}}>👶</span>
               <span className="animate-bounce-gentle" style={{animationDelay: '1s'}}>🏆</span>
@@ -156,30 +157,31 @@ export default function BabyOlympicsPage() {
             </div>
           </div>
 
-          <p className="max-w-[800px] text-lg md:text-xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed">
+          <p className="max-w-[800px] text-base sm:text-lg md:text-xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed px-4 sm:px-0">
             Step into the World of Baby Games and watch while they <span className="font-bold text-sunshine-600">Kick</span>,
             <span className="font-bold text-coral-600"> Crawl</span>,
             <span className="font-bold text-mint-600"> Conquer</span>.
             India's biggest baby Olympic games in <span className="font-bold text-sunshine-600">21 cities</span>.
           </p>
 
-          <div className="w-full max-w-lg space-y-6">
-            <div className="flex flex-col gap-4">
+          <div className="w-full max-w-lg space-y-4 sm:space-y-6 px-4 sm:px-0">
+            <div className="flex flex-col gap-3 sm:gap-4">
               <Button
                 size="lg"
-                className="w-full py-8 text-xl font-bold bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400 hover:from-sunshine-500 hover:via-coral-500 hover:to-mint-500 text-neutral-charcoal shadow-2xl transform transition-all hover:scale-110 rounded-3xl border-4 border-white/50 animate-medal-shine"
+                className="w-full py-6 sm:py-8 text-lg sm:text-xl font-bold bg-gradient-to-r from-sunshine-400 via-coral-400 to-mint-400 hover:from-sunshine-500 hover:via-coral-500 hover:to-mint-500 text-neutral-charcoal shadow-2xl transform transition-all hover:scale-105 sm:hover:scale-110 rounded-2xl sm:rounded-3xl border-2 sm:border-4 border-white/50 animate-medal-shine touch-manipulation"
                 asChild
               >
                 <Link href="/register-event">
-                  👑 Claim Your Baby's Throne - Register Now!
+                  <span className="hidden sm:inline">👑 Claim Your Baby's Throne - Register Now!</span>
+                  <span className="sm:hidden">👑 Register Now!</span>
                 </Link>
               </Button>
 
-              <div className="flex gap-3">
+              <div className="flex flex-col sm:flex-row gap-3">
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-sunshine-400 text-sunshine-700 hover:text-sunshine-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  className="flex-1 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-sunshine-400 text-sunshine-700 hover:text-sunshine-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all touch-manipulation"
                   asChild
                 >
                   <Link href="/events">
@@ -189,7 +191,7 @@ export default function BabyOlympicsPage() {
                 <Button
                   variant="outline"
                   size="lg"
-                  className="flex-1 py-4 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-coral-400 text-coral-700 hover:text-coral-800 rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all"
+                  className="flex-1 py-3 sm:py-4 text-base sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-coral-400 text-coral-700 hover:text-coral-800 rounded-xl sm:rounded-2xl shadow-lg hover:shadow-xl transform hover:scale-105 transition-all touch-manipulation"
                   asChild
                 >
                   <Link href="/about">

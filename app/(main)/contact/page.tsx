@@ -21,33 +21,33 @@ export default function ContactPage() {
   return (
     <AnimatedBackground variant="contact">
       {/* Hero Section */}
-      <section className="relative overflow-hidden bg-gradient-to-br from-sunshine-100 via-coral-100 to-mint-100 dark:from-sunshine-900/20 dark:via-coral-900/20 dark:to-mint-900/20 py-20 md:py-28">
-        {/* Floating decorative elements */}
-        <div className="absolute top-10 left-10 w-20 h-20 bg-sunshine-300 rounded-full opacity-20 animate-float"></div>
-        <div className="absolute top-20 right-20 w-16 h-16 bg-coral-300 rounded-full opacity-20 animate-float-delayed"></div>
-        <div className="absolute bottom-20 left-20 w-24 h-24 bg-mint-300 rounded-full opacity-20 animate-bounce-gentle"></div>
-        <div className="absolute bottom-10 right-10 w-18 h-18 bg-lavender-300 rounded-full opacity-20 animate-float-slow"></div>
+      <section className="relative overflow-hidden bg-gradient-to-br from-sunshine-100 via-coral-100 to-mint-100 dark:from-sunshine-900/20 dark:via-coral-900/20 dark:to-mint-900/20 py-16 sm:py-20 md:py-28">
+        {/* Floating decorative elements - hidden on mobile for better performance */}
+        <div className="hidden sm:block absolute top-10 left-10 w-16 sm:w-20 h-16 sm:h-20 bg-sunshine-300 rounded-full opacity-20 animate-float"></div>
+        <div className="hidden sm:block absolute top-20 right-20 w-12 sm:w-16 h-12 sm:h-16 bg-coral-300 rounded-full opacity-20 animate-float-delayed"></div>
+        <div className="hidden sm:block absolute bottom-20 left-20 w-20 sm:w-24 h-20 sm:h-24 bg-mint-300 rounded-full opacity-20 animate-bounce-gentle"></div>
+        <div className="hidden sm:block absolute bottom-10 right-10 w-16 sm:w-18 h-16 sm:h-18 bg-lavender-300 rounded-full opacity-20 animate-float-slow"></div>
 
-        <div className="container relative z-10">
-          <div className="mx-auto max-w-4xl text-center space-y-8">
-            <Badge className="px-8 py-4 text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-4 border-white/50">
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="mx-auto max-w-4xl text-center space-y-6 sm:space-y-8">
+            <Badge className="px-4 sm:px-8 py-3 sm:py-4 text-lg sm:text-xl font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full shadow-xl animate-bounce-gentle border-2 sm:border-4 border-white/50">
               📞 Contact NIBOG
             </Badge>
 
-            <h1 className="text-5xl font-bold tracking-tight md:text-6xl lg:text-7xl">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl xl:text-7xl font-bold tracking-tight">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-500 via-coral-500 to-mint-500 bg-[length:200%_auto] animate-rainbow-shift">
                 Contact Us
               </span>
             </h1>
 
-            <p className="text-xl md:text-2xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed max-w-3xl mx-auto">
+            <p className="text-base sm:text-lg md:text-xl lg:text-2xl text-neutral-charcoal/80 dark:text-white/80 leading-relaxed max-w-3xl mx-auto px-4 sm:px-0">
               We'd love to hear from you! Reach out to the <span className="font-bold text-sunshine-600">NIBOG team</span> with any
               <span className="font-bold text-coral-600"> questions</span> or
               <span className="font-bold text-mint-600"> inquiries</span> 💬
             </p>
 
             {/* Fun emoji decorations */}
-            <div className="flex justify-center gap-6 text-4xl">
+            <div className="flex justify-center gap-3 sm:gap-6 text-2xl sm:text-4xl">
               <span className="animate-bounce-gentle">📞</span>
               <span className="animate-bounce-gentle" style={{animationDelay: '0.5s'}}>💬</span>
               <span className="animate-bounce-gentle" style={{animationDelay: '1s'}}>📧</span>
@@ -58,85 +58,85 @@ export default function ContactPage() {
       </section>
 
       {/* Contact Information */}
-      <section className="relative py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
+      <section className="relative py-12 sm:py-16 md:py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
+        {/* Decorative background elements - hidden on mobile */}
+        <div className="hidden sm:block absolute top-0 left-0 w-24 sm:w-32 h-24 sm:h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
+        <div className="hidden sm:block absolute bottom-0 right-0 w-32 sm:w-40 h-32 sm:h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
+        <div className="hidden sm:block absolute top-1/2 left-1/4 w-20 sm:w-24 h-20 sm:h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
 
-        <div className="container relative z-10">
-          <div className="grid gap-16 md:grid-cols-2">
-            <div className="space-y-8">
-              <div className="space-y-4">
-                <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full w-fit">
+        <div className="container relative z-10 px-4 sm:px-6">
+          <div className="grid gap-8 sm:gap-12 md:gap-16 md:grid-cols-2">
+            <div className="space-y-6 sm:space-y-8">
+              <div className="space-y-3 sm:space-y-4">
+                <Badge className="px-3 sm:px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full w-fit">
                   💬 Get in Touch
                 </Badge>
-                <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
+                <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight">
                   <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
                     Get in Touch
                   </span>
                 </h2>
-                <p className="text-lg text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">
+                <p className="text-base sm:text-lg text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">
                   Have questions about our events, registration process, or anything else? Our team is here to help!
                 </p>
               </div>
 
-              <div className="space-y-6">
-                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gradient-to-br from-sunshine-400 to-sunshine-600 rounded-full p-4 shadow-lg animate-medal-shine">
-                      <Phone className="h-6 w-6 text-white" />
+              <div className="space-y-4 sm:space-y-6">
+                <div className="card-baby-gradient p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300 touch-manipulation">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-gradient-to-br from-sunshine-400 to-sunshine-600 rounded-full p-3 sm:p-4 shadow-lg animate-medal-shine">
+                      <Phone className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">📞 Phone</h3>
-                      <p className="text-lg font-semibold text-sunshine-700 mt-2">+91-8977939614/15</p>
-                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Call us for immediate assistance</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gradient-to-br from-coral-400 to-coral-600 rounded-full p-4 shadow-lg animate-medal-shine">
-                      <Mail className="h-6 w-6 text-white" />
-                    </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">📧 Email</h3>
-                      <p className="text-lg font-semibold text-coral-700 mt-2">newindababyolympics@gmail.com</p>
-                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Send us your queries anytime</p>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-neutral-charcoal dark:text-white">📞 Phone</h3>
+                      <p className="text-base sm:text-lg font-semibold text-sunshine-700 mt-1 sm:mt-2 break-all">+91-8977939614/15</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-xs sm:text-sm mt-1">Call us for immediate assistance</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gradient-to-br from-mint-400 to-mint-600 rounded-full p-4 shadow-lg animate-medal-shine">
-                      <MapPin className="h-6 w-6 text-white" />
+                <div className="card-baby-gradient p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300 touch-manipulation">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-gradient-to-br from-coral-400 to-coral-600 rounded-full p-3 sm:p-4 shadow-lg animate-medal-shine">
+                      <Mail className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🏢 Head Office</h3>
-                      <p className="text-lg font-semibold text-mint-700 mt-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-neutral-charcoal dark:text-white">📧 Email</h3>
+                      <p className="text-base sm:text-lg font-semibold text-coral-700 mt-1 sm:mt-2 break-all">newindababyolympics@gmail.com</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-xs sm:text-sm mt-1">Send us your queries anytime</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="card-baby-gradient p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300 touch-manipulation">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-gradient-to-br from-mint-400 to-mint-600 rounded-full p-3 sm:p-4 shadow-lg animate-medal-shine">
+                      <MapPin className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-neutral-charcoal dark:text-white">🏢 Head Office</h3>
+                      <p className="text-base sm:text-lg font-semibold text-mint-700 mt-1 sm:mt-2">
                         NIBOG, P.No:18, H.NO 33-30/4,<br />
                         Officers Colony, R.K Puram,<br />
                         Hyderabad - 500056
                       </p>
-                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">Visit us at our headquarters</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-xs sm:text-sm mt-1">Visit us at our headquarters</p>
                     </div>
                   </div>
                 </div>
 
-                <div className="card-baby-gradient p-6 rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300">
-                  <div className="flex items-start gap-4">
-                    <div className="bg-gradient-to-br from-lavender-400 to-lavender-600 rounded-full p-4 shadow-lg animate-medal-shine">
-                      <Clock className="h-6 w-6 text-white" />
+                <div className="card-baby-gradient p-4 sm:p-6 rounded-2xl sm:rounded-3xl shadow-xl border-2 border-white/50 hover:scale-105 transition-all duration-300 touch-manipulation">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <div className="bg-gradient-to-br from-lavender-400 to-lavender-600 rounded-full p-3 sm:p-4 shadow-lg animate-medal-shine">
+                      <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-white" />
                     </div>
-                    <div>
-                      <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🕒 Office Hours</h3>
-                      <p className="text-lg font-semibold text-lavender-700 mt-2">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-lg sm:text-xl font-bold text-neutral-charcoal dark:text-white">🕒 Office Hours</h3>
+                      <p className="text-base sm:text-lg font-semibold text-lavender-700 mt-1 sm:mt-2">
                         Monday - Sunday<br />
                         10:00 AM - 6:00 PM
                       </p>
-                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-sm mt-1">We're here to help every day!</p>
+                      <p className="text-neutral-charcoal/70 dark:text-white/70 text-xs sm:text-sm mt-1">We're here to help every day!</p>
                     </div>
                   </div>
                 </div>
@@ -146,36 +146,60 @@ export default function ContactPage() {
             </div>
 
             <div className="relative">
-              <div className="absolute -inset-6 bg-[radial-gradient(circle_at_70%_30%,rgba(180,180,255,0.2),transparent_70%),radial-gradient(circle_at_30%_70%,rgba(255,182,193,0.2),transparent_70%)] blur-xl rounded-2xl opacity-70 dark:opacity-30"></div>
+              <div className="absolute -inset-3 sm:-inset-6 bg-[radial-gradient(circle_at_70%_30%,rgba(180,180,255,0.2),transparent_70%),radial-gradient(circle_at_30%_70%,rgba(255,182,193,0.2),transparent_70%)] blur-xl rounded-2xl opacity-70 dark:opacity-30"></div>
               <Card className="bg-white dark:bg-slate-800/90 shadow-md relative z-10">
-                <CardContent className="pt-6">
-                  <form className="space-y-6">
+                <CardContent className="p-4 sm:p-6">
+                  <form className="space-y-4 sm:space-y-6">
                     <div className="space-y-2">
-                      <Label htmlFor="name">Your Name</Label>
-                      <Input id="name" placeholder="Enter your full name" required />
+                      <Label htmlFor="name" className="text-sm sm:text-base">Your Name</Label>
+                      <Input
+                        id="name"
+                        placeholder="Enter your full name"
+                        required
+                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email">Email Address</Label>
-                      <Input id="email" type="email" placeholder="Enter your email address" required />
+                      <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        placeholder="Enter your email address"
+                        required
+                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="phone">Phone Number</Label>
-                      <Input id="phone" placeholder="Enter your phone number" />
+                      <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
+                      <Input
+                        id="phone"
+                        placeholder="Enter your phone number"
+                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="subject">Subject</Label>
-                      <Input id="subject" placeholder="What is your message about?" required />
+                      <Label htmlFor="subject" className="text-sm sm:text-base">Subject</Label>
+                      <Input
+                        id="subject"
+                        placeholder="What is your message about?"
+                        required
+                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                      />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="message">Message</Label>
+                      <Label htmlFor="message" className="text-sm sm:text-base">Message</Label>
                       <Textarea
                         id="message"
                         placeholder="Please provide details about your inquiry"
-                        rows={5}
+                        rows={4}
                         required
+                        className="text-base sm:text-sm touch-manipulation resize-none"
                       />
                     </div>
-                    <Button type="submit" className="w-full">
+                    <Button
+                      type="submit"
+                      className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                    >
                       <Send className="mr-2 h-4 w-4" />
                       Send Message
                     </Button>
@@ -188,21 +212,21 @@ export default function ContactPage() {
       </section>
 
       {/* FAQ Section */}
-      <section className="relative py-16 md:py-24">
+      <section className="relative py-12 sm:py-16 md:py-24">
         <div className="absolute inset-0 bg-slate-50 dark:bg-slate-800/50 -z-10"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(147,197,253,0.15),transparent_60%),radial-gradient(circle_at_70%_70%,rgba(216,180,254,0.15),transparent_60%)] blur-xl opacity-80 dark:opacity-20 -z-10"></div>
-        <div className="container">
+        <div className="container px-4 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
             <div className="inline-block rounded-lg bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
               FAQs
             </div>
-            <h2 className="mt-4 text-3xl font-bold tracking-tight">Frequently Asked Questions</h2>
-            <p className="mt-4 text-slate-600 dark:text-slate-300">
+            <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">Frequently Asked Questions</h2>
+            <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
               Find answers to common questions about NIBOG events and registration
             </p>
           </div>
 
-          <div className="mt-12 grid gap-6 md:grid-cols-2">
+          <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-6 md:grid-cols-2">
             {[
               {
                 question: "How do I register my child for a NIBOG event?",
@@ -256,21 +280,30 @@ export default function ContactPage() {
       
 
       {/* CTA */}
-      <section className="bg-purple-600 py-16 text-white dark:bg-purple-900 md:py-24">
-        <div className="container">
+      <section className="bg-purple-600 py-12 sm:py-16 md:py-24 text-white dark:bg-purple-900">
+        <div className="container px-4 sm:px-6">
           <div className="mx-auto max-w-3xl text-center">
-            <h2 className="text-3xl font-bold tracking-tight text-white md:text-4xl">
+            <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-white">
               Ready to Join the NIBOG Family?
             </h2>
-            <p className="mt-4 text-xl text-purple-100">
+            <p className="mt-4 text-base sm:text-lg md:text-xl text-purple-100">
               Register your child for our upcoming events and be part of India's biggest baby Olympic games
             </p>
-            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Button size="lg" className="bg-white text-purple-600 hover:bg-purple-50" asChild>
+            <div className="mt-6 sm:mt-8 flex flex-col justify-center gap-3 sm:gap-4 sm:flex-row">
+              <Button
+                size="lg"
+                className="bg-white text-purple-600 hover:bg-purple-50 h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                asChild
+              >
                 <Link href="/register-event">Register Now</Link>
               </Button>
-              <Button size="lg" variant="outline" className="bg-transparent text-white hover:bg-white/10" asChild>
-                <Link href="/register">Register Now</Link>
+              <Button
+                size="lg"
+                variant="outline"
+                className="bg-transparent text-white hover:bg-white/10 border-white h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                asChild
+              >
+                <Link href="/events">Browse Events</Link>
               </Button>
             </div>
           </div>
