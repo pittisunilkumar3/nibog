@@ -200,3 +200,34 @@ export async function deleteBabyGame(id: number): Promise<{ success: boolean }> 
     throw error;
   }
 }
+
+/**
+ * Upload image for baby game
+ * @param file The image file to upload
+ * @returns Promise with the uploaded file path
+ */
+export async function uploadBabyGameImage(file: File): Promise<string> {
+  try {
+    console.log('Uploading baby game image...');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/babygames/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to upload baby game image');
+    }
+
+    const result = await response.json();
+    console.log('Successfully uploaded baby game image:', result.path);
+    return result.path;
+  } catch (error) {
+    console.error('Error uploading baby game image:', error);
+    throw error;
+  }
+}

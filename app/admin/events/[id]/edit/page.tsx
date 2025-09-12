@@ -20,7 +20,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
-import { getEventById, updateEvent, formatEventDataForUpdate } from "@/services/eventService"
+import { getEventById, updateEvent, formatEventDataForUpdate, uploadEventImage } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
 import { getVenuesByCity } from "@/services/venueService"
 import { getAllBabyGames, BabyGame as ImportedBabyGame } from "@/services/babyGameService"
@@ -130,6 +130,8 @@ export default function EditEventPage({ params }: Props) {
   const [cityError, setCityError] = useState<string | null>(null)
   const [venueError, setVenueError] = useState<string | null>(null)
   const [gamesError, setGamesError] = useState<string | null>(null)
+  const [eventImage, setEventImage] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   // Fetch event data when component mounts
   useEffect(() => {
@@ -467,6 +469,33 @@ export default function EditEventPage({ params }: Props) {
     }))
   }
 
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsUploadingImage(true)
+      const imagePath = await uploadEventImage(file)
+      setEventImage(imagePath)
+      console.log('Event image uploaded successfully:', imagePath)
+
+      toast({
+        title: "Success",
+        description: "Event image uploaded successfully!",
+      })
+    } catch (error: any) {
+      console.error('Error uploading event image:', error)
+      toast({
+        title: "Error",
+        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -507,10 +536,16 @@ export default function EditEventPage({ params }: Props) {
         date: selectedDate ? format(selectedDate, "yyyy-MM-dd") : "",
         status: eventStatus,
         games: selectedGames,
-        cityId: cityId
+        cityId: cityId,
+        imagePath: eventImage
       }
 
       console.log("Form data for update:", formData)
+
+      // Log uploaded image path if available
+      if (eventImage) {
+        console.log("Event image uploaded successfully:", eventImage)
+      }
 
       // Format the data for the API
       const apiData = formatEventDataForUpdate(Number(eventId), formData)
@@ -621,6 +656,31 @@ export default function EditEventPage({ params }: Props) {
                     rows={4}
                     className="touch-manipulation"
                   />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="eventImage">Event Image</Label>
+                  <div className="space-y-2">
+                    <Input
+                      id="eventImage"
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={isUploadingImage}
+                      className="cursor-pointer touch-manipulation"
+                    />
+                    {isUploadingImage && (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Uploading image...
+                      </div>
+                    )}
+                    {eventImage && (
+                      <div className="flex items-center text-sm text-green-600">
+                        <span>✓ Image uploaded: {eventImage.split('/').pop()}</span>
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 <div className="space-y-2">

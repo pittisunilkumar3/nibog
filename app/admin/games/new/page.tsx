@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { X, Wand2, Loader2 } from "lucide-react"
-import { createBabyGame } from "@/services/babyGameService"
+import { createBabyGame, uploadBabyGameImage } from "@/services/babyGameService"
 import { toast } from "@/components/ui/use-toast"
 
 export default function NewGameTemplate() {
@@ -29,6 +29,8 @@ export default function NewGameTemplate() {
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [gameImage, setGameImage] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -52,6 +54,33 @@ export default function NewGameTemplate() {
     }, 1500)
   }
 
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsUploadingImage(true)
+      const imagePath = await uploadBabyGameImage(file)
+      setGameImage(imagePath)
+      console.log('Baby game image uploaded successfully:', imagePath)
+
+      toast({
+        title: "Success",
+        description: "Game image uploaded successfully!",
+      })
+    } catch (error: any) {
+      console.error('Error uploading baby game image:', error)
+      toast({
+        title: "Error",
+        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSubmitting(true)
@@ -67,7 +96,15 @@ export default function NewGameTemplate() {
         max_age_months: maxAge,       // API expects max_age_months
         duration_minutes: duration,
         categories: categories,
-        is_active: isActive
+        is_active: isActive,
+        imagePath: gameImage
+      }
+
+      console.log("Baby game data:", gameData)
+
+      // Log uploaded image path if available
+      if (gameImage) {
+        console.log("Baby game image uploaded successfully:", gameImage)
       }
 
       // Call the API to create the game
@@ -142,6 +179,31 @@ export default function NewGameTemplate() {
                 rows={5}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gameImage">Game Image</Label>
+              <div className="space-y-2">
+                <Input
+                  id="gameImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImage}
+                  className="cursor-pointer"
+                />
+                {isUploadingImage && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading image...
+                  </div>
+                )}
+                {gameImage && (
+                  <div className="flex items-center text-sm text-green-600">
+                    <span>✓ Image uploaded: {gameImage.split('/').pop()}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">

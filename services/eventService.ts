@@ -1059,6 +1059,37 @@ export function getEventWithParticipants(id: string) {
   return null;
 }
 
+/**
+ * Upload image for event
+ * @param file The image file to upload
+ * @returns Promise with the uploaded file path
+ */
+export async function uploadEventImage(file: File): Promise<string> {
+  try {
+    console.log('Uploading event image...');
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/events/upload-image', {
+      method: 'POST',
+      body: formData,
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Failed to upload event image');
+    }
+
+    const result = await response.json();
+    console.log('Successfully uploaded event image:', result.path);
+    return result.path;
+  } catch (error) {
+    console.error('Error uploading event image:', error);
+    throw error;
+  }
+}
+
 export async function deleteEvent(id: number): Promise<{ success: boolean } | Array<{ success: boolean }>> {
   console.log(`Attempting to delete event with ID: ${id}`);
 

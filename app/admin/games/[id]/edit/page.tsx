@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -14,20 +14,19 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { X, Wand2, ArrowLeft, Loader2 } from "lucide-react"
-import { getBabyGameById, updateBabyGame } from "@/services/babyGameService"
+import { getBabyGameById, updateBabyGame, uploadBabyGameImage } from "@/services/babyGameService"
 import { useToast } from "@/components/ui/use-toast"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function EditGameTemplate({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap the params Promise using React.use()
-  const resolvedParams = use(params)
-  const gameId = parseInt(resolvedParams.id, 10)
+  // Get the game ID from params
+  const gameId = parseInt(params.id, 10)
 
   const [isLoading, setIsLoading] = useState(true)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -44,6 +43,8 @@ export default function EditGameTemplate({ params }: Props) {
   const [categories, setCategories] = useState<string[]>([])
   const [isGeneratingDescription, setIsGeneratingDescription] = useState(false)
   const [isSaved, setIsSaved] = useState(false)
+  const [gameImage, setGameImage] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
 
   // Fetch game data when component mounts
   useEffect(() => {
@@ -54,7 +55,7 @@ export default function EditGameTemplate({ params }: Props) {
 
         // Validate gameId
         if (isNaN(gameId) || gameId <= 0) {
-          const errorMsg = `Invalid game ID: ${resolvedParams.id}. ID must be a positive number.`
+          const errorMsg = `Invalid game ID: ${params.id}. ID must be a positive number.`
           setError(errorMsg)
           setIsLoading(false)
           return
@@ -90,7 +91,7 @@ export default function EditGameTemplate({ params }: Props) {
     }
 
     fetchGameData()
-  }, [gameId, resolvedParams.id]) // Removed toast from dependency array to prevent infinite loop
+  }, [gameId, params.id]) // Removed toast from dependency array to prevent infinite loop
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -114,6 +115,33 @@ export default function EditGameTemplate({ params }: Props) {
     }, 1500)
   }
 
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    try {
+      setIsUploadingImage(true)
+      const imagePath = await uploadBabyGameImage(file)
+      setGameImage(imagePath)
+      console.log('Baby game image uploaded successfully:', imagePath)
+
+      toast({
+        title: "Success",
+        description: "Game image uploaded successfully!",
+      })
+    } catch (error: any) {
+      console.error('Error uploading baby game image:', error)
+      toast({
+        title: "Error",
+        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        variant: "destructive",
+      })
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
@@ -131,6 +159,14 @@ export default function EditGameTemplate({ params }: Props) {
         duration_minutes: duration,
         categories: categories,
         is_active: isActive,
+        imagePath: gameImage
+      }
+
+      console.log("Baby game update data:", gameData)
+
+      // Log uploaded image path if available
+      if (gameImage) {
+        console.log("Baby game image uploaded successfully:", gameImage)
       }
 
       // Call the API to update the game
@@ -251,6 +287,31 @@ export default function EditGameTemplate({ params }: Props) {
                 rows={5}
                 required
               />
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="gameImage">Game Image</Label>
+              <div className="space-y-2">
+                <Input
+                  id="gameImage"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImage}
+                  className="cursor-pointer"
+                />
+                {isUploadingImage && (
+                  <div className="flex items-center text-sm text-muted-foreground">
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Uploading image...
+                  </div>
+                )}
+                {gameImage && (
+                  <div className="flex items-center text-sm text-green-600">
+                    <span>✓ Image uploaded: {gameImage.split('/').pop()}</span>
+                  </div>
+                )}
+              </div>
             </div>
 
             <div className="space-y-2">
