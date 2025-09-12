@@ -45,6 +45,7 @@ export default function EditGameTemplate({ params }: Props) {
   const [isSaved, setIsSaved] = useState(false)
   const [gameImage, setGameImage] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imagePriority, setImagePriority] = useState("5")
 
   // Fetch game data when component mounts
   useEffect(() => {
@@ -159,14 +160,16 @@ export default function EditGameTemplate({ params }: Props) {
         duration_minutes: duration,
         categories: categories,
         is_active: isActive,
-        imagePath: gameImage
+        imagePath: gameImage,
+        imagePriority: imagePriority
       }
 
       console.log("Baby game update data:", gameData)
 
-      // Log uploaded image path if available
+      // Log uploaded image path and priority if available
       if (gameImage) {
         console.log("Baby game image uploaded successfully:", gameImage)
+        console.log("Baby game priority:", imagePriority)
       }
 
       // Call the API to update the game
@@ -311,6 +314,18 @@ export default function EditGameTemplate({ params }: Props) {
                     <span>✓ Image uploaded: {gameImage.split('/').pop()}</span>
                   </div>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={imagePriority}
+                  onChange={(e) => setImagePriority(e.target.value)}
+                  placeholder="Enter priority (1-10)"
+                />
               </div>
             </div>
 

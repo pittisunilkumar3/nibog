@@ -132,6 +132,7 @@ export default function EditEventPage({ params }: Props) {
   const [gamesError, setGamesError] = useState<string | null>(null)
   const [eventImage, setEventImage] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imagePriority, setImagePriority] = useState("5")
 
   // Fetch event data when component mounts
   useEffect(() => {
@@ -537,14 +538,16 @@ export default function EditEventPage({ params }: Props) {
         status: eventStatus,
         games: selectedGames,
         cityId: cityId,
-        imagePath: eventImage
+        imagePath: eventImage,
+        imagePriority: imagePriority
       }
 
       console.log("Form data for update:", formData)
 
-      // Log uploaded image path if available
+      // Log uploaded image path and priority if available
       if (eventImage) {
         console.log("Event image uploaded successfully:", eventImage)
+        console.log("Event priority:", imagePriority)
       }
 
       // Format the data for the API
@@ -680,6 +683,19 @@ export default function EditEventPage({ params }: Props) {
                         <span>✓ Image uploaded: {eventImage.split('/').pop()}</span>
                       </div>
                     )}
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="priority">Priority</Label>
+                    <Input
+                      id="priority"
+                      type="number"
+                      min="1"
+                      max="10"
+                      value={imagePriority}
+                      onChange={(e) => setImagePriority(e.target.value)}
+                      placeholder="Enter priority (1-10)"
+                      className="touch-manipulation"
+                    />
                   </div>
                 </div>
 

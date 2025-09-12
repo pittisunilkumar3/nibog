@@ -12,7 +12,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { X, Wand2, Loader2 } from "lucide-react"
+import { X, Star, Loader2 } from "lucide-react"
 import { createBabyGame, uploadBabyGameImage } from "@/services/babyGameService"
 import { toast } from "@/components/ui/use-toast"
 
@@ -31,6 +31,7 @@ export default function NewGameTemplate() {
   const [error, setError] = useState<string | null>(null)
   const [gameImage, setGameImage] = useState<string | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [imagePriority, setImagePriority] = useState("5")
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -97,14 +98,16 @@ export default function NewGameTemplate() {
         duration_minutes: duration,
         categories: categories,
         is_active: isActive,
-        imagePath: gameImage
+        imagePath: gameImage,
+        imagePriority: imagePriority
       }
 
       console.log("Baby game data:", gameData)
 
-      // Log uploaded image path if available
+      // Log uploaded image path and priority if available
       if (gameImage) {
         console.log("Baby game image uploaded successfully:", gameImage)
+        console.log("Baby game priority:", imagePriority)
       }
 
       // Call the API to create the game
@@ -167,7 +170,7 @@ export default function NewGameTemplate() {
                   onClick={handleGenerateDescription}
                   disabled={isGeneratingDescription || !name}
                 >
-                  <Wand2 className="mr-2 h-4 w-4" />
+                  <Star className="mr-2 h-4 w-4" />
                   {isGeneratingDescription ? "Generating..." : "Generate with AI"}
                 </Button>
               </div>
@@ -203,6 +206,18 @@ export default function NewGameTemplate() {
                     <span>✓ Image uploaded: {gameImage.split('/').pop()}</span>
                   </div>
                 )}
+              </div>
+              <div className="space-y-2">
+                <Label htmlFor="priority">Priority</Label>
+                <Input
+                  id="priority"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={imagePriority}
+                  onChange={(e) => setImagePriority(e.target.value)}
+                  placeholder="Enter priority (1-10)"
+                />
               </div>
             </div>
 
