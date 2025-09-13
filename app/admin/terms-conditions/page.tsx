@@ -71,7 +71,7 @@ const mockTermsContent: TermsConditionsContent = {
 
     <h2>10. Contact Information</h2>
     <p>For questions or concerns regarding these Terms and Conditions, please contact us at:</p>
-    <p>Email: newindababyolympics@gmail.com<br />
+    <p>Email: newindiababyolympics@gmail.com<br />
     Phone: +91-8977939614/15<br />
     Address: NIBOG, P.No:18, H.NO 33-30/4, Officers Colony, R.K Puram, Hyderabad - 500056.</p>
   `,

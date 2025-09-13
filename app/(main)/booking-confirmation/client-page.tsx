@@ -569,8 +569,8 @@ function BookingConfirmationContent() {
 
           <div className="text-center text-sm text-gray-500">
             Need help? Contact us at{" "}
-            <Link href="mailto:newindababyolympics@gmail.com" className="text-green-600 font-medium underline-offset-4 hover:underline transition-colors">
-              newindababyolympics@gmail.com
+            <Link href="mailto:newindiababyolympics@gmail.com" className="text-green-600 font-medium underline-offset-4 hover:underline transition-colors">
+              newindiababyolympics@gmail.com
             </Link>
           </div>
         </CardFooter>

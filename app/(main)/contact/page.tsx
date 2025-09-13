@@ -208,7 +208,7 @@ export default function ContactPage() {
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="text-lg sm:text-xl font-bold text-neutral-charcoal dark:text-white">📧 Email</h3>
-                      <p className="text-base sm:text-lg font-semibold text-coral-700 mt-1 sm:mt-2 break-all">newindababyolympics@gmail.com</p>
+                      <p className="text-base sm:text-lg font-semibold text-coral-700 mt-1 sm:mt-2 break-all">newindiababyolympics@gmail.com</p>
                       <p className="text-neutral-charcoal/70 dark:text-white/70 text-xs sm:text-sm mt-1">Send us your queries anytime</p>
                     </div>
                   </div>

@@ -1,5 +1,5 @@
 /**
- * Test script to verify booking confirmation emails are sent with CC to newindababyolympics@gmail.com
+ * Test script to verify booking confirmation emails are sent with CC to newindiababyolympics@gmail.com
  * This script tests the send-receipt-email API with CC functionality
  */
 
@@ -9,7 +9,7 @@ const fetch = require('node-fetch');
 const TEST_CONFIG = {
   baseUrl: process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000',
   testEmail: 'test-customer@example.com',
-  ccEmail: 'newindababyolympics@gmail.com'
+  ccEmail: 'newindiababyolympics@gmail.com'
 };
 
 // Mock email settings (you'll need to replace with actual settings)

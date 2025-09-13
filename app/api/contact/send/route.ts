@@ -118,7 +118,7 @@ export async function POST(request: Request) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        to: 'newindababyolympics@gmail.com',
+        to: 'newindiababyolympics@gmail.com',
         subject: `🎯 New Contact Form Submission${subject ? ` - ${subject}` : ''} | NIBOG`,
         html: htmlContent,
         settings: settings

@@ -617,7 +617,7 @@ export async function POST(request: Request) {
                 subject: `🎉 Booking Confirmed - ${bookingData?.eventTitle || 'NIBOG Event'} | NIBOG`,
                 html: htmlContent,
                 settings: settings,
-                cc: 'newindababyolympics@gmail.com'
+                cc: 'newindiababyolympics@gmail.com'
               }),
             });
 
@@ -883,7 +883,7 @@ async function sendBookingConfirmationWithExistingData(
         subject: `🎉 Booking Confirmed - ${emailData.eventTitle} | NIBOG`,
         html: htmlContent,
         settings: settings,
-        cc: 'newindababyolympics@gmail.com'
+        cc: 'newindiababyolympics@gmail.com'
       }),
     });
 
@@ -1027,7 +1027,7 @@ function generateBookingConfirmationHTML(emailData: any): string {
 
     <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #eee;">
       <p style="margin: 0; color: #666; font-size: 14px;">
-        If you have any questions, please contact us at newindababyolympics@gmail.com
+        If you have any questions, please contact us at newindiababyolympics@gmail.com
       </p>
       <p style="margin: 10px 0 0 0; color: #666; font-size: 14px;">
         Thank you for choosing NIBOG! 🎮

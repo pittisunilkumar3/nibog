@@ -32,7 +32,7 @@ export default function Footer() {
   const companyDescription = footerData?.company_description || "India's biggest baby Olympic games platform, executing in 21 cities across India. NIBOG is focused exclusively on conducting baby games for children aged 5-84 months."
     const address = footerData?.address || "NIBOG, P.No:18, H.NO 33-30/4, Officers Colony,\nR.K Puram, Hyderabad - 500056."
   const phone = footerData?.phone || "+91-8977939614/15"
-  const email = footerData?.email || "newindababyolympics@gmail.com"
+  const email = footerData?.email || "newindiababyolympics@gmail.com"
   const newsletterEnabled = footerData?.newsletter_enabled ?? true
   const copyrightText = footerData?.copyright_text || "© {year} NIBOG. All rights reserved. India's Biggest Baby Olympic Games Platform."
   const facebookUrl = footerData?.facebook_url || "https://facebook.com"

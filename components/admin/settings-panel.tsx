@@ -82,7 +82,7 @@ export default function SettingsPanel({ className }: SettingsPanelProps) {
     smtpPort: "587",
     smtpUsername: "",
     smtpPassword: "",
-    fromEmail: "newindababyolympics@gmail.com ",
+    fromEmail: "newindiababyolympics@gmail.com ",
     fromName: "NIBOG Team",
     
     // Backup settings
