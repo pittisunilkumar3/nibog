@@ -32,6 +32,7 @@ import {
   Star,
   Layout,
   Trophy,
+  HelpCircle,
 
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -190,16 +191,10 @@ const adminRoutes: AdminRouteSection[] = [
         description: "Customer reviews",
       },
       {
-        href: "/admin/sports-importance",
-        label: "Sports Importance",
-        icon: <Trophy className="h-4 w-4" />,
-        description: "Why sports are important to children",
-      },
-      {
-        href: "/admin/game-importance",
-        label: "Game Importance",
-        icon: <BarChart3 className="h-4 w-4" />,
-        description: "Why games are important for children",
+        href: "/admin/faq",
+        label: "Frequently Asked Questions",
+        icon: <HelpCircle className="h-4 w-4" />,
+        description: "Manage FAQ content",
       },
       {
         href: "/admin/privacy-policy",

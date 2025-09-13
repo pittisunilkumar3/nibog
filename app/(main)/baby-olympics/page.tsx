@@ -9,7 +9,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Calendar, Clock, MapPin, Medal, Trophy, Award, Star, Loader2 } from "lucide-react"
-import { AnimatedTestimonials } from "@/components/animated-testimonials"
+
 import { AnimatedBackground } from "@/components/animated-background"
 import AgeSelector from "@/components/age-selector"
 import CitySelector from "@/components/city-selector"
@@ -344,69 +344,6 @@ export default function BabyOlympicsPage() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="relative py-16 md:py-24 overflow-hidden my-8">
-        {/* Background layers */}
-        <div className="absolute inset-0 bg-gradient-to-br from-yellow-50 via-orange-50 to-amber-50 dark:from-amber-950/20 dark:via-orange-950/10 dark:to-yellow-950/20 -z-10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(251,191,36,0.1),transparent_60%),radial-gradient(circle_at_70%_70%,rgba(245,158,11,0.1),transparent_60%)] blur-xl opacity-80 dark:opacity-30 -z-10"></div>
-        
-        {/* Decorative elements */}
-        <div className="absolute top-12 left-8 text-4xl opacity-20 animate-pulse-slow">💬</div>
-        <div className="absolute bottom-12 right-8 text-4xl opacity-20 animate-pulse-slow">❤️</div>
-        <div className="absolute top-1/3 right-1/4 text-2xl opacity-20 animate-bounce-slow">⭐</div>
-        <div className="absolute bottom-1/3 left-1/4 text-2xl opacity-20 animate-bounce-slow">✨</div>
-        
-        <div className="container">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2 text-center">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl dark:text-white">Children's Parents Speak for Us</h2>
-            <p className="mx-auto max-w-[700px] text-slate-700 dark:text-slate-500 font-medium">
-              Hear what parents have to say about NIBOG events
-            </p>
-          </div>
-          <AnimatedTestimonials
-            testimonials={[
-              {
-                quote: "The annual NIBOG game has been a huge hit with my kids. They love competing in different challenges and games, and it's been great for their confidence and self-esteem. I love that they're learning important life skills like perseverance and determination while they're having fun.",
-                name: "Harikrishna",
-                location: "Hyderabad",
-                src: "/images/baby-crawling.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "New India Baby Olympic games has been a great experience for my kids. They love competing with other kids and showing off their skills, and it's been great for their hand-eye coordination and fine motor skills. I love that they're learning important life skills like teamwork and sportsmanship while they're having fun.",
-                name: "Durga Prasad",
-                location: "Bangalore",
-                src: "/images/baby-walker.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "My kids love participating in games. It's been great for their problem-solving skills, as they get to tackle different challenges and puzzles. They've also developed their critical thinking skills and made new friends from different schools.",
-                name: "Srujana",
-                location: "Vizag",
-                src: "/images/running-race.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "The organization of the event was flawless. From registration to the actual games, everything was well-planned. The staff was friendly and helpful, making it a stress-free experience for parents and an exciting day for the children.",
-                name: "Rajesh Kumar",
-                location: "Chennai",
-                src: "/images/hurdle-toddle.jpg",
-                event: "Chennai Little Champions"
-              },
-              {
-                quote: "What I appreciate most about NIBOG is how they make every child feel like a winner. The focus is on participation and having fun, not just winning. My daughter came home with a medal and the biggest smile I've ever seen!",
-                name: "Priya Sharma",
-                location: "Mumbai",
-                src: "/images/ball-throw.jpg",
-                event: "Mumbai Mini Olympics"
-              }
-            ]}
-            className="py-8"
-          />
-        </div>
-        </div>
-      </section>
 
       {/* FAQ Section */}
       <section className="container">

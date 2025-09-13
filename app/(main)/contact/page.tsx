@@ -1,5 +1,8 @@
+"use client"
+
 import Image from "next/image"
 import Link from "next/link"
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
@@ -8,16 +11,119 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Phone, Mail, MapPin, Clock, Send, MessageSquare, HelpCircle } from "lucide-react"
-import type { Metadata } from "next"
+import { Phone, Mail, MapPin, Clock, Send, MessageSquare, HelpCircle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
+import { useToast } from "@/hooks/use-toast"
 
-export const metadata: Metadata = {
-  title: "Contact Us | NIBOG - New India Baby Olympic Games",
-  description: "Get in touch with the NIBOG team for inquiries about events, registrations, partnerships, or any other questions.",
+interface FormData {
+  name: string
+  email: string
+  phone: string
+  subject: string
+  message: string
+}
+
+interface FormErrors {
+  name?: string
+  email?: string
+  message?: string
 }
 
 export default function ContactPage() {
+  const { toast } = useToast()
+  const [formData, setFormData] = useState<FormData>({
+    name: '',
+    email: '',
+    phone: '',
+    subject: '',
+    message: ''
+  })
+  const [errors, setErrors] = useState<FormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [isSubmitted, setIsSubmitted] = useState(false)
+
+  const validateForm = (): boolean => {
+    const newErrors: FormErrors = {}
+
+    if (!formData.name.trim()) {
+      newErrors.name = 'Name is required'
+    }
+
+    if (!formData.email.trim()) {
+      newErrors.email = 'Email is required'
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+      newErrors.email = 'Please enter a valid email address'
+    }
+
+    if (!formData.message.trim()) {
+      newErrors.message = 'Message is required'
+    }
+
+    setErrors(newErrors)
+    return Object.keys(newErrors).length === 0
+  }
+
+  const handleInputChange = (field: keyof FormData, value: string) => {
+    setFormData(prev => ({ ...prev, [field]: value }))
+    // Clear error when user starts typing
+    if (errors[field as keyof FormErrors]) {
+      setErrors(prev => ({ ...prev, [field]: undefined }))
+    }
+  }
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault()
+
+    if (!validateForm()) {
+      toast({
+        title: "Validation Error",
+        description: "Please fix the errors in the form before submitting.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const response = await fetch('/api/contact/send', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        setIsSubmitted(true)
+        setFormData({
+          name: '',
+          email: '',
+          phone: '',
+          subject: '',
+          message: ''
+        })
+        toast({
+          title: "Message Sent Successfully! ✅",
+          description: result.message,
+        })
+      } else {
+        throw new Error(result.error || 'Failed to send message')
+      }
+    } catch (error) {
+      console.error('Contact form error:', error)
+      toast({
+        title: "Error Sending Message",
+        description: error instanceof Error ? error.message : 'An unexpected error occurred. Please try again.',
+        variant: "destructive",
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
   return (
     <AnimatedBackground variant="contact">
       {/* Hero Section */}
@@ -149,61 +255,119 @@ export default function ContactPage() {
               <div className="absolute -inset-3 sm:-inset-6 bg-[radial-gradient(circle_at_70%_30%,rgba(180,180,255,0.2),transparent_70%),radial-gradient(circle_at_30%_70%,rgba(255,182,193,0.2),transparent_70%)] blur-xl rounded-2xl opacity-70 dark:opacity-30"></div>
               <Card className="bg-white dark:bg-slate-800/90 shadow-md relative z-10">
                 <CardContent className="p-4 sm:p-6">
-                  <form className="space-y-4 sm:space-y-6">
-                    <div className="space-y-2">
-                      <Label htmlFor="name" className="text-sm sm:text-base">Your Name</Label>
-                      <Input
-                        id="name"
-                        placeholder="Enter your full name"
-                        required
-                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
-                      />
+                  {isSubmitted ? (
+                    <div className="text-center py-8">
+                      <CheckCircle className="mx-auto h-16 w-16 text-green-500 mb-4" />
+                      <h3 className="text-xl font-semibold text-green-700 mb-2">Message Sent Successfully!</h3>
+                      <p className="text-gray-600 mb-4">Thank you for contacting us. We'll get back to you soon.</p>
+                      <Button
+                        onClick={() => setIsSubmitted(false)}
+                        variant="outline"
+                        className="h-10"
+                      >
+                        Send Another Message
+                      </Button>
                     </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="email" className="text-sm sm:text-base">Email Address</Label>
-                      <Input
-                        id="email"
-                        type="email"
-                        placeholder="Enter your email address"
-                        required
-                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
-                      <Input
-                        id="phone"
-                        placeholder="Enter your phone number"
-                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="subject" className="text-sm sm:text-base">Subject</Label>
-                      <Input
-                        id="subject"
-                        placeholder="What is your message about?"
-                        required
-                        className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
-                      />
-                    </div>
-                    <div className="space-y-2">
-                      <Label htmlFor="message" className="text-sm sm:text-base">Message</Label>
-                      <Textarea
-                        id="message"
-                        placeholder="Please provide details about your inquiry"
-                        rows={4}
-                        required
-                        className="text-base sm:text-sm touch-manipulation resize-none"
-                      />
-                    </div>
-                    <Button
-                      type="submit"
-                      className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
-                    >
-                      <Send className="mr-2 h-4 w-4" />
-                      Send Message
-                    </Button>
-                  </form>
+                  ) : (
+                    <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+                      <div className="space-y-2">
+                        <Label htmlFor="name" className="text-sm sm:text-base">Your Name *</Label>
+                        <Input
+                          id="name"
+                          value={formData.name}
+                          onChange={(e) => handleInputChange('name', e.target.value)}
+                          placeholder="Enter your full name"
+                          required
+                          className={`h-11 sm:h-10 text-base sm:text-sm touch-manipulation ${
+                            errors.name ? 'border-red-500 focus:border-red-500' : ''
+                          }`}
+                        />
+                        {errors.name && (
+                          <p className="text-red-500 text-sm flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {errors.name}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="email" className="text-sm sm:text-base">Email Address *</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={formData.email}
+                          onChange={(e) => handleInputChange('email', e.target.value)}
+                          placeholder="Enter your email address"
+                          required
+                          className={`h-11 sm:h-10 text-base sm:text-sm touch-manipulation ${
+                            errors.email ? 'border-red-500 focus:border-red-500' : ''
+                          }`}
+                        />
+                        {errors.email && (
+                          <p className="text-red-500 text-sm flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {errors.email}
+                          </p>
+                        )}
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone" className="text-sm sm:text-base">Phone Number</Label>
+                        <Input
+                          id="phone"
+                          value={formData.phone}
+                          onChange={(e) => handleInputChange('phone', e.target.value)}
+                          placeholder="Enter your phone number"
+                          className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="subject" className="text-sm sm:text-base">Subject</Label>
+                        <Input
+                          id="subject"
+                          value={formData.subject}
+                          onChange={(e) => handleInputChange('subject', e.target.value)}
+                          placeholder="What is your message about?"
+                          className="h-11 sm:h-10 text-base sm:text-sm touch-manipulation"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="message" className="text-sm sm:text-base">Message *</Label>
+                        <Textarea
+                          id="message"
+                          value={formData.message}
+                          onChange={(e) => handleInputChange('message', e.target.value)}
+                          placeholder="Please provide details about your inquiry"
+                          rows={4}
+                          required
+                          className={`text-base sm:text-sm touch-manipulation resize-none ${
+                            errors.message ? 'border-red-500 focus:border-red-500' : ''
+                          }`}
+                        />
+                        {errors.message && (
+                          <p className="text-red-500 text-sm flex items-center">
+                            <AlertCircle className="h-4 w-4 mr-1" />
+                            {errors.message}
+                          </p>
+                        )}
+                      </div>
+                      <Button
+                        type="submit"
+                        disabled={isSubmitting}
+                        className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                      >
+                        {isSubmitting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Sending...
+                          </>
+                        ) : (
+                          <>
+                            <Send className="mr-2 h-4 w-4" />
+                            Send Message
+                          </>
+                        )}
+                      </Button>
+                    </form>
+                  )}
                 </CardContent>
               </Card>
             </div>
