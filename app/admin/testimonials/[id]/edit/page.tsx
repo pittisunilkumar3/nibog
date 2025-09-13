@@ -44,6 +44,14 @@ export default function EditTestimonialPage({ params }: Props) {
   const [cities, setCities] = useState<Array<{id: number, city_name: string}>>([])
   const [events, setEvents] = useState<Array<{id: number, title: string}>>([])
 
+  // New fields for image upload and priority
+  const [selectedImage, setSelectedImage] = useState<File | null>(null)
+  const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [isUploadingImage, setIsUploadingImage] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(null)
+  const [priority, setPriority] = useState<number>(1)
+
   useEffect(() => {
     // Fetch cities
     const fetchCities = async () => {
@@ -125,6 +133,89 @@ export default function EditTestimonialPage({ params }: Props) {
     }
   }, [testimonialId, events])
 
+  // Handle image upload
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
+      setError('Please select a valid image file (JPEG, PNG, GIF, or WebP)')
+      return
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024 // 5MB in bytes
+    if (file.size > maxSize) {
+      setError('Image file size must be less than 5MB')
+      return
+    }
+
+    setSelectedImage(file)
+    setError(null)
+
+    // Create preview
+    const reader = new FileReader()
+    reader.onload = (e) => {
+      setImagePreview(e.target?.result as string)
+    }
+    reader.readAsDataURL(file)
+
+    // Simulate upload process (since we're doing frontend-only implementation)
+    setIsUploadingImage(true)
+    setUploadProgress(0)
+
+    try {
+      // Simulate upload progress
+      const progressInterval = setInterval(() => {
+        setUploadProgress(prev => {
+          if (prev >= 90) {
+            clearInterval(progressInterval)
+            return 90
+          }
+          return prev + 10
+        })
+      }, 100)
+
+      // Simulate file processing delay
+      await new Promise(resolve => setTimeout(resolve, 1000))
+
+      // Generate a mock file path for the uploaded image
+      const timestamp = Date.now()
+      const fileName = `testimonial_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
+      const mockPath = `./upload/testimonial/${fileName}`
+
+      setUploadedImagePath(mockPath)
+      setUploadProgress(100)
+
+      console.log(`Image uploaded successfully: ${mockPath}`)
+      console.log(`Original file name: ${file.name}`)
+      console.log(`File size: ${(file.size / 1024 / 1024).toFixed(2)} MB`)
+
+    } catch (error) {
+      console.error('Error uploading image:', error)
+      setError('Failed to upload image. Please try again.')
+    } finally {
+      setIsUploadingImage(false)
+    }
+  }
+
+  // Remove uploaded image
+  const removeImage = () => {
+    setSelectedImage(null)
+    setImagePreview(null)
+    setUploadedImagePath(null)
+    setUploadProgress(0)
+    setError(null)
+
+    // Reset file input
+    const fileInput = document.getElementById('testimonial-image-edit') as HTMLInputElement
+    if (fileInput) {
+      fileInput.value = ''
+    }
+  }
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsLoading(true)
@@ -146,7 +237,10 @@ export default function EditTestimonialPage({ params }: Props) {
         rating: parseInt(rating),
         testimonial: testimonialText,
         date,
-        status: status.charAt(0).toUpperCase() + status.slice(1) // Capitalize first letter
+        status: status.charAt(0).toUpperCase() + status.slice(1), // Capitalize first letter
+        // New fields (frontend-only, not sent to API)
+        image_path: uploadedImagePath,
+        priority: priority
       }
 
       console.log('Submitting update with data:', updateData)
@@ -349,14 +443,99 @@ export default function EditTestimonialPage({ params }: Props) {
               
               <div className="space-y-2">
                 <Label htmlFor="date">Date</Label>
-                <Input 
-                  id="date" 
+                <Input
+                  id="date"
                   type="date"
-                  value={date} 
-                  onChange={(e) => setDate(e.target.value)} 
+                  value={date}
+                  onChange={(e) => setDate(e.target.value)}
                   required
                 />
               </div>
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Image Upload Field */}
+            <div className="space-y-2">
+              <Label htmlFor="testimonial-image-edit">Testimonial Image</Label>
+              <div className="space-y-4">
+                <Input
+                  id="testimonial-image-edit"
+                  type="file"
+                  accept="image/jpeg,image/jpg,image/png,image/gif,image/webp"
+                  onChange={handleImageUpload}
+                  disabled={isUploadingImage}
+                  className="cursor-pointer"
+                />
+
+                {/* Upload Progress */}
+                {isUploadingImage && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span>Uploading...</span>
+                      <span>{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2">
+                      <div
+                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      ></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Image Preview */}
+                {imagePreview && (
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-sm font-medium">Preview:</span>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={removeImage}
+                        className="text-red-600 hover:text-red-700"
+                      >
+                        Remove
+                      </Button>
+                    </div>
+                    <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
+                      <img
+                        src={imagePreview}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                      />
+                    </div>
+                    {uploadedImagePath && (
+                      <p className="text-xs text-green-600">
+                        ✓ Saved to: {uploadedImagePath}
+                      </p>
+                    )}
+                  </div>
+                )}
+              </div>
+              <p className="text-sm text-muted-foreground">
+                Upload an image for this testimonial. Supported formats: JPEG, PNG, GIF, WebP. Max size: 5MB.
+              </p>
+            </div>
+
+            <Separator className="my-4" />
+
+            {/* Priority Field */}
+            <div className="space-y-2">
+              <Label htmlFor="priority-edit">Priority</Label>
+              <Input
+                id="priority-edit"
+                type="number"
+                min="1"
+                max="100"
+                value={priority}
+                onChange={(e) => setPriority(parseInt(e.target.value) || 1)}
+                required
+              />
+              <p className="text-sm text-muted-foreground">
+                Set the display priority for this testimonial (1 = highest priority, 100 = lowest priority).
+              </p>
             </div>
           </CardContent>
           <CardFooter className="flex justify-between">

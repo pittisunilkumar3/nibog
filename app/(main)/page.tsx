@@ -4,6 +4,15 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState, useEffect } from "react"
 
+// Interface for homepage stats
+interface HomepageStats {
+  userRegistrations: number;
+  totalCities: number;
+  totalGames: number;
+  lastUpdated: string;
+  error?: string;
+}
+
 // Dynamic Home Hero Slider
 function HomeHeroSlider() {
   const [sliderImages, setSliderImages] = useState<string[]>([])
@@ -216,6 +225,156 @@ import AgeSelector from "@/components/age-selector"
 import { AnimatedTestimonials } from "@/components/animated-testimonials"
 import { Star, Award, MapPin } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
+
+// Dynamic Stats Component
+function DynamicStatsSection() {
+  const [stats, setStats] = useState<HomepageStats | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchStats = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const response = await fetch('/api/homepage-stats', {
+        method: 'GET',
+        cache: 'no-store',
+        headers: {
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+          'Pragma': 'no-cache',
+          'Expires': '0'
+        }
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+
+      const data = await response.json();
+      console.log('Homepage: Fetched stats:', data);
+      setStats(data);
+
+    } catch (error) {
+      console.error('Homepage: Error fetching stats:', error);
+      setError(error instanceof Error ? error.message : 'Failed to load stats');
+
+      // Set fallback stats
+      setStats({
+        userRegistrations: 1500,
+        totalCities: 21,
+        totalGames: 16,
+        lastUpdated: new Date().toISOString()
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchStats();
+
+    // Refresh stats every 5 minutes
+    const interval = setInterval(fetchStats, 5 * 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Format numbers with + suffix for display
+  const formatCount = (count: number) => {
+    if (count >= 1000) {
+      return `${Math.floor(count / 100) / 10}k+`;
+    }
+    return `${count}+`;
+  };
+
+  return (
+    <section className="relative py-20 bg-gradient-to-br from-sunshine-400 via-coral-400 to-mint-400 overflow-hidden">
+      {/* Animated background pattern */}
+      <div className="absolute inset-0 opacity-20">
+        <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.3),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.3),transparent_50%)]"></div>
+      </div>
+
+      <div className="container relative z-10">
+        <div className="text-center mb-12">
+          <h2 className="text-3xl font-bold text-white mb-4">🏆 NIBOG by the Numbers 🏆</h2>
+          <p className="text-white/90 text-lg">Celebrating achievements across India</p>
+        </div>
+
+        <div className="grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-3">
+          <div className="group">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-4">
+                  <div className="text-6xl animate-bounce-gentle">👶</div>
+                  <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 to-coral-600">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gradient-to-r from-sunshine-300 to-coral-300 rounded h-12 w-24 mx-auto"></div>
+                    ) : (
+                      formatCount(stats?.userRegistrations || 1500)
+                    )}
+                  </h3>
+                  <p className="text-neutral-charcoal font-semibold text-lg">Happy Registrations</p>
+                  <p className="text-neutral-charcoal/70 text-sm">Little champions ready to play!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="group">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-4">
+                  <div className="text-6xl animate-bounce-gentle" style={{animationDelay: '0.5s'}}>🎮</div>
+                  <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-coral-600 to-mint-600">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gradient-to-r from-coral-300 to-mint-300 rounded h-12 w-16 mx-auto"></div>
+                    ) : (
+                      stats?.totalGames || 16
+                    )}
+                  </h3>
+                  <p className="text-neutral-charcoal font-semibold text-lg">Exciting Games</p>
+                  <p className="text-neutral-charcoal/70 text-sm">From crawling to racing!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          <div className="group">
+            <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
+              <CardContent className="pt-8 pb-8">
+                <div className="space-y-4">
+                  <div className="text-6xl animate-bounce-gentle" style={{animationDelay: '1s'}}>🏙️</div>
+                  <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-mint-600 to-sunshine-600">
+                    {isLoading ? (
+                      <div className="animate-pulse bg-gradient-to-r from-mint-300 to-sunshine-300 rounded h-12 w-16 mx-auto"></div>
+                    ) : (
+                      stats?.totalCities || 21
+                    )}
+                  </h3>
+                  <p className="text-neutral-charcoal font-semibold text-lg">Cities Across India</p>
+                  <p className="text-neutral-charcoal/70 text-sm">Bringing joy nationwide!</p>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+
+        <div className="text-center mt-12">
+          <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-semibold">
+            <span className="animate-sparkle">⭐</span>
+            <span>Join thousands of happy families!</span>
+            <span className="animate-sparkle" style={{animationDelay: '1s'}}>⭐</span>
+          </div>
+          {error && (
+            <p className="text-white/70 text-xs mt-2">
+              Stats refreshed: {stats?.lastUpdated ? new Date(stats.lastUpdated).toLocaleTimeString() : 'Never'}
+            </p>
+          )}
+        </div>
+      </div>
+    </section>
+  );
+}
 
 export default function Home() {
   return (
@@ -707,69 +866,8 @@ export default function Home() {
 
 
 
-      {/* Stats Section */}
-      <section className="relative py-20 bg-gradient-to-br from-sunshine-400 via-coral-400 to-mint-400 overflow-hidden">
-        {/* Animated background pattern */}
-        <div className="absolute inset-0 opacity-20">
-          <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(circle_at_20%_80%,rgba(255,255,255,0.3),transparent_50%),radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.3),transparent_50%)]"></div>
-        </div>
-
-        <div className="container relative z-10">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-white mb-4">🏆 NIBOG by the Numbers 🏆</h2>
-            <p className="text-white/90 text-lg">Celebrating achievements across India</p>
-          </div>
-
-          <div className="grid gap-8 text-center sm:grid-cols-2 lg:grid-cols-3">
-            <div className="group">
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
-                <CardContent className="pt-8 pb-8">
-                  <div className="space-y-4">
-                    <div className="text-6xl animate-bounce-gentle">👶</div>
-                    <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 to-coral-600">1500+</h3>
-                    <p className="text-neutral-charcoal font-semibold text-lg">Happy Registrations</p>
-                    <p className="text-neutral-charcoal/70 text-sm">Little champions ready to play!</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="group">
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
-                <CardContent className="pt-8 pb-8">
-                  <div className="space-y-4">
-                    <div className="text-6xl animate-bounce-gentle" style={{animationDelay: '0.5s'}}>🎮</div>
-                    <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-coral-600 to-mint-600">16</h3>
-                    <p className="text-neutral-charcoal font-semibold text-lg">Exciting Games</p>
-                    <p className="text-neutral-charcoal/70 text-sm">From crawling to racing!</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="group">
-              <Card className="bg-white/90 backdrop-blur-sm border-0 shadow-2xl hover:shadow-3xl transition-all duration-300 hover:scale-110 rounded-3xl">
-                <CardContent className="pt-8 pb-8">
-                  <div className="space-y-4">
-                    <div className="text-6xl animate-bounce-gentle" style={{animationDelay: '1s'}}>🏙️</div>
-                    <h3 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-mint-600 to-sunshine-600">21</h3>
-                    <p className="text-neutral-charcoal font-semibold text-lg">Cities Across India</p>
-                    <p className="text-neutral-charcoal/70 text-sm">Bringing joy nationwide!</p>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-
-          <div className="text-center mt-12">
-            <div className="inline-flex items-center gap-2 bg-white/20 backdrop-blur-sm rounded-full px-6 py-3 text-white font-semibold">
-              <span className="animate-sparkle">⭐</span>
-              <span>Join thousands of happy families!</span>
-              <span className="animate-sparkle" style={{animationDelay: '1s'}}>⭐</span>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Stats Section - Now Dynamic */}
+      <DynamicStatsSection />
 
       {/* CTA Section */}
       <section className="container py-16">
@@ -791,7 +889,7 @@ export default function Home() {
                 </span>
               </h2>
               <p className="mx-auto max-w-[700px] text-lg text-neutral-charcoal/80 dark:text-white/80 leading-relaxed">
-                <span className="font-bold text-sunshine-700">Vizag</span>, <span className="font-bold text-coral-700">Hyderabad</span>, <span className="font-bold text-mint-700">Bangalore</span>, <span className="font-bold text-lavender-700">Mumbai</span> and <span className="font-bold text-sunshine-700">Delhi</span> registrations are now open!
+                Join thousands of families across India in celebrating your little champion's journey from crawling to racing!
               </p>
             </div>
 
@@ -819,11 +917,15 @@ export default function Home() {
             <div className="flex justify-center items-center gap-4 text-sm text-neutral-charcoal/70 dark:text-white/70">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 bg-sunshine-400 rounded-full animate-pulse"></span>
-                <span>Early Bird Pricing</span>
+                <span>Medal for All</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 bg-coral-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></span>
-                <span>Certificate for All</span>
+                <span>E-certificate for All</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="w-3 h-3 bg-coral-400 rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></span>
+                <span>Free Gifts</span>
               </div>
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 bg-mint-400 rounded-full animate-pulse" style={{animationDelay: '1s'}}></span>
