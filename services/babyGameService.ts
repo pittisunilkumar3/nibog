@@ -363,3 +363,51 @@ export async function fetchGameImages(gameId: number): Promise<any[]> {
     throw error;
   }
 }
+
+/**
+ * Update game image
+ * @param gameId The game ID
+ * @param imageUrl The image URL/path
+ * @param priority The priority of the image
+ * @param isActive Whether the image is active
+ * @returns Promise with update result
+ */
+export async function updateGameImage(
+  gameId: number,
+  imageUrl: string,
+  priority: number,
+  isActive: boolean = true
+): Promise<any> {
+  console.log("Updating game image:", { gameId, imageUrl, priority, isActive });
+
+  try {
+    const response = await fetch('/api/gamesimage/update', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        game_id: gameId,
+        image_url: imageUrl,
+        priority: priority,
+        is_active: isActive,
+      }),
+    });
+
+    console.log(`Update game image response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Update failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Game image update success:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error updating game image:", error);
+    throw error;
+  }
+}

@@ -20,7 +20,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
-import { getEventById, updateEvent, formatEventDataForUpdate, uploadEventImage, fetchEventImages, sendEventImageToWebhook } from "@/services/eventService"
+import { getEventById, updateEvent, formatEventDataForUpdate, uploadEventImage, fetchEventImages, sendEventImageToWebhook, updateEventImage } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
 import { getVenuesByCity } from "@/services/venueService"
 import { getAllBabyGames, BabyGame as ImportedBabyGame } from "@/services/babyGameService"
@@ -337,27 +337,56 @@ export default function EditEventPage({ params }: Props) {
   const fetchExistingImages = async () => {
     try {
       setIsLoadingImages(true)
-      console.log(`Fetching existing images for event ID: ${eventId}`)
+      console.log(`🔍 Fetching existing images for event ID: ${eventId}`)
+      console.log(`📍 This will use the new mapping system to find the correct API ID`)
 
       const images = await fetchEventImages(Number(eventId))
-      console.log("Existing event images:", images)
+      console.log("✅ Images fetched with mapping system:", images)
 
       // Filter out any invalid images and ensure we have an array
-      const validImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'object') : []
+      const validImages = Array.isArray(images)
+        ? images.filter(img =>
+            img &&
+            typeof img === 'object' &&
+            img.id !== undefined &&
+            img.image_url !== undefined &&
+            img.image_url !== null &&
+            img.image_url.trim() !== ''
+          )
+        : []
+      console.log("Filtered valid images:", validImages)
       setExistingImages(validImages)
 
-      // If there are existing images, set the first one as the current image
+      // If there are existing images, set the first one as the current image and priority
       if (validImages.length > 0) {
         const firstImage = validImages[0]
+        console.log("Setting first image as current:", firstImage)
+
         if (firstImage.image_url) {
           setEventImage(firstImage.image_url)
-          setImagePriority(firstImage.priority?.toString() || "1")
+          console.log("Set event image to:", firstImage.image_url)
         }
+
+        if (firstImage.priority !== undefined && firstImage.priority !== null) {
+          const priorityValue = firstImage.priority.toString()
+          setImagePriority(priorityValue)
+          console.log("Set image priority to:", priorityValue)
+        } else {
+          setImagePriority("1")
+          console.log("No priority found, defaulting to 1")
+        }
+      } else {
+        console.log("No existing images found")
+        setEventImage(null)
+        setImagePriority("1")
       }
     } catch (error: any) {
       console.error("Failed to fetch existing images:", error)
       // Don't show error toast for images as it's not critical
       console.warn("Could not load existing images, continuing without them")
+      setExistingImages([])
+      setEventImage(null)
+      setImagePriority("1")
     } finally {
       setIsLoadingImages(false)
     }
@@ -602,27 +631,59 @@ export default function EditEventPage({ params }: Props) {
       const updatedEvent = await updateEvent(apiData)
       console.log("Updated event:", updatedEvent)
 
-      // If there's a new image file, upload it and send to webhook
+      // If there's a new image file, upload it and update/create image record
       if (eventImageFile) {
         try {
           console.log("Uploading new event image after successful event update...")
 
-          // Upload the image
+          // Upload the new image
           const uploadResult = await uploadEventImage(eventImageFile)
           console.log("Event image uploaded:", uploadResult)
 
-          // Send to webhook with the event ID
-          const webhookResult = await sendEventImageToWebhook(
-            Number(eventId),
-            uploadResult.path,
-            parseInt(imagePriority),
-            true
-          )
-          console.log("Event image webhook result:", webhookResult)
+          // Check if there are existing images to update or if we need to create new
+          if (existingImages.length > 0) {
+            console.log("Updating existing event image...")
+
+            // Delete old image files from filesystem
+            for (const existingImage of existingImages) {
+              if (existingImage.image_url) {
+                try {
+                  // Call API to delete the old file
+                  await fetch('/api/files/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filePath: existingImage.image_url })
+                  })
+                  console.log(`Deleted old image file: ${existingImage.image_url}`)
+                } catch (deleteError) {
+                  console.warn(`Failed to delete old image file: ${existingImage.image_url}`, deleteError)
+                }
+              }
+            }
+
+            // Update the image record
+            const updateResult = await updateEventImage(
+              Number(eventId),
+              uploadResult.path,
+              parseInt(imagePriority),
+              true
+            )
+            console.log("Event image update result:", updateResult)
+          } else {
+            console.log("Creating new event image...")
+            // Create new image record
+            const webhookResult = await sendEventImageToWebhook(
+              Number(eventId),
+              uploadResult.path,
+              parseInt(imagePriority),
+              true
+            )
+            console.log("Event image webhook result:", webhookResult)
+          }
 
           toast({
             title: "Success",
-            description: "Event updated and new image uploaded successfully!",
+            description: "Event updated and image uploaded successfully!",
           })
         } catch (imageError: any) {
           console.error("Error uploading image after event update:", imageError)
@@ -763,28 +824,67 @@ export default function EditEventPage({ params }: Props) {
                       </div>
                     )}
                     {existingImages.length > 0 && !eventImageFile && (
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-gray-700">Existing Images:</div>
+                      <div className="space-y-3">
+                        <div className="text-sm font-medium text-gray-700">Current Event Images:</div>
                         {existingImages.map((img, index) => (
-                          <div key={img.id || index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                            <div className="flex items-center text-sm text-gray-600">
-                              <span>📷 {img.image_url ? img.image_url.split('/').pop() : 'Unknown file'} (Priority: {img.priority || 'N/A'})</span>
+                          <div key={img.id || index} className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center text-sm text-gray-700">
+                                <span className="font-medium">📷 {img.image_url ? img.image_url.split('/').pop() : 'Unknown file'}</span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                  Priority: {img.priority || 'N/A'}
+                                </span>
+                                <span className={`text-xs px-2 py-1 rounded ${img.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                                  {img.is_active ? 'Active' : 'Inactive'}
+                                </span>
+                              </div>
                             </div>
-                            <div className="text-xs text-gray-500">
-                              {img.is_active ? 'Active' : 'Inactive'}
+                            <div className="mt-2 text-xs text-gray-500">
+                              Created: {img.created_at ? new Date(img.created_at).toLocaleDateString() : 'Unknown'}
+                              {img.updated_at && img.updated_at !== img.created_at && (
+                                <span> • Updated: {new Date(img.updated_at).toLocaleDateString()}</span>
+                              )}
                             </div>
                           </div>
                         ))}
+                        <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                          💡 The priority field below shows the current priority. Upload a new image to replace the existing one.
+                        </div>
+                      </div>
+                    )}
+                    {existingImages.length === 0 && !eventImageFile && !isLoadingImages && (
+                      <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                        <div className="text-sm text-yellow-800">
+                          📷 No existing images found for Event ID {eventId}
+                        </div>
+                        <div className="text-xs text-yellow-600 mt-1">
+                          This event doesn't have any images yet. Upload an image above to add one.
+                        </div>
+                        <div className="text-xs text-yellow-500 mt-2">
+                          💡 If you expect images to be here, verify the event ID in the external system.
+                        </div>
                       </div>
                     )}
                     {eventImageFile && (
-                      <div className="flex items-center text-sm text-blue-600">
-                        <span>✓ New image selected: {eventImageFile.name} (will be uploaded after event update)</span>
+                      <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
+                        <div className="flex items-center text-sm text-green-700">
+                          <span>✓ New image selected: <strong>{eventImageFile.name}</strong></span>
+                        </div>
+                        <div className="text-xs text-green-600 mt-1">
+                          This image will be uploaded after the event is updated
+                        </div>
                       </div>
                     )}
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="priority">Priority</Label>
+                    <Label htmlFor="priority">
+                      Priority
+                      {existingImages.length > 0 && (
+                        <span className="text-xs text-blue-600 ml-2">(loaded from existing image)</span>
+                      )}
+                    </Label>
                     <Input
                       id="priority"
                       type="number"
@@ -795,6 +895,9 @@ export default function EditEventPage({ params }: Props) {
                       placeholder="Enter priority (1-10)"
                       className="touch-manipulation"
                     />
+                    <div className="text-xs text-gray-500">
+                      Priority determines the display order (1 = highest priority)
+                    </div>
                   </div>
                 </div>
 

@@ -1222,7 +1222,7 @@ export async function sendEventImageToWebhook(
 }
 
 /**
- * Fetch event images by event ID
+ * Fetch event images by event ID with automatic mapping
  * @param eventId The event ID
  * @returns Promise with array of event images
  */
@@ -1230,36 +1230,99 @@ export async function fetchEventImages(eventId: number): Promise<any[]> {
   console.log("Fetching event images for event ID:", eventId);
 
   try {
-    const response = await fetch('/api/eventimages/get', {
+    // Import the mapping function dynamically to avoid circular dependencies
+    const { fetchEventImagesWithMapping } = await import('@/lib/eventImageMapping');
+
+    const images = await fetchEventImagesWithMapping(eventId);
+    console.log("Event images fetched with mapping:", images);
+
+    return images;
+  } catch (error) {
+    console.error("Error fetching event images:", error);
+
+    // Fallback to direct API call if mapping fails
+    try {
+      console.log("Falling back to direct API call...");
+
+      const response = await fetch('/api/eventimages/get', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          event_id: eventId,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`API failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (Array.isArray(data)) {
+        const validImages = data.filter(img =>
+          img &&
+          typeof img === 'object' &&
+          img.id !== undefined &&
+          img.image_url !== undefined
+        );
+        console.log("Fallback fetch successful:", validImages);
+        return validImages;
+      }
+
+      return [];
+    } catch (fallbackError) {
+      console.error("Fallback fetch also failed:", fallbackError);
+      return [];
+    }
+  }
+}
+
+/**
+ * Update event image
+ * @param eventId The event ID
+ * @param imageUrl The image URL/path
+ * @param priority The priority of the image
+ * @param isActive Whether the image is active
+ * @returns Promise with update result
+ */
+export async function updateEventImage(
+  eventId: number,
+  imageUrl: string,
+  priority: number,
+  isActive: boolean = true
+): Promise<any> {
+  console.log("Updating event image:", { eventId, imageUrl, priority, isActive });
+
+  try {
+    const response = await fetch('/api/eventimages/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
         event_id: eventId,
+        image_url: imageUrl,
+        priority: priority,
+        is_active: isActive,
       }),
     });
 
-    console.log(`Fetch event images response status: ${response.status}`);
+    console.log(`Update event image response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Error response: ${errorText}`);
-      throw new Error(`Fetch failed: ${response.status}`);
+      throw new Error(`Update failed: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Event images fetched:", data);
+    console.log("Event image update success:", data);
 
-    // Return the array of images, handling various response formats
-    if (Array.isArray(data)) {
-      return data.filter(img => img && typeof img === 'object');
-    }
-
-    // Handle case where API returns empty object or null
-    return [];
+    return data;
   } catch (error) {
-    console.error("Error fetching event images:", error);
+    console.error("Error updating event image:", error);
     throw error;
   }
 }

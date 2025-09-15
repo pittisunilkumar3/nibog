@@ -14,7 +14,7 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { X, Wand2, ArrowLeft, Loader2 } from "lucide-react"
-import { getBabyGameById, updateBabyGame, uploadBabyGameImage, fetchGameImages, uploadGameImage, sendGameImageToWebhook } from "@/services/babyGameService"
+import { getBabyGameById, updateBabyGame, uploadBabyGameImage, fetchGameImages, uploadGameImage, sendGameImageToWebhook, updateGameImage } from "@/services/babyGameService"
 import { useToast } from "@/components/ui/use-toast"
 
 type Props = {
@@ -222,27 +222,59 @@ export default function EditGameTemplate({ params }: Props) {
       const result = await updateBabyGame(gameData)
       console.log("Updated game:", result)
 
-      // If there's a new image file, upload it and send to webhook
+      // If there's a new image file, upload it and update/create image record
       if (gameImageFile) {
         try {
           console.log("Uploading new game image after successful game update...")
 
-          // Upload the image
+          // Upload the new image
           const uploadResult = await uploadGameImage(gameImageFile)
           console.log("Game image uploaded:", uploadResult)
 
-          // Send to webhook with the game ID
-          const webhookResult = await sendGameImageToWebhook(
-            gameId,
-            uploadResult.path,
-            parseInt(imagePriority),
-            true
-          )
-          console.log("Game image webhook result:", webhookResult)
+          // Check if there are existing images to update or if we need to create new
+          if (existingImages.length > 0) {
+            console.log("Updating existing game image...")
+
+            // Delete old image files from filesystem
+            for (const existingImage of existingImages) {
+              if (existingImage.image_url) {
+                try {
+                  // Call API to delete the old file
+                  await fetch('/api/files/delete', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ filePath: existingImage.image_url })
+                  })
+                  console.log(`Deleted old image file: ${existingImage.image_url}`)
+                } catch (deleteError) {
+                  console.warn(`Failed to delete old image file: ${existingImage.image_url}`, deleteError)
+                }
+              }
+            }
+
+            // Update the image record
+            const updateResult = await updateGameImage(
+              gameId,
+              uploadResult.path,
+              parseInt(imagePriority),
+              true
+            )
+            console.log("Game image update result:", updateResult)
+          } else {
+            console.log("Creating new game image...")
+            // Create new image record
+            const webhookResult = await sendGameImageToWebhook(
+              gameId,
+              uploadResult.path,
+              parseInt(imagePriority),
+              true
+            )
+            console.log("Game image webhook result:", webhookResult)
+          }
 
           toast({
             title: "Success",
-            description: "Game updated and new image uploaded successfully!",
+            description: "Game updated and image uploaded successfully!",
           })
         } catch (imageError: any) {
           console.error("Error uploading image after game update:", imageError)
