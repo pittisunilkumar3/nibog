@@ -1060,32 +1060,42 @@ export function getEventWithParticipants(id: string) {
 }
 
 /**
- * Upload image for event
+ * Upload event image to the eventimages directory
  * @param file The image file to upload
- * @returns Promise with the uploaded file path
+ * @returns Promise with upload result containing path and filename
  */
-export async function uploadEventImage(file: File): Promise<string> {
-  try {
-    console.log('Uploading event image...');
+export async function uploadEventImage(file: File): Promise<{
+  success: boolean;
+  path: string;
+  filename: string;
+  originalName: string;
+  size: number;
+}> {
+  console.log("Uploading event image:", file.name);
 
+  try {
     const formData = new FormData();
     formData.append('file', file);
 
-    const response = await fetch('/api/events/upload-image', {
+    const response = await fetch('/api/eventimages/upload', {
       method: 'POST',
       body: formData,
     });
 
+    console.log(`Upload event image response status: ${response.status}`);
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || 'Failed to upload event image');
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Upload failed: ${response.status}`);
     }
 
-    const result = await response.json();
-    console.log('Successfully uploaded event image:', result.path);
-    return result.path;
+    const data = await response.json();
+    console.log("Event image uploaded:", data);
+
+    return data;
   } catch (error) {
-    console.error('Error uploading event image:', error);
+    console.error("Error uploading event image:", error);
     throw error;
   }
 }
@@ -1157,6 +1167,56 @@ export async function deleteEvent(id: number): Promise<{ success: boolean } | Ar
     }
   } catch (error) {
     console.error(`Error deleting event with ID ${id}:`, error);
+    throw error;
+  }
+}
+
+
+
+/**
+ * Send event image data to external webhook
+ * @param eventId The event ID
+ * @param imageUrl The image URL/path
+ * @param priority The priority of the image
+ * @param isActive Whether the image is active
+ * @returns Promise with webhook result
+ */
+export async function sendEventImageToWebhook(
+  eventId: number,
+  imageUrl: string,
+  priority: number,
+  isActive: boolean = true
+): Promise<any> {
+  console.log("Sending event image to webhook:", { eventId, imageUrl, priority, isActive });
+
+  try {
+    const response = await fetch('/api/eventimages/webhook', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        event_id: eventId,
+        image_url: imageUrl,
+        priority: priority,
+        is_active: isActive,
+      }),
+    });
+
+    console.log(`Event image webhook response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Webhook failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Event image webhook success:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error sending event image to webhook:", error);
     throw error;
   }
 }

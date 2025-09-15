@@ -22,7 +22,7 @@ import { TimePickerDemo } from "@/components/time-picker"
 import { getAllCities } from "@/services/cityService"
 import { getVenuesByCity } from "@/services/venueService"
 import { getAllBabyGames, BabyGame } from "@/services/babyGameService"
-import { createEvent, formatEventDataForAPI, uploadEventImage } from "@/services/eventService"
+import { createEvent, formatEventDataForAPI, uploadEventImage, sendEventImageToWebhook } from "@/services/eventService"
 import { toast } from "@/components/ui/use-toast"
 
 const venues = [
@@ -81,8 +81,9 @@ export default function NewEventPage() {
   const [eventDescription, setEventDescription] = useState("")
   const [eventStatus, setEventStatus] = useState("draft")
   const [eventImage, setEventImage] = useState<string | null>(null)
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imagePriority, setImagePriority] = useState("5")
+  const [imagePriority, setImagePriority] = useState("1")
   const [selectedGames, setSelectedGames] = useState<Array<{
     templateId: string;
     customTitle?: string;
@@ -368,31 +369,41 @@ export default function NewEventPage() {
     }))
   }
 
-  // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload - just store the file for now, upload after event creation
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    try {
-      setIsUploadingImage(true)
-      const imagePath = await uploadEventImage(file)
-      setEventImage(imagePath)
-      console.log('Event image uploaded successfully:', imagePath)
-
-      toast({
-        title: "Success",
-        description: "Event image uploaded successfully!",
-      })
-    } catch (error: any) {
-      console.error('Error uploading event image:', error)
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Error",
-        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        description: "Invalid file type. Only JPG, PNG, GIF, and WebP images are allowed.",
         variant: "destructive",
       })
-    } finally {
-      setIsUploadingImage(false)
+      return
     }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      toast({
+        title: "Error",
+        description: "File size too large. Maximum size is 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setEventImageFile(file)
+    setEventImage(file.name) // Store filename for display
+    console.log('Event image selected:', file.name)
+
+    toast({
+      title: "Success",
+      description: "Event image selected! It will be uploaded after event creation.",
+    })
   }
 
   // Handle form submission
@@ -454,16 +465,57 @@ export default function NewEventPage() {
       const createdEvent = await createEvent(apiData)
       console.log("Created event:", createdEvent)
 
-      // Show success message
-      toast({
-        title: "Success",
-        description: "Event created successfully!",
-      })
+      // Get the event ID from the response
+      // Handle both response formats: {id: ...} or {event_id: ...}
+      const eventId = (createdEvent as any)?.event_id || (createdEvent as any)?.id
+      if (!eventId) {
+        throw new Error("Event created but no ID returned")
+      }
+
+      console.log("Event created with ID:", eventId)
+
+      // If there's an image file, upload it and send to webhook
+      if (eventImageFile) {
+        try {
+          console.log("Uploading event image after successful event creation...")
+
+          // Upload the image
+          const uploadResult = await uploadEventImage(eventImageFile)
+          console.log("Event image uploaded:", uploadResult)
+
+          // Send to webhook with the event ID
+          const webhookResult = await sendEventImageToWebhook(
+            eventId,
+            uploadResult.path,
+            parseInt(imagePriority),
+            true
+          )
+          console.log("Event image webhook result:", webhookResult)
+
+          toast({
+            title: "Success",
+            description: "Event created and image uploaded successfully!",
+          })
+        } catch (imageError: any) {
+          console.error("Error uploading image after event creation:", imageError)
+          toast({
+            title: "Warning",
+            description: `Event created successfully, but image upload failed: ${imageError.message || "Unknown error"}`,
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Show success message for event creation only
+        toast({
+          title: "Success",
+          description: "Event created successfully!",
+        })
+      }
 
       // Redirect to events list after a short delay to show the toast
       setTimeout(() => {
         router.push("/admin/events")
-      }, 1500)
+      }, 2000)
     } catch (error: any) {
       console.error("Error creating event:", error)
       toast({
@@ -528,9 +580,9 @@ export default function NewEventPage() {
                         Uploading image...
                       </div>
                     )}
-                    {eventImage && (
-                      <div className="flex items-center text-sm text-green-600">
-                        <span>✓ Image uploaded: {eventImage.split('/').pop()}</span>
+                    {eventImageFile && (
+                      <div className="flex items-center text-sm text-blue-600">
+                        <span>✓ Image selected: {eventImageFile.name} (will be uploaded after event creation)</span>
                       </div>
                     )}
                   </div>
