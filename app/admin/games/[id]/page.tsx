@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -23,16 +23,15 @@ import { getBabyGameById, deleteBabyGame } from "@/services/babyGameService"
 import { useToast } from "@/components/ui/use-toast"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function GameDetailPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap the params Promise using React.use()
-  const resolvedParams = use(params)
-  const gameId = parseInt(resolvedParams.id, 10)
+  // In Next.js app router, params is already resolved
+  const gameId = parseInt(params.id, 10)
 
   const [game, setGame] = useState<any>(null)
   const [isLoading, setIsLoading] = useState(true)
@@ -87,7 +86,7 @@ export default function GameDetailPage({ params }: Props) {
     }
 
     fetchGameData()
-  }, [gameId, resolvedParams.id]) // Removed toast from dependency array to prevent infinite loop
+  }, [gameId]) // Removed toast from dependency array to prevent infinite loop
 
   const handleDelete = async () => {
     try {

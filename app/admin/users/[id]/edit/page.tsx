@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -34,16 +34,15 @@ type PageParams = {
 }
 
 type Props = {
-  params: Promise<PageParams>
+  params: PageParams
 }
 
 export default function EditUserPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap params using React.use() with proper type
-  const { id } = use(params)
-  const userId = Number(id)
+  // In Next.js app router, params is already resolved
+  const userId = Number(params.id)
 
   const [user, setUser] = useState<any>(null)
   const [fullName, setFullName] = useState("")

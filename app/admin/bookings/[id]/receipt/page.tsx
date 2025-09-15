@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use } from "react"
+import { useState } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -101,9 +101,8 @@ type Props = {
 export default function BookingReceiptPage({ params }: Props) {
   const router = useRouter()
   
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const bookingId = unwrappedParams.id
+  // In Next.js app router, params is already resolved
+  const bookingId = params.id
   
   const booking = bookings.find((b) => b.id === bookingId)
   const [isLoading, setIsLoading] = useState({

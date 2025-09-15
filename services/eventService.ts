@@ -1220,3 +1220,46 @@ export async function sendEventImageToWebhook(
     throw error;
   }
 }
+
+/**
+ * Fetch event images by event ID
+ * @param eventId The event ID
+ * @returns Promise with array of event images
+ */
+export async function fetchEventImages(eventId: number): Promise<any[]> {
+  console.log("Fetching event images for event ID:", eventId);
+
+  try {
+    const response = await fetch('/api/eventimages/get', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        event_id: eventId,
+      }),
+    });
+
+    console.log(`Fetch event images response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Event images fetched:", data);
+
+    // Return the array of images, handling various response formats
+    if (Array.isArray(data)) {
+      return data.filter(img => img && typeof img === 'object');
+    }
+
+    // Handle case where API returns empty object or null
+    return [];
+  } catch (error) {
+    console.error("Error fetching event images:", error);
+    throw error;
+  }
+}

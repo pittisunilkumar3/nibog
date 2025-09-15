@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
@@ -46,9 +46,8 @@ export default function EditPromoCodePage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const promoCodeId = unwrappedParams.id
+  // In Next.js app router, params is already resolved
+  const promoCodeId = params.id
 
   // Promo code data
   const [promoCode, setPromoCode] = useState<PromoCodeDetail | null>(null)

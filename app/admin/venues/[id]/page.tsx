@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -59,9 +59,8 @@ export default function VenueDetailPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap the params Promise using React.use()
-  const resolvedParams = use(params)
-  const venueId = parseInt(resolvedParams.id)
+  // In Next.js app router, params is already resolved
+  const venueId = parseInt(params.id)
 
   const [venue, setVenue] = useState<any>(null)
   const [city, setCity] = useState<any>(null)

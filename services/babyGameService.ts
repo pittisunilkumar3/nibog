@@ -231,3 +231,135 @@ export async function uploadBabyGameImage(file: File): Promise<string> {
     throw error;
   }
 }
+
+/**
+ * Upload game image to the gamesimage directory
+ * @param file The image file to upload
+ * @returns Promise with upload result containing path and filename
+ */
+export async function uploadGameImage(file: File): Promise<{
+  success: boolean;
+  path: string;
+  filename: string;
+  originalName: string;
+  size: number;
+}> {
+  console.log("Uploading game image:", file.name);
+
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const response = await fetch('/api/gamesimage/upload', {
+      method: 'POST',
+      body: formData,
+    });
+
+    console.log(`Upload game image response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Upload failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Game image uploaded:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error uploading game image:", error);
+    throw error;
+  }
+}
+
+/**
+ * Send game image data to external webhook
+ * @param gameId The game ID
+ * @param imageUrl The image URL/path
+ * @param priority The priority of the image
+ * @param isActive Whether the image is active
+ * @returns Promise with webhook result
+ */
+export async function sendGameImageToWebhook(
+  gameId: number,
+  imageUrl: string,
+  priority: number,
+  isActive: boolean = true
+): Promise<any> {
+  console.log("Sending game image to webhook:", { gameId, imageUrl, priority, isActive });
+
+  try {
+    const response = await fetch('/api/gamesimage/webhook', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        game_id: gameId,
+        image_url: imageUrl,
+        priority: priority,
+        is_active: isActive,
+      }),
+    });
+
+    console.log(`Game image webhook response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Webhook failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Game image webhook success:", data);
+
+    return data;
+  } catch (error) {
+    console.error("Error sending game image to webhook:", error);
+    throw error;
+  }
+}
+
+/**
+ * Fetch game images by game ID
+ * @param gameId The game ID
+ * @returns Promise with array of game images
+ */
+export async function fetchGameImages(gameId: number): Promise<any[]> {
+  console.log("Fetching game images for game ID:", gameId);
+
+  try {
+    const response = await fetch('/api/gamesimage/get', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        game_id: gameId,
+      }),
+    });
+
+    console.log(`Fetch game images response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error response: ${errorText}`);
+      throw new Error(`Fetch failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("Game images fetched:", data);
+
+    // Return the array of images, handling various response formats
+    if (Array.isArray(data)) {
+      return data.filter(img => img && typeof img === 'object');
+    }
+
+    // Handle case where API returns empty object or null
+    return [];
+  } catch (error) {
+    console.error("Error fetching game images:", error);
+    throw error;
+  }
+}

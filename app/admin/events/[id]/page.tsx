@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use, useEffect } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -97,9 +97,8 @@ export default function EventDetailPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const eventId = unwrappedParams.id
+  // In Next.js app router, params is already resolved
+  const eventId = params.id
 
   const [event, setEvent] = useState<EventListItem | null>(null)
   const [apiError, setApiError] = useState<string | null>(null)

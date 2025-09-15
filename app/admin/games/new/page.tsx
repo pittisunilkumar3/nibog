@@ -13,7 +13,7 @@ import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
 import { X, Star, Loader2 } from "lucide-react"
-import { createBabyGame, uploadBabyGameImage } from "@/services/babyGameService"
+import { createBabyGame, uploadBabyGameImage, uploadGameImage, sendGameImageToWebhook } from "@/services/babyGameService"
 import { toast } from "@/components/ui/use-toast"
 
 export default function NewGameTemplate() {
@@ -30,8 +30,9 @@ export default function NewGameTemplate() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [gameImage, setGameImage] = useState<string | null>(null)
+  const [gameImageFile, setGameImageFile] = useState<File | null>(null)
   const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imagePriority, setImagePriority] = useState("5")
+  const [imagePriority, setImagePriority] = useState("1")
 
   const handleAddCategory = () => {
     if (newCategory.trim() && !categories.includes(newCategory.trim())) {
@@ -55,31 +56,41 @@ export default function NewGameTemplate() {
     }, 1500)
   }
 
-  // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload - just store the file for now, upload after game creation
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    try {
-      setIsUploadingImage(true)
-      const imagePath = await uploadBabyGameImage(file)
-      setGameImage(imagePath)
-      console.log('Baby game image uploaded successfully:', imagePath)
-
-      toast({
-        title: "Success",
-        description: "Game image uploaded successfully!",
-      })
-    } catch (error: any) {
-      console.error('Error uploading baby game image:', error)
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Error",
-        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        description: "Invalid file type. Only JPG, PNG, GIF, and WebP images are allowed.",
         variant: "destructive",
       })
-    } finally {
-      setIsUploadingImage(false)
+      return
     }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      toast({
+        title: "Error",
+        description: "File size too large. Maximum size is 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setGameImageFile(file)
+    setGameImage(file.name) // Store filename for display
+    console.log('Game image selected:', file.name)
+
+    toast({
+      title: "Success",
+      description: "Game image selected! It will be uploaded after game creation.",
+    })
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -112,16 +123,60 @@ export default function NewGameTemplate() {
 
       // Call the API to create the game
       const result = await createBabyGame(gameData)
+      console.log("Created game:", result)
 
-      // Show success message
-      toast({
-        title: "Game Created",
-        description: `${name} has been created successfully.`,
-        variant: "default",
-      })
+      // Get the game ID from the response
+      // Handle both response formats: {id: ...} or {game_id: ...}
+      const gameId = (result as any)?.id || (result as any)?.game_id
+      if (!gameId) {
+        throw new Error("Game created but no ID returned")
+      }
 
-      // Redirect to the game templates list
-      router.push("/admin/games")
+      console.log("Game created with ID:", gameId)
+
+      // If there's an image file, upload it and send to webhook
+      if (gameImageFile) {
+        try {
+          console.log("Uploading game image after successful game creation...")
+
+          // Upload the image
+          const uploadResult = await uploadGameImage(gameImageFile)
+          console.log("Game image uploaded:", uploadResult)
+
+          // Send to webhook with the game ID
+          const webhookResult = await sendGameImageToWebhook(
+            gameId,
+            uploadResult.path,
+            parseInt(imagePriority),
+            true
+          )
+          console.log("Game image webhook result:", webhookResult)
+
+          toast({
+            title: "Success",
+            description: "Game created and image uploaded successfully!",
+          })
+        } catch (imageError: any) {
+          console.error("Error uploading image after game creation:", imageError)
+          toast({
+            title: "Warning",
+            description: `Game created successfully, but image upload failed: ${imageError.message || "Unknown error"}`,
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Show success message for game creation only
+        toast({
+          title: "Game Created",
+          description: `${name} has been created successfully.`,
+          variant: "default",
+        })
+      }
+
+      // Redirect to the game templates list after a short delay to show the toast
+      setTimeout(() => {
+        router.push("/admin/games")
+      }, 2000)
     } catch (error: any) {
       setError(error.message || "Failed to create game. Please try again.")
 
@@ -201,9 +256,9 @@ export default function NewGameTemplate() {
                     Uploading image...
                   </div>
                 )}
-                {gameImage && (
-                  <div className="flex items-center text-sm text-green-600">
-                    <span>✓ Image uploaded: {gameImage.split('/').pop()}</span>
+                {gameImageFile && (
+                  <div className="flex items-center text-sm text-blue-600">
+                    <span>✓ Image selected: {gameImageFile.name} (will be uploaded after game creation)</span>
                   </div>
                 )}
               </div>

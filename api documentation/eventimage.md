@@ -25,6 +25,9 @@ Responsive:-
     }
 ]
 
+
+
+
 # Getting the image 
 
 
@@ -51,4 +54,32 @@ responsive :-
     }
 ]
 
+
+# update event image 
+
+
+POST https://ai.alviongs.com/webhook/nibog/eventimage/updated
+
+payload :-
+
+{
+    "event_id": 131,
+    "image_url": "./upload/eventimages/eventimage_1757947801601_4538.png",
+    "priority": 1,
+    "is_active": true
+}
+
+response :-
+
+[
+    {
+        "id": 4,
+        "event_id": 131,
+        "image_url": "./upload/eventimages/eventimage_1757947801601_4538.png",
+        "priority": 1,
+        "is_active": true,
+        "created_at": "2025-09-15T09:20:04.921Z",
+        "updated_at": "2025-09-15T09:20:04.921Z"
+    }
+]
 

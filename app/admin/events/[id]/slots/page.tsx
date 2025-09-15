@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -31,9 +31,8 @@ type Props = {
 export default function EventSlotsPage({ params }: Props) {
   const { toast } = useToast()
 
-  // Unwrap the params Promise using React.use()
-  const resolvedParams = use(params)
-  const eventId = resolvedParams.id
+  // In Next.js app router, params is already resolved
+  const eventId = params.id
 
   // State for event data
   const [event, setEvent] = useState<any>(null)

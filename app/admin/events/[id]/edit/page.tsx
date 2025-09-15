@@ -20,7 +20,7 @@ import { Switch } from "@/components/ui/switch"
 import { Separator } from "@/components/ui/separator"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { useToast } from "@/components/ui/use-toast"
-import { getEventById, updateEvent, formatEventDataForUpdate, uploadEventImage } from "@/services/eventService"
+import { getEventById, updateEvent, formatEventDataForUpdate, uploadEventImage, fetchEventImages, sendEventImageToWebhook } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
 import { getVenuesByCity } from "@/services/venueService"
 import { getAllBabyGames, BabyGame as ImportedBabyGame } from "@/services/babyGameService"
@@ -131,8 +131,11 @@ export default function EditEventPage({ params }: Props) {
   const [venueError, setVenueError] = useState<string | null>(null)
   const [gamesError, setGamesError] = useState<string | null>(null)
   const [eventImage, setEventImage] = useState<string | null>(null)
+  const [eventImageFile, setEventImageFile] = useState<File | null>(null)
+  const [existingImages, setExistingImages] = useState<any[]>([])
   const [isUploadingImage, setIsUploadingImage] = useState(false)
-  const [imagePriority, setImagePriority] = useState("5")
+  const [isLoadingImages, setIsLoadingImages] = useState(false)
+  const [imagePriority, setImagePriority] = useState("1")
 
   // Fetch event data when component mounts
   useEffect(() => {
@@ -182,9 +185,10 @@ export default function EditEventPage({ params }: Props) {
           setActiveGameIndex(0)
         }
 
-        // Fetch cities, venues, and games
+        // Fetch cities, venues, games, and images
         fetchCities()
         fetchBabyGames()
+        fetchExistingImages()
       } catch (error: any) {
         console.error(`Error fetching event with ID ${eventId}:`, error)
         setError(error.message || "Failed to load event")
@@ -329,6 +333,36 @@ export default function EditEventPage({ params }: Props) {
     }
   }
 
+  // Fetch existing images for the event
+  const fetchExistingImages = async () => {
+    try {
+      setIsLoadingImages(true)
+      console.log(`Fetching existing images for event ID: ${eventId}`)
+
+      const images = await fetchEventImages(Number(eventId))
+      console.log("Existing event images:", images)
+
+      // Filter out any invalid images and ensure we have an array
+      const validImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'object') : []
+      setExistingImages(validImages)
+
+      // If there are existing images, set the first one as the current image
+      if (validImages.length > 0) {
+        const firstImage = validImages[0]
+        if (firstImage.image_url) {
+          setEventImage(firstImage.image_url)
+          setImagePriority(firstImage.priority?.toString() || "1")
+        }
+      }
+    } catch (error: any) {
+      console.error("Failed to fetch existing images:", error)
+      // Don't show error toast for images as it's not critical
+      console.warn("Could not load existing images, continuing without them")
+    } finally {
+      setIsLoadingImages(false)
+    }
+  }
+
   // Get game templates (either from API or fallback)
   const gameTemplates = babyGames.length > 0
     ? babyGames.map((game: ImportedBabyGame) => ({
@@ -470,31 +504,41 @@ export default function EditEventPage({ params }: Props) {
     }))
   }
 
-  // Handle image upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  // Handle image upload - store the file for later use
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (!file) return
 
-    try {
-      setIsUploadingImage(true)
-      const imagePath = await uploadEventImage(file)
-      setEventImage(imagePath)
-      console.log('Event image uploaded successfully:', imagePath)
-
-      toast({
-        title: "Success",
-        description: "Event image uploaded successfully!",
-      })
-    } catch (error: any) {
-      console.error('Error uploading event image:', error)
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp']
+    if (!allowedTypes.includes(file.type)) {
       toast({
         title: "Error",
-        description: `Failed to upload image: ${error.message || "Unknown error"}`,
+        description: "Invalid file type. Only JPG, PNG, GIF, and WebP images are allowed.",
         variant: "destructive",
       })
-    } finally {
-      setIsUploadingImage(false)
+      return
     }
+
+    // Validate file size (5MB limit)
+    const maxSize = 5 * 1024 * 1024 // 5MB
+    if (file.size > maxSize) {
+      toast({
+        title: "Error",
+        description: "File size too large. Maximum size is 5MB.",
+        variant: "destructive",
+      })
+      return
+    }
+
+    setEventImageFile(file)
+    setEventImage(file.name) // Store filename for display
+    console.log('Event image selected:', file.name)
+
+    toast({
+      title: "Success",
+      description: "Event image selected! It will be uploaded after event update.",
+    })
   }
 
   // Handle form submission
@@ -558,14 +602,48 @@ export default function EditEventPage({ params }: Props) {
       const updatedEvent = await updateEvent(apiData)
       console.log("Updated event:", updatedEvent)
 
-      // Show success message
-      toast({
-        title: "Success",
-        description: "Event updated successfully!",
-      })
+      // If there's a new image file, upload it and send to webhook
+      if (eventImageFile) {
+        try {
+          console.log("Uploading new event image after successful event update...")
 
-      // Redirect to event details page
-      router.push('/admin/events')
+          // Upload the image
+          const uploadResult = await uploadEventImage(eventImageFile)
+          console.log("Event image uploaded:", uploadResult)
+
+          // Send to webhook with the event ID
+          const webhookResult = await sendEventImageToWebhook(
+            Number(eventId),
+            uploadResult.path,
+            parseInt(imagePriority),
+            true
+          )
+          console.log("Event image webhook result:", webhookResult)
+
+          toast({
+            title: "Success",
+            description: "Event updated and new image uploaded successfully!",
+          })
+        } catch (imageError: any) {
+          console.error("Error uploading image after event update:", imageError)
+          toast({
+            title: "Warning",
+            description: `Event updated successfully, but image upload failed: ${imageError.message || "Unknown error"}`,
+            variant: "destructive",
+          })
+        }
+      } else {
+        // Show success message for event update only
+        toast({
+          title: "Success",
+          description: "Event updated successfully!",
+        })
+      }
+
+      // Redirect to event details page after a short delay to show the toast
+      setTimeout(() => {
+        router.push('/admin/events')
+      }, 2000)
     } catch (error: any) {
       console.error("Error updating event:", error)
       toast({
@@ -672,15 +750,36 @@ export default function EditEventPage({ params }: Props) {
                       disabled={isUploadingImage}
                       className="cursor-pointer touch-manipulation"
                     />
+                    {isLoadingImages && (
+                      <div className="flex items-center text-sm text-muted-foreground">
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Loading existing images...
+                      </div>
+                    )}
                     {isUploadingImage && (
                       <div className="flex items-center text-sm text-muted-foreground">
                         <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                         Uploading image...
                       </div>
                     )}
-                    {eventImage && (
-                      <div className="flex items-center text-sm text-green-600">
-                        <span>✓ Image uploaded: {eventImage.split('/').pop()}</span>
+                    {existingImages.length > 0 && !eventImageFile && (
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-gray-700">Existing Images:</div>
+                        {existingImages.map((img, index) => (
+                          <div key={img.id || index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
+                            <div className="flex items-center text-sm text-gray-600">
+                              <span>📷 {img.image_url ? img.image_url.split('/').pop() : 'Unknown file'} (Priority: {img.priority || 'N/A'})</span>
+                            </div>
+                            <div className="text-xs text-gray-500">
+                              {img.is_active ? 'Active' : 'Inactive'}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                    {eventImageFile && (
+                      <div className="flex items-center text-sm text-blue-600">
+                        <span>✓ New image selected: {eventImageFile.name} (will be uploaded after event update)</span>
                       </div>
                     )}
                   </div>

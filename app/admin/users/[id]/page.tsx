@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, use, useEffect } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -32,9 +32,8 @@ export default function UserDetailPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const userId = Number(unwrappedParams.id)
+  // In Next.js app router, params is already resolved
+  const userId = Number(params.id)
 
   const [user, setUser] = useState<UserType | null>(null)
   const [isLoading, setIsLoading] = useState(true)

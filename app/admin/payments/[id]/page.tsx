@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -35,9 +35,8 @@ export default function PaymentDetailPage({ params }: Props) {
   const router = useRouter()
   const { toast } = useToast()
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const paymentId = unwrappedParams.id
+  // In Next.js app router, params is already resolved
+  const paymentId = params.id
 
   // State management
   const [payment, setPayment] = useState<Payment | null>(null)

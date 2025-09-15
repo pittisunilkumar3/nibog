@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -135,7 +135,7 @@ interface EventData {
   status: string;
 }
 
-export default function CityDetailsPage({ params }: { params: Promise<PageParams> }) {
+export default function CityDetailsPage({ params }: { params: PageParams }) {
   const router = useRouter()
   const [city, setCity] = useState<City | null>(null)
   const [cityVenues, setCityVenues] = useState<any[]>([])
@@ -143,9 +143,8 @@ export default function CityDetailsPage({ params }: { params: Promise<PageParams
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-  const cityId = parseInt(unwrappedParams.id)
+  // In Next.js app router, params is already resolved
+  const cityId = parseInt(params.id)
 
   useEffect(() => {
     const fetchCityData = async () => {

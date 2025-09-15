@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, use } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -23,12 +23,8 @@ export default function EditCityPage({ params }: { params: { id: string } }) {
   const [isSaved, setIsSaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  // Unwrap params using React.use()
-  const unwrappedParams = use(params)
-
-  // Parse and validate the city ID
-  const cityIdRaw = unwrappedParams.id
-  const cityId = parseInt(cityIdRaw)
+  // In Next.js app router, params is already resolved
+  const cityId = parseInt(params.id)
 
   // Set error if ID is invalid
   useEffect(() => {
