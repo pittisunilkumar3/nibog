@@ -47,6 +47,17 @@ export default function EditTestimonialPage({ params }: Props) {
   // New fields for image upload and priority
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  // Helper to convert local path to public URL
+  const getImageUrl = (path: string | null) => {
+    if (!path) return null;
+    // If it's a data URL (from FileReader), return as is
+    if (path.startsWith('data:')) return path;
+    // If it's already a full URL, return as is
+    if (/^https?:\/\//.test(path)) return path;
+    // If it starts with './upload/' or 'upload/', convert to public URL
+    const cleaned = path.replace(/^\.\/?/, '/');
+    return cleaned;
+  }
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
   const [uploadedImagePath, setUploadedImagePath] = useState<string | null>(null)
@@ -132,6 +143,54 @@ export default function EditTestimonialPage({ params }: Props) {
       fetchTestimonial()
     }
   }, [testimonialId, events])
+
+  // Fetch existing testimonial image data
+  useEffect(() => {
+    const fetchTestimonialImage = async () => {
+      try {
+        console.log('Fetching existing testimonial image for ID:', testimonialId)
+        
+        const response = await fetch('/api/testimonials/images/get-single', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            testmonial_id: parseInt(testimonialId)
+          })
+        })
+
+        if (!response.ok) {
+          // If no image found, that's okay - just log it
+          console.log('No existing image found for testimonial ID:', testimonialId)
+          return
+        }
+
+        const data = await response.json()
+        console.log('Existing testimonial image data:', data)
+        
+        // Handle array response (API returns array)
+        const imageData = Array.isArray(data) ? data[0] : data
+        
+        if (imageData) {
+          // Set the existing image data
+          setImagePreview(imageData.image_url)
+          setUploadedImagePath(imageData.image_url)
+          setPriority(imageData.priority || 1)
+          
+          console.log('Loaded existing image:', imageData.image_url)
+          console.log('Loaded existing priority:', imageData.priority)
+        }
+      } catch (error) {
+        console.error('Error fetching testimonial image:', error)
+        // Don't show error to user - it's okay if no image exists
+      }
+    }
+
+    if (testimonialId) {
+      fetchTestimonialImage()
+    }
+  }, [testimonialId])
 
   // Handle image upload
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -233,7 +292,7 @@ export default function EditTestimonialPage({ params }: Props) {
         id: parseInt(testimonialId),
         name,
         city,
-        event_id: parseInt(selectedEvent.id),
+        event_id: selectedEvent.id,
         rating: parseInt(rating),
         testimonial: testimonialText,
         date,
@@ -265,6 +324,50 @@ export default function EditTestimonialPage({ params }: Props) {
       if (!response.ok) {
         console.error('Error response:', parsedData);
         throw new Error(parsedData.message || 'Failed to update testimonial');
+      }
+
+      // Always call the testimonial images API to update priority and image
+      // This ensures priority is updated even if no new image is uploaded
+      console.log('Calling testimonial images API for testimonial ID:', testimonialId)
+      
+      const imageData = {
+        testimonial_id: parseInt(testimonialId),
+        image_url: uploadedImagePath || "https://example.com/default-testimonial-image.jpg", // Use uploaded image, existing image, or default
+        priority: priority,
+        is_active: true
+      }
+
+      console.log('Submitting image data:', imageData)
+
+      try {
+          const imageResponse = await fetch('/api/testimonials/images/update', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(imageData)
+          })
+
+          if (!imageResponse.ok) {
+            const errorText = await imageResponse.text()
+            console.error('Image API error response:', errorText)
+            throw new Error(`Failed to update testimonial image: ${errorText}`)
+          }
+
+          const imageResult = await imageResponse.json()
+          console.log('Image API response:', imageResult)
+
+          // Handle array response
+          if (Array.isArray(imageResult) && imageResult.length > 0) {
+            console.log('Image associated successfully with ID:', imageResult[0].id)
+          } else {
+            console.log('Image API response (non-array):', imageResult)
+          }
+
+      } catch (imageError) {
+        console.error('Error calling testimonial images API:', imageError)
+        // Don't throw here - testimonial was updated successfully, just log the image error
+        setError('Testimonial updated but failed to associate image. Please try uploading the image again.')
       }
 
       setIsLoading(false)
@@ -488,7 +591,9 @@ export default function EditTestimonialPage({ params }: Props) {
                 {imagePreview && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-sm font-medium">Preview:</span>
+                      <span className="text-sm font-medium">
+                        {selectedImage ? 'New Image Preview:' : 'Current Image:'}
+                      </span>
                       <Button
                         type="button"
                         variant="outline"
@@ -501,9 +606,10 @@ export default function EditTestimonialPage({ params }: Props) {
                     </div>
                     <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
                       <img
-                        src={imagePreview}
+                        src={getImageUrl(imagePreview) || '/placeholder-user.jpg'}
                         alt="Preview"
                         className="w-full h-full object-cover"
+                        onError={(e) => { e.currentTarget.src = '/placeholder-user.jpg'; }}
                       />
                     </div>
                     {uploadedImagePath && (

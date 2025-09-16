@@ -27,5 +27,29 @@ response :-
 
 
 
+# get single testimonial image 
 
+POST https://ai.alviongs.com/webhook/nibog/testmonialimages/getsingle
+
+payload :-
+
+
+{
+  "testmonial_id":69
+}
+
+
+Response :-
+
+[
+    {
+        "id": 21,
+        "testimonial_id": 69,
+        "image_url": "https://example.com/test-priority-10.jpg",
+        "priority": 10,
+        "is_active": true,
+        "created_at": "2025-09-16T09:42:07.153Z",
+        "updated_at": "2025-09-16T09:42:07.153Z"
+    }
+]
 
