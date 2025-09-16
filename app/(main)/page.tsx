@@ -225,6 +225,7 @@ import AgeSelector from "@/components/age-selector"
 import { AnimatedTestimonials } from "@/components/animated-testimonials"
 import { Star, Award, MapPin } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
+import HomepageGamesSection from "@/components/homepage-games-section"
 
 // Dynamic Stats Component
 function DynamicStatsSection() {
@@ -499,117 +500,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Age Categories Section */}
-      <section className="relative py-20 bg-gradient-to-br from-lavender-100 via-mint-50 to-coral-50 dark:from-lavender-900/20 dark:via-mint-900/20 dark:to-coral-900/20 overflow-hidden">
-        {/* Decorative background elements */}
-        <div className="absolute top-0 left-0 w-32 h-32 bg-sunshine-300 rounded-full opacity-10 animate-float"></div>
-        <div className="absolute bottom-0 right-0 w-40 h-40 bg-coral-300 rounded-full opacity-10 animate-float-delayed"></div>
-        <div className="absolute top-1/2 left-1/4 w-24 h-24 bg-mint-300 rounded-full opacity-10 animate-bounce-gentle"></div>
-
-        <div className="container relative z-10">
-          <div className="flex flex-col gap-12 text-center">
-            <div className="space-y-4">
-              <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full">
-                🎯 Age Groups
-              </Badge>
-              <h2 className="text-3xl font-bold tracking-tight md:text-4xl lg:text-5xl">
-                <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
-                  NIBOG Games by Age Group
-                </span>
-              </h2>
-              <p className="mt-4 text-lg text-neutral-charcoal/70 dark:text-white/70 max-w-2xl mx-auto">
-                Age-appropriate Olympic games designed for every stage of your little champion's development
-              </p>
-            </div>
-
-            <div className="grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
-              <Link href="/events?minAge=5&maxAge=13" className="group">
-                <Card className="card-baby-gradient overflow-hidden h-full">
-                  <div className="relative h-48">
-                    <Image
-                      src="/images/baby-crawling.jpg"
-                      alt="Crawling Babies (5-13 months)"
-                      fill
-                      className="object-cover transition-transform group-hover:scale-110 duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-sunshine-500/80 via-sunshine-300/40 to-transparent" />
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-white/90 rounded-full p-2 text-2xl animate-bounce-gentle">
-                        🍼
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-xl font-bold text-white mb-1">Baby Crawling Race</h3>
-                      <p className="text-white/90 font-semibold">5-13 months</p>
-                      <p className="text-white/80 text-sm mt-2">Watch tiny champions crawl to victory!</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-
-              <Link href="/events?minAge=5&maxAge=13" className="group">
-                <Card className="card-baby-gradient overflow-hidden h-full">
-                  <div className="relative h-48">
-                    <Image
-                      src="/images/baby-walker.jpg"
-                      alt="Baby Walker (5-13 months)"
-                      fill
-                      className="object-cover transition-transform group-hover:scale-110 duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-coral-500/80 via-coral-300/40 to-transparent" />
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-white/90 rounded-full p-2 text-2xl animate-bounce-gentle">
-                        🚶‍♀️
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-xl font-bold text-white mb-1">Baby Walker Challenge</h3>
-                      <p className="text-white/90 font-semibold">5-13 months</p>
-                      <p className="text-white/80 text-sm mt-2">First steps to Olympic dreams!</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-
-              <Link href="/events?minAge=13&maxAge=84" className="group">
-                <Card className="card-baby-gradient overflow-hidden h-full">
-                  <div className="relative h-48">
-                    <Image
-                      src="/images/running-race.jpg"
-                      alt="Running Race (13-84 months)"
-                      fill
-                      className="object-cover transition-transform group-hover:scale-110 duration-500"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-mint-500/80 via-mint-300/40 to-transparent" />
-                    <div className="absolute top-4 right-4">
-                      <div className="bg-white/90 rounded-full p-2 text-2xl animate-bounce-gentle">
-                        🏃‍♂️
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-6">
-                      <h3 className="text-xl font-bold text-white mb-1">Running Race</h3>
-                      <p className="text-white/90 font-semibold">13-84 months</p>
-                      <p className="text-white/80 text-sm mt-2">Speed demons in action!</p>
-                    </div>
-                  </div>
-                </Card>
-              </Link>
-            </div>
-
-            <div className="mt-8">
-              <Button
-                size="lg"
-                className="btn-baby-primary text-lg px-8 py-4"
-                asChild
-              >
-                <Link href="/baby-olympics">
-                  🎮 Explore All Games
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* NIBOG Games by Age Group Section - Now Dynamic */}
+      <HomepageGamesSection />
 
       {/* Why Choose NIBOG Section */}
       <section className="relative py-20 bg-gradient-to-r from-sunshine-50 via-coral-50 to-mint-50 dark:from-sunshine-900/10 dark:via-coral-900/10 dark:to-mint-900/10">

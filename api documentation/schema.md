@@ -646,3 +646,30 @@ CREATE TABLE privacy_policy (
     html_content TEXT NOT NULL,      -- full HTML content
     created_at TIMESTAMPTZ DEFAULT now()
 );
+
+
+
+CREATE TABLE eventimage (
+    id SERIAL PRIMARY KEY,
+    event_id INTEGER NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    priority INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+
+
+CREATE TABLE gamesimage (
+    id SERIAL PRIMARY KEY,
+    game_id INTEGER NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    priority INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
+
+
