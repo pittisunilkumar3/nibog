@@ -8,8 +8,8 @@ export async function POST(request: Request) {
     const testimonialData = await request.json();
     console.log("Server API route: Testimonial data:", JSON.stringify(testimonialData, null, 2));
 
-    // Validate required fields
-    if (!testimonialData.name || !testimonialData.city || !testimonialData.event_id || 
+    // Validate required fields according to API documentation
+    if (!testimonialData.name || !testimonialData.event_id ||
         !testimonialData.rating || !testimonialData.testimonial) {
       return NextResponse.json(
         { error: "Missing required testimonial data" },
@@ -17,69 +17,41 @@ export async function POST(request: Request) {
       );
     }
 
-    // Forward the request to the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/testimonials/create";
-    console.log("Server API route: Calling API URL:", apiUrl);
+    // Call the external API to create testimonial
+    console.log("Server API route: Calling external API to create testimonial");
 
-    // Create an AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-    const response = await fetch(apiUrl, {
-      method: "POST",
+    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/create', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
-      body: JSON.stringify(testimonialData),
-      signal: controller.signal,
+      body: JSON.stringify({
+        name: testimonialData.name,
+        city_id: testimonialData.city_id || null, // Send city_id instead of city name
+        event_id: testimonialData.event_id,
+        rating: testimonialData.rating,
+        testimonial: testimonialData.testimonial,
+        date: testimonialData.date || new Date().toISOString().split('T')[0],
+        status: testimonialData.status || 'Published'
+      }),
     });
 
-    clearTimeout(timeoutId);
-
-    console.log(`Server API route: Create testimonial response status: ${response.status}`);
+    console.log(`External API response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Server API route: Error response: ${errorText}`);
-      
-      let errorMessage = `Error creating testimonial: ${response.status}`;
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-      } catch (e) {
-        // If we can't parse the error as JSON, use the status code
-      }
-
+      console.error('External API error:', errorText);
       return NextResponse.json(
-        { error: errorMessage },
+        { error: `External API returned error status: ${response.status}` },
         { status: response.status }
       );
     }
 
-    // Get the response data
-    const responseText = await response.text();
-    console.log(`Server API route: Raw response: ${responseText}`);
-    
-    let data;
-    try {
-      // Try to parse the response as JSON
-      data = JSON.parse(responseText);
-      console.log("Server API route: Parsed response data:", data);
-    } catch (parseError) {
-      console.error("Server API route: Error parsing response:", parseError);
-      return NextResponse.json(
-        { 
-          error: "Failed to parse API response", 
-          rawResponse: responseText.substring(0, 500) 
-        },
-        { status: 500 }
-      );
-    }
+    const data = await response.json();
+    console.log("Server API route: Testimonial created successfully:", data);
     
     // Return the response with success status
-    return NextResponse.json(data, { status: 200 });
+    return NextResponse.json(data, { status: 201 });
   } catch (error: any) {
     console.error("Server API route: Error creating testimonial:", error);
     

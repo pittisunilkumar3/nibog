@@ -15,9 +15,9 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
 
 // Define interfaces to match API response
 interface Event {
-  id: number;
-  title: string;
-  description: string;
+  event_id: number;
+  event_title: string;
+  event_description: string;
   city_id: number;
   venue_id: number;
   event_date: string;
@@ -63,7 +63,7 @@ export default function NewTestimonialPage() {
         console.log('Fetching data...')
         
         // Fetch events from API
-        const eventsResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/event/get-all')
+        const eventsResponse = await fetch('/api/events/get-all')
         if (!eventsResponse.ok) {
           throw new Error('Failed to fetch events')
         }
@@ -71,14 +71,24 @@ export default function NewTestimonialPage() {
         console.log('Events data:', eventsData)
         setEvents(eventsData)
 
-        // Fetch cities from cities API
-        const citiesResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/city/get-all')
+        // Fetch cities from internal API route
+        const citiesResponse = await fetch('/api/cities/get-all')
         if (!citiesResponse.ok) {
           throw new Error('Failed to fetch cities')
         }
         const citiesData = await citiesResponse.json()
         console.log('Cities data:', citiesData)
-        setCities(citiesData)
+
+        // Clean up city names by trimming whitespace and ensure proper structure
+        const cleanedCities = citiesData.map((city: any) => ({
+          id: city.id,
+          city_name: city.city_name ? city.city_name.trim() : '',
+          state: city.state,
+          is_active: city.is_active
+        }))
+
+        console.log('Cleaned cities data:', cleanedCities)
+        setCities(cleanedCities)
 
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -122,11 +132,14 @@ export default function NewTestimonialPage() {
     }
     reader.readAsDataURL(file)
 
-    // Simulate upload process (since we're doing frontend-only implementation)
     setIsUploadingImage(true)
     setUploadProgress(0)
 
     try {
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('file', file)
+
       // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
@@ -138,26 +151,41 @@ export default function NewTestimonialPage() {
         })
       }, 100)
 
-      // Simulate file processing delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Upload file to our API
+      const uploadResponse = await fetch('/api/testimonials/upload-image', {
+        method: 'POST',
+        body: formData
+      })
 
-      // Generate a mock file path for the uploaded image
-      const timestamp = Date.now()
-      const fileName = `testimonial_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
-      const mockPath = `./upload/testimonial/${fileName}`
-
-      setUploadedImagePath(mockPath)
+      clearInterval(progressInterval)
       setUploadProgress(100)
 
-      console.log(`Image uploaded successfully: ${mockPath}`)
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || 'Failed to upload image')
+      }
+
+      const uploadData = await uploadResponse.json()
+      setUploadedImagePath(uploadData.path)
+
+      console.log(`Image uploaded successfully: ${uploadData.path}`)
       console.log(`Original file name: ${file.name}`)
       console.log(`File size: ${(file.size / 1024 / 1024).toFixed(2)} MB`)
 
+      // Clear the progress after a short delay
+      setTimeout(() => {
+        setIsUploadingImage(false)
+        setUploadProgress(0)
+      }, 500)
+
     } catch (error) {
       console.error('Error uploading image:', error)
-      setError('Failed to upload image. Please try again.')
-    } finally {
+      setError(error instanceof Error ? error.message : 'Failed to upload image. Please try again.')
       setIsUploadingImage(false)
+      setUploadProgress(0)
+      setSelectedImage(null)
+      setImagePreview(null)
+      setUploadedImagePath(null)
     }
   }
 
@@ -187,41 +215,50 @@ export default function NewTestimonialPage() {
       if (!selectedEventId) {
         throw new Error('Please select an event')
       }
-      if (!selectedCityName || !selectedCityId) {
-        throw new Error('Please select a city')
+      if (!selectedCityName || selectedCityName.trim() === '') {
+        console.error('City validation failed:', { selectedCityName, selectedCityId });
+        throw new Error('Please select a city')  
       }
 
       // Format date to match API requirement (YYYY-MM-DD)
       const formattedDate = new Date(date).toISOString().split('T')[0];
 
-      // Prepare payload exactly as per API documentation
+      // Prepare payload for API
+      // Send city name as city_id field value
       const payload = {
         name: name.trim(),
-        city_id: selectedCityName.trim(), // Include city ID to ensure proper association
+        city_id: selectedCityName.trim(), // Send city name as city_id value
         event_id: parseInt(selectedEventId),
         rating: parseInt(rating),
         testimonial: testimonialText.trim(),
         date: formattedDate,
-        status: "Published",
-        // New fields (frontend-only, not sent to API)
-        image_path: uploadedImagePath,
-        priority: priority
+        status: "Published"
       }
 
       // Extensive debug logging
       console.log('Form Data:', {
         name,
         selectedCityName,
+        selectedCityId,
         selectedEventId,
         rating,
         testimonialText,
         date
       });
-      
+
       console.log('Payload for API:', payload);
 
-      // Make API call to create testimonial
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/create', {
+      // Additional validation logging
+      console.log('City validation:', {
+        selectedCityName: selectedCityName,
+        selectedCityNameLength: selectedCityName?.length,
+        selectedCityNameTrimmed: selectedCityName?.trim(),
+        selectedCityId: selectedCityId,
+        cityIdInPayload: payload.city_id
+      });
+
+      // Step 1: Create testimonial
+      const response = await fetch('/api/testimonials/create', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -235,10 +272,43 @@ export default function NewTestimonialPage() {
         throw new Error('Failed to create testimonial: ' + errorData);
       }
 
-      const data = await response.json()
-      
+      const testimonialData = await response.json()
+      console.log('Testimonial created successfully:', testimonialData)
+
+      // Step 2: If image was uploaded, associate it with the testimonial
+      if (uploadedImagePath && testimonialData.id) {
+        console.log('Associating image with testimonial ID:', testimonialData.id)
+
+        const imagePayload = {
+          testimonial_id: testimonialData.id,
+          image_url: uploadedImagePath,
+          priority: priority,
+          is_active: true
+        }
+
+        console.log('Image payload:', imagePayload)
+
+        const imageResponse = await fetch('/api/testimonials/images/update', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(imagePayload)
+        })
+
+        if (!imageResponse.ok) {
+          const imageErrorData = await imageResponse.text();
+          console.error('Image API error response:', imageErrorData);
+          // Don't fail the entire process if image association fails
+          console.warn('Failed to associate image with testimonial, but testimonial was created successfully')
+        } else {
+          const imageData = await imageResponse.json()
+          console.log('Image associated successfully:', imageData)
+        }
+      }
+
       setIsLoading(false)
-      
+
       // Redirect to the testimonials list on success
       router.push("/admin/testimonials")
 
@@ -290,18 +360,33 @@ export default function NewTestimonialPage() {
                 <Select
                   value={selectedCityName}
                   onValueChange={(cityName) => {
-                    console.log('Selected city name:', cityName);
+                    console.log('City selection changed:', {
+                      cityName,
+                      cityNameType: typeof cityName,
+                      cityNameLength: cityName?.length,
+                      availableCities: cities.map(c => c.city_name)
+                    });
+
                     setSelectedCityName(cityName);
-                    
+
                     // Find the corresponding city ID for the selected city name
                     const selectedCity = cities.find(c => c.city_name === cityName);
                     if (selectedCity) {
-                      console.log('Found city ID:', selectedCity.id);
+                      console.log('Found matching city:', selectedCity);
                       setSelectedCityId(selectedCity.id);
                     } else {
-                      console.log('City ID not found for:', cityName);
+                      console.log('No matching city found for:', cityName);
+                      console.log('Available cities:', cities.map(c => ({ id: c.id, name: c.city_name })));
                       setSelectedCityId(null);
                     }
+
+                    // Verify state after setting
+                    setTimeout(() => {
+                      console.log('State after city selection:', {
+                        selectedCityName: cityName,
+                        selectedCityId: selectedCity?.id || null
+                      });
+                    }, 100);
                   }}
                   required
                   disabled={isDataLoading}
@@ -338,8 +423,8 @@ export default function NewTestimonialPage() {
                   <SelectContent>
                     {events && events.length > 0 ? (
                       events.map((event) => (
-                        <SelectItem key={event.id} value={event.id.toString()}>
-                          {event.title}
+                        <SelectItem key={event.event_id} value={event.event_id.toString()}>
+                          {event.event_title}
                         </SelectItem>
                       ))
                     ) : (

@@ -110,7 +110,9 @@ export default function TestimonialDetailPage({ params }: Props) {
   const handleDeleteTestimonial = async () => {
     try {
       setIsProcessing("delete")
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete', {
+
+      // Use local API instead of external API
+      const response = await fetch('/api/testimonials/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -119,10 +121,14 @@ export default function TestimonialDetailPage({ params }: Props) {
       })
 
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Delete API error:', errorText)
         throw new Error('Failed to delete testimonial')
       }
 
       const data = await response.json()
+      console.log('Delete response:', data)
+
       if (!data[0]?.success) {
         throw new Error('Delete operation failed')
       }

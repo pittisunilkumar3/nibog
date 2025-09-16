@@ -157,4 +157,13 @@ export const EVENT_DETAILS_API = {
   GET_WITH_IMAGES: "https://ai.alviongs.com/webhook/nibog/getting/eventdetailswithimage", // GET
 };
 
+// Testimonials API endpoints
+export const TESTIMONIALS_API = {
+  CREATE: `${API_BASE_URL}/testimonials/create`, // POST
+  GET: `${API_BASE_URL}/testimonials/get`, // POST with id in body
+  GET_ALL: `${API_BASE_URL}/testimonials/get-all`, // GET
+  UPDATE: `${API_BASE_URL}/testimonials/update`, // POST
+  DELETE: `${API_BASE_URL}/testimonials/delete`, // POST with id in body
+};
+
 // PhonePe API endpoints are now in config/phonepe.ts

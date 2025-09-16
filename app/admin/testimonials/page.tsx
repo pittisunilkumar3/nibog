@@ -15,6 +15,7 @@ import { useToast } from "@/components/ui/use-toast"
 import { getAllTestimonials, deleteTestimonial, updateTestimonialStatus, type Testimonial } from "@/services/testimonialService"
 import { getAllEvents } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -162,7 +163,8 @@ export default function TestimonialsPage() {
     try {
       setIsProcessing(String(id))
 
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete', {
+      // Use local API instead of external API
+      const response = await fetch('/api/testimonials/delete', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -171,11 +173,14 @@ export default function TestimonialsPage() {
       })
 
       if (!response.ok) {
+        const errorText = await response.text()
+        console.error('Delete API error:', errorText)
         throw new Error('Failed to delete testimonial')
       }
 
       const data = await response.json()
-      
+      console.log('Delete response:', data)
+
       if (!data[0]?.success) {
         throw new Error('Delete operation failed')
       }
@@ -360,7 +365,7 @@ export default function TestimonialsPage() {
   }
 
   // Define table columns for EnhancedDataTable
-  const columns: Column<any>[] = [
+  const columns: Column<Testimonial>[] = [
     {
       key: 'name',
       label: 'Parent Name',
@@ -373,6 +378,7 @@ export default function TestimonialsPage() {
       sortable: true,
       priority: 3, // Less important on mobile
       hideOnMobile: true,
+      // No render function needed - city names are stored directly
     },
     {
       key: 'event_id',
@@ -421,51 +427,51 @@ export default function TestimonialsPage() {
   ]
 
   // Define table actions
-  const actions: TableAction<any>[] = [
+  const actions: TableAction<Testimonial>[] = [
     {
       label: "View",
       icon: <Eye className="h-4 w-4" />,
-      onClick: (testimonial) => {
+      onClick: (testimonial: Testimonial) => {
         window.location.href = `/admin/testimonials/${testimonial.id}`
       }
     },
     {
       label: "Edit",
       icon: <Edit className="h-4 w-4" />,
-      onClick: (testimonial) => {
+      onClick: (testimonial: Testimonial) => {
         window.location.href = `/admin/testimonials/${testimonial.id}/edit`
       }
     },
     {
       label: "Approve",
       icon: <Check className="h-4 w-4" />,
-      onClick: (testimonial) => handleApprove(testimonial.id),
-      show: (testimonial) => testimonial.status === 'pending'
+      onClick: (testimonial: Testimonial) => handleApproveTestimonial(testimonial.id),
+      disabled: (testimonial: Testimonial) => testimonial.status?.toLowerCase() !== 'pending'
     },
     {
       label: "Reject",
       icon: <X className="h-4 w-4" />,
-      onClick: (testimonial) => handleReject(testimonial.id),
+      onClick: (testimonial: Testimonial) => handleRejectTestimonial(testimonial.id),
       variant: 'destructive',
-      show: (testimonial) => testimonial.status === 'pending'
+      disabled: (testimonial: Testimonial) => testimonial.status?.toLowerCase() !== 'pending'
     },
     {
       label: "Delete",
       icon: <Trash className="h-4 w-4" />,
-      onClick: (testimonial) => handleDelete(testimonial.id),
+      onClick: (testimonial: Testimonial) => handleDeleteTestimonial(testimonial.id),
       variant: 'destructive'
     }
   ]
 
   // Define bulk actions
-  const bulkActions: BulkAction<any>[] = [
+  const bulkActions: BulkAction<Testimonial>[] = [
     {
       label: "Approve Selected",
       icon: <Check className="h-4 w-4" />,
-      onClick: (selectedTestimonials) => {
+      onClick: (selectedTestimonials: Testimonial[]) => {
         selectedTestimonials.forEach(testimonial => {
-          if (testimonial.status === 'pending') {
-            handleApprove(testimonial.id)
+          if (testimonial.status?.toLowerCase() === 'pending') {
+            handleApproveTestimonial(testimonial.id)
           }
         })
       }
@@ -473,15 +479,15 @@ export default function TestimonialsPage() {
     {
       label: "Delete Selected",
       icon: <Trash className="h-4 w-4" />,
-      onClick: (selectedTestimonials) => {
-        selectedTestimonials.forEach(testimonial => handleDelete(testimonial.id))
+      onClick: (selectedTestimonials: Testimonial[]) => {
+        selectedTestimonials.forEach(testimonial => handleDeleteTestimonial(testimonial.id))
       },
       variant: 'destructive'
     }
   ]
 
   // Define export columns
-  const exportColumns: ExportColumn[] = [
+  const exportColumns: ExportColumn<Testimonial>[] = [
     { key: 'name', label: 'Parent Name' },
     { key: 'city', label: 'City' },
     { key: 'event_id', label: 'Event ID' },

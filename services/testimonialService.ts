@@ -186,15 +186,15 @@ export async function updateTestimonial(testimonialData: UpdateTestimonialPayloa
 }
 
 /**
- * Delete a testimonial
+ * Delete a testimonial from local storage
  * @param testimonialId Testimonial ID to delete
  * @returns Promise with deletion result
  */
 export async function deleteTestimonial(testimonialId: number): Promise<{ success: boolean }> {
   try {
-    console.log(`Deleting testimonial with ID: ${testimonialId}`);
+    console.log(`Deleting testimonial with ID: ${testimonialId} from local storage`);
 
-    // Use our internal API route to avoid CORS issues
+    // Use our internal API route that works with local storage
     const response = await fetch('/api/testimonials/delete', {
       method: "POST",
       headers: {
@@ -208,7 +208,7 @@ export async function deleteTestimonial(testimonialId: number): Promise<{ succes
     if (!response.ok) {
       const errorText = await response.text();
       console.error(`Error response: ${errorText}`);
-      throw new Error(`API returned error status: ${response.status}`);
+      throw new Error(`Failed to delete testimonial: ${response.status} - ${errorText}`);
     }
 
     const data = await response.json();

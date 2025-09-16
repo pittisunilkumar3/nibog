@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function DELETE(request: Request) {
   try {
-    console.log("Server API route: Deleting testimonial");
+    console.log("Server API route: Deleting testimonial via external API");
 
     // Parse the request body
     const { id } = await request.json();
@@ -15,68 +15,29 @@ export async function DELETE(request: Request) {
       );
     }
 
-    // Forward the request to the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete";
-    console.log("Server API route: Calling API URL:", apiUrl);
-
-    // Create an AbortController for timeout
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
-
-    const response = await fetch(apiUrl, {
-      method: "DELETE",
+    // Call the external API to delete testimonial
+    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete', {
+      method: 'POST',
       headers: {
-        "Content-Type": "application/json",
+        'Content-Type': 'application/json',
       },
       body: JSON.stringify({ id: Number(id) }),
-      signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     console.log(`Server API route: Delete testimonial response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Server API route: Error response: ${errorText}`);
-      
-      let errorMessage = `Error deleting testimonial: ${response.status}`;
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error) {
-          errorMessage = errorData.error;
-        }
-      } catch (e) {
-        // If we can't parse the error as JSON, use the status code
-      }
-
+      console.error('External API error:', errorText);
       return NextResponse.json(
-        { error: errorMessage },
+        { error: `External API returned error status: ${response.status}` },
         { status: response.status }
       );
     }
 
-    // Get the response data
-    const responseText = await response.text();
-    console.log(`Server API route: Raw response: ${responseText}`);
-    
-    let data;
-    try {
-      // Try to parse the response as JSON
-      data = JSON.parse(responseText);
-      console.log("Server API route: Parsed response data:", data);
-    } catch (parseError) {
-      console.error("Server API route: Error parsing response:", parseError);
-      return NextResponse.json(
-        { 
-          error: "Failed to parse API response", 
-          rawResponse: responseText.substring(0, 500) 
-        },
-        { status: 500 }
-      );
-    }
-    
-    // Return the response with success status
+    const data = await response.json();
+    console.log("Server API route: Delete operation successful:", data);
+
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
     console.error("Server API route: Error deleting testimonial:", error);
@@ -101,4 +62,9 @@ export async function DELETE(request: Request) {
       { status: 500 }
     );
   }
+}
+
+// Also support POST method since frontend uses POST
+export async function POST(request: Request) {
+  return DELETE(request);
 }

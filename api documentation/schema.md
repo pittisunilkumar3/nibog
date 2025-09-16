@@ -673,3 +673,15 @@ CREATE TABLE gamesimage (
 
 
 
+CREATE TABLE testimonialimagestable (
+    id SERIAL PRIMARY KEY,
+    testimonial_id INTEGER NOT NULL,
+    image_url VARCHAR(255) NOT NULL,
+    priority INTEGER DEFAULT 0,
+    is_active BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW(),
+    updated_at TIMESTAMP WITHOUT TIME ZONE DEFAULT NOW()
+);
+
+
+
