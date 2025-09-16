@@ -272,11 +272,17 @@ export default function NewTestimonialPage() {
         throw new Error('Failed to create testimonial: ' + errorData);
       }
 
-      const testimonialData = await response.json()
-      console.log('Testimonial created successfully:', testimonialData)
+      const testimonialResponse = await response.json()
+      console.log('✅ Step 1 Complete: Testimonial API response:', testimonialResponse)
 
-      // Step 2: If image was uploaded, associate it with the testimonial
-      if (uploadedImagePath && testimonialData.id) {
+      // Handle array response from testimonial API
+      const testimonialData = Array.isArray(testimonialResponse) ? testimonialResponse[0] : testimonialResponse
+      console.log('✅ Testimonial data extracted:', testimonialData)
+
+      // Step 2: MANDATORY - Associate image with the testimonial
+      // Both testimonial creation AND image association must succeed
+      if (uploadedImagePath && testimonialData && testimonialData.id) {
+        console.log('🔄 Step 2 Starting: Image association is REQUIRED for this testimonial');
         console.log('Associating image with testimonial ID:', testimonialData.id)
 
         const imagePayload = {
@@ -299,17 +305,28 @@ export default function NewTestimonialPage() {
         if (!imageResponse.ok) {
           const imageErrorData = await imageResponse.text();
           console.error('Image API error response:', imageErrorData);
-          // Don't fail the entire process if image association fails
-          console.warn('Failed to associate image with testimonial, but testimonial was created successfully')
-        } else {
-          const imageData = await imageResponse.json()
-          console.log('Image associated successfully:', imageData)
+          // FAIL the entire process if image association fails
+          throw new Error('Failed to associate image with testimonial: ' + imageErrorData);
         }
+
+        const imageResponse_data = await imageResponse.json()
+        // Handle array response from testimonial images API
+        const imageData = Array.isArray(imageResponse_data) ? imageResponse_data[0] : imageResponse_data
+        console.log('✅ Step 2 Complete: Image associated successfully:', imageData)
+        console.log('🎉 SUCCESS: Both testimonial and image created successfully!')
+      } else if (uploadedImagePath && (!testimonialData || !testimonialData.id)) {
+        // Image was uploaded but testimonial ID is missing
+        console.error('❌ CRITICAL ERROR: Testimonial ID missing for image association');
+        console.error('Testimonial response was:', testimonialResponse);
+        throw new Error('Testimonial was created but ID is missing for image association');
+      } else if (!uploadedImagePath) {
+        // No image was uploaded, testimonial creation alone is sufficient
+        console.log('✅ SUCCESS: Testimonial created successfully (no image to associate)')
       }
 
       setIsLoading(false)
 
-      // Redirect to the testimonials list on success
+      // Redirect to the testimonials list ONLY after both APIs succeed
       router.push("/admin/testimonials")
 
     } catch (error) {
