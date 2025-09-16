@@ -186,8 +186,11 @@ export default function EditEventPage({ params }: Props) {
         }
 
         // Fetch cities, venues, games, and images
+        console.log("🔄 Starting to fetch additional data...")
         fetchCities()
         fetchBabyGames()
+        console.log("🖼️ About to call fetchExistingImages()...")
+        console.log("🎯 Event ID for image fetch:", eventId)
         fetchExistingImages()
       } catch (error: any) {
         console.error(`Error fetching event with ID ${eventId}:`, error)
