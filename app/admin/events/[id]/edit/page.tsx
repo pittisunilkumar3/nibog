@@ -631,18 +631,18 @@ export default function EditEventPage({ params }: Props) {
       const updatedEvent = await updateEvent(apiData)
       console.log("Updated event:", updatedEvent)
 
-      // If there's a new image file, upload it and update/create image record
+      // Handle image updates - either new image upload or priority change
       if (eventImageFile) {
         try {
-          console.log("Uploading new event image after successful event update...")
+          console.log("🖼️ Uploading new event image after successful event update...")
 
           // Upload the new image
           const uploadResult = await uploadEventImage(eventImageFile)
-          console.log("Event image uploaded:", uploadResult)
+          console.log("✅ Event image uploaded:", uploadResult)
 
           // Check if there are existing images to update or if we need to create new
           if (existingImages.length > 0) {
-            console.log("Updating existing event image...")
+            console.log("🔄 Updating existing event image with new file...")
 
             // Delete old image files from filesystem
             for (const existingImage of existingImages) {
@@ -654,23 +654,23 @@ export default function EditEventPage({ params }: Props) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filePath: existingImage.image_url })
                   })
-                  console.log(`Deleted old image file: ${existingImage.image_url}`)
+                  console.log(`🗑️ Deleted old image file: ${existingImage.image_url}`)
                 } catch (deleteError) {
-                  console.warn(`Failed to delete old image file: ${existingImage.image_url}`, deleteError)
+                  console.warn(`⚠️ Failed to delete old image file: ${existingImage.image_url}`, deleteError)
                 }
               }
             }
 
-            // Update the image record
+            // Update the image record with new file
             const updateResult = await updateEventImage(
               Number(eventId),
               uploadResult.path,
               parseInt(imagePriority),
               true
             )
-            console.log("Event image update result:", updateResult)
+            console.log("✅ Event image update result:", updateResult)
           } else {
-            console.log("Creating new event image...")
+            console.log("➕ Creating new event image...")
             // Create new image record
             const webhookResult = await sendEventImageToWebhook(
               Number(eventId),
@@ -678,7 +678,7 @@ export default function EditEventPage({ params }: Props) {
               parseInt(imagePriority),
               true
             )
-            console.log("Event image webhook result:", webhookResult)
+            console.log("✅ Event image webhook result:", webhookResult)
           }
 
           toast({
@@ -686,15 +686,54 @@ export default function EditEventPage({ params }: Props) {
             description: "Event updated and image uploaded successfully!",
           })
         } catch (imageError: any) {
-          console.error("Error uploading image after event update:", imageError)
+          console.error("❌ Error uploading image after event update:", imageError)
           toast({
             title: "Warning",
             description: `Event updated successfully, but image upload failed: ${imageError.message || "Unknown error"}`,
             variant: "destructive",
           })
         }
+      } else if (existingImages.length > 0) {
+        // No new image file, but update existing image priority if it changed
+        try {
+          console.log("🔄 Updating existing event image priority (no new file)...")
+
+          // Get the latest existing image
+          const sortedImages = [...existingImages].sort((a, b) => {
+            if (a.priority !== b.priority) {
+              return b.priority - a.priority;
+            }
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          });
+          const latestImage = sortedImages[0];
+
+          console.log(`📊 Current image: ${latestImage.image_url}, Priority: ${latestImage.priority}`);
+          console.log(`📊 New priority: ${imagePriority}`);
+
+          // Always call the secondary API to update priority (even if it's the same)
+          const updateResult = await updateEventImage(
+            Number(eventId),
+            latestImage.image_url,
+            parseInt(imagePriority),
+            true
+          )
+          console.log("✅ Event image priority update result:", updateResult)
+
+          toast({
+            title: "Success",
+            description: "Event updated and image priority updated successfully!",
+          })
+        } catch (imageError: any) {
+          console.error("❌ Error updating image priority:", imageError)
+          toast({
+            title: "Warning",
+            description: `Event updated successfully, but image priority update failed: ${imageError.message || "Unknown error"}`,
+            variant: "destructive",
+          })
+        }
       } else {
-        // Show success message for event update only
+        // No existing images and no new image file
+        console.log("ℹ️ No image updates needed - no existing images and no new file")
         toast({
           title: "Success",
           description: "Event updated successfully!",

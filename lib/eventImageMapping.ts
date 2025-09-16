@@ -23,12 +23,13 @@ export async function findApiIdForEvent(targetEventId: number): Promise<number |
 
   console.log(`Searching for API ID that returns images for Event ${targetEventId}...`);
 
-  // Search through a reasonable range of API IDs
-  const searchRange = Array.from({ length: 50 }, (_, i) => i + 1); // Test IDs 1-50
+  // Search through a reasonable range of API IDs by calling external API directly
+  const searchRange = Array.from({ length: 20 }, (_, i) => i + 1); // Test IDs 1-20
 
   for (const apiId of searchRange) {
     try {
-      const response = await fetch('/api/eventimages/get', {
+      // Call external API directly to avoid infinite recursion
+      const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -38,12 +39,12 @@ export async function findApiIdForEvent(targetEventId: number): Promise<number |
 
       if (response.ok) {
         const data = await response.json();
-        
+
         if (Array.isArray(data) && data.length > 0) {
-          const validImages = data.filter(img => 
-            img && 
-            typeof img === 'object' && 
-            img.id !== undefined && 
+          const validImages = data.filter(img =>
+            img &&
+            typeof img === 'object' &&
+            img.id !== undefined &&
             img.image_url !== undefined &&
             img.event_id === targetEventId
           );
@@ -76,9 +77,9 @@ export async function findApiIdForEvent(targetEventId: number): Promise<number |
 export async function fetchEventImagesWithMapping(eventId: number): Promise<any[]> {
   console.log(`Fetching images for Event ${eventId} with mapping...`);
 
-  // First, try the direct approach (event ID matches API ID)
+  // First, try the direct approach (event ID matches API ID) by calling external API
   try {
-    const directResponse = await fetch('/api/eventimages/get', {
+    const directResponse = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -88,17 +89,17 @@ export async function fetchEventImagesWithMapping(eventId: number): Promise<any[
 
     if (directResponse.ok) {
       const directData = await directResponse.json();
-      
+
       if (Array.isArray(directData) && directData.length > 0) {
-        const validImages = directData.filter(img => 
-          img && 
-          typeof img === 'object' && 
-          img.id !== undefined && 
+        const validImages = directData.filter(img =>
+          img &&
+          typeof img === 'object' &&
+          img.id !== undefined &&
           img.image_url !== undefined
         );
-        
+
         if (validImages.length > 0) {
-          console.log(`✅ Direct mapping worked for Event ${eventId}`);
+          console.log(`✅ Direct mapping worked for Event ${eventId} (found ${validImages.length} images)`);
           return validImages;
         }
       }
@@ -115,9 +116,9 @@ export async function fetchEventImagesWithMapping(eventId: number): Promise<any[
     return [];
   }
 
-  // Fetch using the correct API ID
+  // Fetch using the correct API ID by calling external API directly
   try {
-    const mappedResponse = await fetch('/api/eventimages/get', {
+    const mappedResponse = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -127,17 +128,17 @@ export async function fetchEventImagesWithMapping(eventId: number): Promise<any[
 
     if (mappedResponse.ok) {
       const mappedData = await mappedResponse.json();
-      
+
       if (Array.isArray(mappedData) && mappedData.length > 0) {
-        const validImages = mappedData.filter(img => 
-          img && 
-          typeof img === 'object' && 
-          img.id !== undefined && 
+        const validImages = mappedData.filter(img =>
+          img &&
+          typeof img === 'object' &&
+          img.id !== undefined &&
           img.image_url !== undefined &&
           img.event_id === eventId
         );
-        
-        console.log(`✅ Mapped fetch successful for Event ${eventId} (via API ID ${correctApiId})`);
+
+        console.log(`✅ Mapped fetch successful for Event ${eventId} (via API ID ${correctApiId}, found ${validImages.length} images)`);
         return validImages;
       }
     }

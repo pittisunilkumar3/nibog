@@ -327,7 +327,7 @@ export async function sendGameImageToWebhook(
  * @returns Promise with array of game images
  */
 export async function fetchGameImages(gameId: number): Promise<any[]> {
-  console.log("Fetching game images for game ID:", gameId);
+  console.log("🎮 Fetching game images for game ID:", gameId);
 
   try {
     const response = await fetch('/api/gamesimage/get', {
@@ -340,32 +340,80 @@ export async function fetchGameImages(gameId: number): Promise<any[]> {
       }),
     });
 
-    console.log(`Fetch game images response status: ${response.status}`);
+    console.log(`📡 Fetch game images response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error response: ${errorText}`);
+      console.error(`❌ API Error response: ${errorText}`);
       throw new Error(`Fetch failed: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Game images fetched:", data);
+    console.log("✅ Game images fetched:", data);
 
-    // Return the array of images, handling various response formats
+    // Enhanced filtering to handle empty objects and invalid data
     if (Array.isArray(data)) {
-      return data.filter(img => img && typeof img === 'object');
+      const validImages = data.filter(img =>
+        img &&
+        typeof img === 'object' &&
+        img.id !== undefined &&
+        img.image_url !== undefined &&
+        img.image_url !== null &&
+        img.image_url.trim() !== ''
+      );
+
+      console.log(`📊 Valid game images after filtering: ${validImages.length}`, validImages);
+      return validImages;
     }
 
     // Handle case where API returns empty object or null
+    console.log("⚠️ API returned non-array data:", typeof data);
     return [];
   } catch (error) {
-    console.error("Error fetching game images:", error);
+    console.error("❌ Error fetching game images:", error);
     throw error;
   }
 }
 
 /**
- * Update game image
+ * Delete game images for a specific game
+ * @param gameId The game ID
+ * @returns Promise with delete result
+ */
+export async function deleteGameImages(gameId: number): Promise<any> {
+  console.log("🗑️ Deleting game images for game ID:", gameId);
+
+  try {
+    const response = await fetch('/api/gamesimage/delete', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        game_id: gameId,
+      }),
+    });
+
+    console.log(`Delete game images response status: ${response.status}`);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Delete error response: ${errorText}`);
+      throw new Error(`Delete failed: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log("✅ Game images delete success:", data);
+
+    return data;
+  } catch (error) {
+    console.error("❌ Error deleting game images:", error);
+    throw error;
+  }
+}
+
+/**
+ * Update game image using create strategy (since update endpoint is not available)
  * @param gameId The game ID
  * @param imageUrl The image URL/path
  * @param priority The priority of the image
@@ -378,9 +426,10 @@ export async function updateGameImage(
   priority: number,
   isActive: boolean = true
 ): Promise<any> {
-  console.log("Updating game image:", { gameId, imageUrl, priority, isActive });
+  console.log("🔄 Updating game image using create strategy:", { gameId, imageUrl, priority, isActive });
 
   try {
+    // Use the update API route which internally calls the create endpoint
     const response = await fetch('/api/gamesimage/update', {
       method: 'POST',
       headers: {
@@ -394,20 +443,34 @@ export async function updateGameImage(
       }),
     });
 
-    console.log(`Update game image response status: ${response.status}`);
+    console.log(`📡 Update game image response status: ${response.status}`);
 
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error response: ${errorText}`);
+      console.error(`❌ Update API error response: ${errorText}`);
       throw new Error(`Update failed: ${response.status}`);
     }
 
     const data = await response.json();
-    console.log("Game image update success:", data);
+    console.log("✅ Game image update success:", data);
 
     return data;
   } catch (error) {
-    console.error("Error updating game image:", error);
+    console.error("❌ Error updating game image:", error);
     throw error;
   }
+}
+
+/**
+ * Legacy update function (kept for compatibility, but uses new strategy)
+ * @deprecated Use updateGameImage instead
+ */
+export async function updateGameImageLegacy(
+  gameId: number,
+  imageUrl: string,
+  priority: number,
+  isActive: boolean = true
+): Promise<any> {
+  console.log("⚠️ Using legacy update function - redirecting to new implementation");
+  return updateGameImage(gameId, imageUrl, priority, isActive);
 }

@@ -44,10 +44,11 @@ export async function POST(request: NextRequest) {
       is_active: is_active !== undefined ? is_active : true
     }
 
-    console.log('Sending to external update webhook:', webhookPayload)
-    console.log('External webhook URL:', 'https://ai.alviongs.com/webhook/nibog/gamesimage/update')
+    console.log('🔄 Calling games image update endpoint:', webhookPayload)
+    console.log('📡 External webhook URL:', 'https://ai.alviongs.com/webhook/nibog/gamesimage/update')
+    console.log('💡 Using the correct update endpoint as specified by user')
 
-    // Send to external webhook
+    // Call the correct update endpoint as specified by user
     const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
@@ -56,9 +57,11 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(webhookPayload),
     })
 
+    console.log(`📊 External webhook response status: ${webhookResponse.status}`)
+
     if (!webhookResponse.ok) {
       const errorText = await webhookResponse.text()
-      console.error('External webhook failed:', errorText)
+      console.error('❌ External update webhook failed:', errorText)
       return NextResponse.json(
         { error: 'Failed to update game image in external system', details: errorText },
         { status: 500 }
@@ -66,7 +69,7 @@ export async function POST(request: NextRequest) {
     }
 
     const webhookResult = await webhookResponse.json()
-    console.log('External webhook response:', webhookResult)
+    console.log('✅ External update webhook response:', webhookResult)
 
     return NextResponse.json({
       success: true,

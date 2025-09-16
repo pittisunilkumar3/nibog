@@ -104,25 +104,56 @@ export default function EditGameTemplate({ params }: Props) {
   const fetchExistingImages = async () => {
     try {
       setIsLoadingImages(true)
-      console.log(`Fetching existing images for game ID: ${gameId}`)
+      console.log(`🔍 Fetching existing images for game ID: ${gameId}`)
 
       const images = await fetchGameImages(gameId)
-      console.log("Existing game images:", images)
+      console.log("✅ Raw game images response:", images)
 
-      // Filter out any invalid images and ensure we have an array
-      const validImages = Array.isArray(images) ? images.filter(img => img && typeof img === 'object') : []
+      // Enhanced filtering to handle empty objects and invalid data
+      const validImages = Array.isArray(images)
+        ? images.filter(img =>
+            img &&
+            typeof img === 'object' &&
+            img.id !== undefined &&
+            img.image_url !== undefined &&
+            img.image_url !== null &&
+            img.image_url.trim() !== ''
+          )
+        : []
+
+      console.log(`📊 Valid images after filtering: ${validImages.length}`, validImages)
       setExistingImages(validImages)
 
-      // If there are existing images, set the first one as the current image
+      // Get the LATEST image (highest priority or most recent) for editing
       if (validImages.length > 0) {
-        const firstImage = validImages[0]
-        if (firstImage.image_url) {
-          setGameImage(firstImage.image_url)
-          setImagePriority(firstImage.priority?.toString() || "1")
+        // Sort by priority (descending) then by created_at (descending) to get the latest
+        const sortedImages = [...validImages].sort((a, b) => {
+          if (a.priority !== b.priority) {
+            return b.priority - a.priority; // Higher priority first
+          }
+          // If same priority, use most recent
+          return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+        });
+
+        const latestImage = sortedImages[0];
+        console.log(`🎯 Using LATEST image for editing (not first):`, {
+          id: latestImage.id,
+          priority: latestImage.priority,
+          url: latestImage.image_url,
+          created_at: latestImage.created_at,
+          total_images: validImages.length
+        });
+
+        if (latestImage.image_url) {
+          setGameImage(latestImage.image_url)
+          setImagePriority(latestImage.priority?.toString() || "1")
+          console.log(`✅ Priority set to: ${latestImage.priority} (from latest image)`)
         }
+      } else {
+        console.log(`ℹ️ No valid images found for game ${gameId}`)
       }
     } catch (error: any) {
-      console.error("Failed to fetch existing images:", error)
+      console.error("❌ Failed to fetch existing images:", error)
       // Don't show error toast for images as it's not critical
       console.warn("Could not load existing images, continuing without them")
     } finally {
@@ -222,20 +253,21 @@ export default function EditGameTemplate({ params }: Props) {
       const result = await updateBabyGame(gameData)
       console.log("Updated game:", result)
 
-      // If there's a new image file, upload it and update/create image record
+      // Handle image updates - either new image upload or priority change
       if (gameImageFile) {
         try {
-          console.log("Uploading new game image after successful game update...")
+          console.log("🖼️ Uploading new game image after successful game update...")
 
           // Upload the new image
           const uploadResult = await uploadGameImage(gameImageFile)
-          console.log("Game image uploaded:", uploadResult)
+          console.log("✅ Game image uploaded:", uploadResult)
 
           // Check if there are existing images to update or if we need to create new
           if (existingImages.length > 0) {
-            console.log("Updating existing game image...")
+            console.log("🔄 Updating existing game image with new file...")
+            console.log(`📊 Current images: ${existingImages.length}, uploading new one`)
 
-            // Delete old image files from filesystem
+            // Delete old image files from filesystem to save space
             for (const existingImage of existingImages) {
               if (existingImage.image_url) {
                 try {
@@ -245,23 +277,23 @@ export default function EditGameTemplate({ params }: Props) {
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ filePath: existingImage.image_url })
                   })
-                  console.log(`Deleted old image file: ${existingImage.image_url}`)
+                  console.log(`🗑️ Deleted old image file: ${existingImage.image_url}`)
                 } catch (deleteError) {
-                  console.warn(`Failed to delete old image file: ${existingImage.image_url}`, deleteError)
+                  console.warn(`⚠️ Failed to delete old image file: ${existingImage.image_url}`, deleteError)
                 }
               }
             }
 
-            // Update the image record
+            // Update the image record with new file
             const updateResult = await updateGameImage(
               gameId,
               uploadResult.path,
               parseInt(imagePriority),
               true
             )
-            console.log("Game image update result:", updateResult)
+            console.log("✅ Game image update result:", updateResult)
           } else {
-            console.log("Creating new game image...")
+            console.log("➕ Creating first game image...")
             // Create new image record
             const webhookResult = await sendGameImageToWebhook(
               gameId,
@@ -269,23 +301,64 @@ export default function EditGameTemplate({ params }: Props) {
               parseInt(imagePriority),
               true
             )
-            console.log("Game image webhook result:", webhookResult)
+            console.log("✅ First game image created:", webhookResult)
           }
 
           toast({
             title: "Success",
-            description: "Game updated and image uploaded successfully!",
+            description: existingImages.length > 0
+              ? "Game and image updated successfully!"
+              : "Game updated and image uploaded successfully!",
           })
         } catch (imageError: any) {
-          console.error("Error uploading image after game update:", imageError)
+          console.error("❌ Error uploading image after game update:", imageError)
           toast({
             title: "Warning",
             description: `Game updated successfully, but image upload failed: ${imageError.message || "Unknown error"}`,
             variant: "destructive",
           })
         }
+      } else if (existingImages.length > 0) {
+        // No new image file, but update existing image priority if it changed
+        try {
+          console.log("🔄 Updating existing game image priority (no new file)...")
+
+          // Get the latest existing image
+          const sortedImages = [...existingImages].sort((a, b) => {
+            if (a.priority !== b.priority) {
+              return b.priority - a.priority;
+            }
+            return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+          });
+          const latestImage = sortedImages[0];
+
+          console.log(`📊 Current image: ${latestImage.image_url}, Priority: ${latestImage.priority}`);
+          console.log(`📊 New priority: ${imagePriority}`);
+
+          // Always call the secondary API to update priority (even if it's the same)
+          const updateResult = await updateGameImage(
+            gameId,
+            latestImage.image_url,
+            parseInt(imagePriority),
+            true
+          )
+          console.log("✅ Game image priority update result:", updateResult)
+
+          toast({
+            title: "Success",
+            description: "Game updated and image priority updated successfully!",
+          })
+        } catch (imageError: any) {
+          console.error("❌ Error updating image priority:", imageError)
+          toast({
+            title: "Warning",
+            description: `Game updated successfully, but image priority update failed: ${imageError.message || "Unknown error"}`,
+            variant: "destructive",
+          })
+        }
       } else {
-        // Show success message for game update only
+        // No existing images and no new image file
+        console.log("ℹ️ No image updates needed - no existing images and no new file")
         toast({
           title: "Game Updated",
           description: `${name} has been updated successfully.`,
@@ -427,20 +500,71 @@ export default function EditGameTemplate({ params }: Props) {
                   </div>
                 )}
                 {existingImages.length > 0 && !gameImageFile && (
-                  <div className="space-y-2">
-                    <div className="text-sm font-medium text-gray-700">Existing Images:</div>
-                    {existingImages.map((img, index) => (
-                      <div key={img.id || index} className="flex items-center justify-between p-2 bg-gray-50 rounded">
-                        <div className="flex items-center text-sm text-gray-600">
-                          <span>📷 {img.image_url ? img.image_url.split('/').pop() : 'Unknown file'} (Priority: {img.priority || 'N/A'})</span>
+                  <div className="space-y-3">
+                    <div className="text-sm font-medium text-gray-700">
+                      Current Game Images ({existingImages.length}):
+                    </div>
+                    {/* Sort images by priority (desc) then by created_at (desc) to show latest first */}
+                    {[...existingImages]
+                      .sort((a, b) => {
+                        if (a.priority !== b.priority) {
+                          return b.priority - a.priority; // Higher priority first
+                        }
+                        return new Date(b.created_at || 0).getTime() - new Date(a.created_at || 0).getTime();
+                      })
+                      .map((img, index) => (
+                        <div
+                          key={img.id || index}
+                          className={`p-3 border rounded-lg ${
+                            index === 0
+                              ? 'bg-green-50 border-green-200' // Latest image gets green highlight
+                              : 'bg-blue-50 border-blue-200'
+                          }`}
+                        >
+                          <div className="grid grid-cols-2 gap-2 text-sm">
+                            <div><strong>Image:</strong> {img.image_url ? img.image_url.split('/').pop() : 'Unknown file'}</div>
+                            <div><strong>Priority:</strong>
+                              <span className="ml-1 font-semibold text-blue-600">{img.priority || 'N/A'}</span>
+                              {index === 0 && <span className="ml-2 text-xs bg-green-100 text-green-700 px-2 py-1 rounded">CURRENT</span>}
+                            </div>
+                            <div><strong>Status:</strong>
+                              <span className={`ml-1 px-2 py-1 rounded text-xs ${img.is_active ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
+                                {img.is_active ? 'Active' : 'Inactive'}
+                              </span>
+                            </div>
+                            <div><strong>ID:</strong> {img.id}</div>
+                            <div className="col-span-2"><strong>Created:</strong> {img.created_at ? new Date(img.created_at).toLocaleString() : 'N/A'}</div>
+                            <div className="col-span-2"><strong>Updated:</strong> {img.updated_at ? new Date(img.updated_at).toLocaleString() : 'N/A'}</div>
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {img.is_active ? 'Active' : 'Inactive'}
-                        </div>
-                      </div>
-                    ))}
+                      ))}
+                    <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                      💡 Priority loaded from latest image (highest priority/most recent). Upload a new image to update.
+                      <br />
+                      ⚠️ Note: Due to API limitations, updates create new records. Latest image is used for editing.
+                    </div>
                   </div>
                 )}
+                {isLoadingImages && (
+                  <div className="p-3 bg-gray-50 border border-gray-200 rounded-lg">
+                    <div className="flex items-center text-sm text-gray-600">
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Loading existing images...
+                    </div>
+                  </div>
+                )}
+
+                {existingImages.length === 0 && !gameImageFile && !isLoadingImages && (
+                  <div className="p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+                    <div className="text-sm text-yellow-800">
+                      📷 No existing images found for Game ID {gameId}
+                    </div>
+                    <div className="text-xs text-yellow-600 mt-1">
+                      This game doesn't have any images yet. Upload an image above to add one.
+                    </div>
+                  </div>
+                )}
+
                 {gameImageFile && (
                   <div className="flex items-center text-sm text-blue-600">
                     <span>✓ New image selected: {gameImageFile.name} (will be uploaded after game update)</span>
