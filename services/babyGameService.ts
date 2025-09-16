@@ -17,6 +17,22 @@ export interface BabyGame {
   updated_at?: string;
 }
 
+// Interface for games with images from the transformed API
+export interface GameWithImage {
+  id: number;
+  name: string;
+  description: string;
+  minAge: number;
+  maxAge: number;
+  duration: number;
+  categories: string[];
+  imageUrl: string;
+  imagePriority: number;
+  isActive: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
 /**
  * Create a new baby game
  * @param gameData The game data to create
@@ -74,6 +90,60 @@ export async function getAllBabyGames(): Promise<BabyGame[]> {
     }
 
     return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get all games with images from the external API (ALL games, not just first 4)
+ * @returns A list of all games with images
+ */
+export async function getAllGamesWithImages(): Promise<GameWithImage[]> {
+  try {
+    // Use the new API endpoint that returns ALL games (not just first 4)
+    const response = await fetch('/api/all-games-with-images', {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      cache: 'no-store', // Ensure fresh data
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`API returned error status: ${response.status} - ${errorText}`);
+    }
+
+    const data = await response.json();
+
+    // Ensure we return an array
+    if (!Array.isArray(data)) {
+      return [];
+    }
+
+    return data;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * Get all active games with images (filtered version)
+ * @returns A list of active games with images
+ */
+export async function getAllActiveGamesWithImages(): Promise<GameWithImage[]> {
+  try {
+    const allGames = await getAllGamesWithImages();
+
+    // Filter for active games with images (using transformed data structure)
+    const activeGames = allGames.filter(game =>
+      game &&
+      game.isActive === true &&
+      game.imageUrl // Image URL exists means it has an image
+    );
+
+    return activeGames;
   } catch (error) {
     throw error;
   }

@@ -14,27 +14,69 @@ import { AnimatedBackground } from "@/components/animated-background"
 import AgeSelector from "@/components/age-selector"
 import CitySelector from "@/components/city-selector"
 import { formatPrice } from "@/lib/utils"
-import { getAllBabyGames, BabyGame } from "@/services/babyGameService"
+import { getAllActiveGamesWithImages, GameWithImage } from "@/services/babyGameService"
 
 // Metadata is handled in layout.tsx for client components
 
-// Default images for different game types
-const getGameImage = (gameName: string): string => {
-  const gameImages: { [key: string]: string } = {
-    "Baby Crawling": "https://images.unsplash.com/photo-1579758629938-03607ccdb340?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "Baby Walker": "https://plus.unsplash.com/premium_photo-1679429323133-74204423424e?q=80&w=1887&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "Running Race": "https://images.unsplash.com/photo-1508057198894-247b23fe5ade?q=80&w=2070&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    "Hurdle Toddle": "https://c.stocksy.com/a/I2Q600/z9/1532424.jpg",
-    "Cycle Race": "https://img.freepik.com/free-photo/children-compete-bicycle-race_1093-133.jpg",
-    "Ring Holding": "https://www.shutterstock.com/image-photo/child-playing-ring-toss-game-260nw-1723433449.jpg",
-    "default": "https://images.unsplash.com/photo-1544717297-fa95b6ee9643?q=80&w=1000&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+// Helper function to format age range
+const formatAgeRange = (minAge: number, maxAge: number): string => {
+  // Convert months to years for better readability
+  const minYears = Math.floor(minAge / 12);
+  const maxYears = Math.floor(maxAge / 12);
+
+  // If both ages are less than 12 months, show in months
+  if (maxAge < 12) {
+    return `${minAge}-${maxAge} months`;
   }
-  
-  return gameImages[gameName] || gameImages["default"]
-}
+
+  // If min age is less than 12 months but max is more, show mixed format
+  if (minAge < 12 && maxAge >= 12) {
+    return `${minAge} months - ${maxYears} years`;
+  }
+
+  // If both are 12+ months, show in years
+  if (minAge >= 12) {
+    return `${minYears}-${maxYears} years`;
+  }
+
+  return `${minAge}-${maxAge} months`;
+};
+
+// Helper function to get game emoji based on categories and name
+const getGameEmoji = (categories: string[], gameName: string): string => {
+  const name = gameName.toLowerCase();
+  const categoryStr = categories.join(' ').toLowerCase();
+
+  // Check game name first for specific matches
+  if (name.includes('crawling')) return '🍼';
+  if (name.includes('walker')) return '🚶‍♀️';
+  if (name.includes('running') || name.includes('race')) return '🏃‍♂️';
+  if (name.includes('jump') || name.includes('high')) return '🤸‍♀️';
+  if (name.includes('shot put')) return '🏋️‍♀️';
+  if (name.includes('ball') && name.includes('jump')) return '⚽';
+  if (name.includes('ring')) return '💍';
+  if (name.includes('hurdle') || name.includes('toddle')) return '🏃‍♀️';
+
+  // Check categories
+  if (categoryStr.includes('crawling')) return '🍼';
+  if (categoryStr.includes('walker')) return '🚶‍♀️';
+  if (categoryStr.includes('race') || categoryStr.includes('running')) return '🏃‍♂️';
+  if (categoryStr.includes('jump')) return '🤸‍♀️';
+  if (categoryStr.includes('ball')) return '⚽';
+  if (categoryStr.includes('ring')) return '💍';
+  if (categoryStr.includes('shot')) return '🏋️‍♀️';
+
+  return '🎮'; // Default game emoji
+};
+
+// Helper function to use image URL (already transformed by API)
+const getImageUrl = (imageUrl: string): string => {
+  // The API already transforms the URL, so we can use it directly
+  return imageUrl || '';
+};
 
 export default function BabyOlympicsPage() {
-  const [games, setGames] = useState<BabyGame[]>([])
+  const [games, setGames] = useState<GameWithImage[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
@@ -44,10 +86,11 @@ export default function BabyOlympicsPage() {
       try {
         setIsLoading(true)
         setError(null)
-        const gamesData = await getAllBabyGames()
-        // Only show active games
-        const activeGames = gamesData.filter(game => game.is_active)
-        setGames(activeGames)
+
+        // Get all active games with images for Baby Olympics page
+        const gamesData = await getAllActiveGamesWithImages()
+        setGames(gamesData)
+
       } catch (err: any) {
         console.error("Failed to fetch games:", err)
         setError(err.message || "Failed to load games")
@@ -58,6 +101,7 @@ export default function BabyOlympicsPage() {
 
     fetchGames()
   }, [])
+
   return (
     <AnimatedBackground variant="olympics">
       <div className="flex flex-col gap-12 pb-8">
@@ -179,7 +223,7 @@ export default function BabyOlympicsPage() {
                   <Trophy className="h-6 w-6 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🎮 16 Different Games</h3>
+                  <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white">🎮 {games.length || 'Multiple'} Different Games</h3>
                   <p className="text-neutral-charcoal/70 dark:text-white/70 leading-relaxed">From crawling races to running races, we have games for all ages from 5-84 months</p>
                 </div>
               </div>
@@ -241,10 +285,17 @@ export default function BabyOlympicsPage() {
       <section className="bg-muted/50 py-12">
         <div className="container">
           <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl dark:text-white">Available NIBOG Games</h2>
-              <p className="mx-auto max-w-[700px] text-muted-foreground dark:text-white">
-                Discover all the exciting baby Olympic games available across India
+            <div className="flex flex-col gap-4 text-center">
+              <Badge className="px-4 py-2 text-sm font-bold bg-gradient-to-r from-sunshine-400 to-coral-400 text-neutral-charcoal rounded-full mx-auto">
+                🎮 All NIBOG Games
+              </Badge>
+              <h2 className="text-2xl font-bold tracking-tight md:text-3xl lg:text-4xl dark:text-white">
+                <span className="bg-clip-text text-transparent bg-gradient-to-r from-sunshine-600 via-coral-600 to-mint-600">
+                  Complete Games Collection
+                </span>
+              </h2>
+              <p className="mx-auto max-w-[700px] text-lg text-muted-foreground dark:text-white leading-relaxed">
+                Explore all {games.length} exciting NIBOG games available across India. Each game is designed for specific age groups to ensure safe, fun, and developmental play.
               </p>
             </div>
             
@@ -278,50 +329,71 @@ export default function BabyOlympicsPage() {
 
             {/* Games Grid */}
             {!isLoading && !error && games.length > 0 && (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
                 {games.map((game) => (
-                  <Card key={game.id} className="group overflow-hidden transition-all hover:shadow-md">
+                  <Card key={game.id} className="group overflow-hidden transition-all hover:shadow-lg hover:scale-105 duration-300">
                     <div className="relative h-48">
-                      <Image 
-                        src={getGameImage(game.game_name)} 
-                        alt={game.game_name} 
-                        fill 
-                        className="object-cover" 
+                      <Image
+                        src={getImageUrl(game.imageUrl)}
+                        alt={game.name}
+                        fill
+                        className="object-cover transition-transform group-hover:scale-110 duration-500"
                         loading="lazy"
+                        onError={(e) => {
+                          // Fallback to a default image if the game image fails to load
+                          const target = e.target as HTMLImageElement;
+                          target.src = '/images/default-game.jpg';
+                        }}
                       />
-                      <Badge className="absolute right-2 top-2 bg-yellow-500 hover:bg-yellow-600">Baby Olympics</Badge>
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                      <div className="absolute top-4 right-4">
+                        <div className="bg-white/90 rounded-full p-2 text-2xl animate-bounce-gentle">
+                          {getGameEmoji(game.categories, game.name)}
+                        </div>
+                      </div>
+                      <div className="absolute top-4 left-4">
+                        <Badge className="bg-gradient-to-r from-yellow-400 to-yellow-600 text-white font-bold border-0">
+                          Priority {game.imagePriority}
+                        </Badge>
+                      </div>
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <h3 className="text-lg font-bold text-white mb-1 line-clamp-1">{game.name}</h3>
+                        <p className="text-white/90 font-semibold text-sm">{formatAgeRange(game.minAge, game.maxAge)}</p>
+                      </div>
                     </div>
                     <CardContent className="p-4">
-                      <div className="space-y-2">
-                        <h3 className="font-semibold group-hover:text-yellow-500">{game.game_name}</h3>
-                        <p className="line-clamp-2 text-sm text-muted-foreground">
-                          {game.description || "Fun and exciting baby game designed for skill development"}
+                      <div className="space-y-3">
+                        <p className="line-clamp-2 text-sm text-muted-foreground leading-relaxed">
+                          {game.description || "Fun and exciting baby game designed for skill development and physical growth"}
                         </p>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                           <Clock className="h-3 w-3" />
-                          <span>Duration: {game.duration_minutes} minutes</span>
-                        </div>
-                        <div className="flex items-center justify-between">
-                          <Badge variant="outline">
-                            Age: {game.min_age || 5}-{game.max_age || 84} months
-                          </Badge>
+                          <span>Duration: {game.duration} minutes</span>
                         </div>
                         {game.categories && game.categories.length > 0 && (
                           <div className="flex flex-wrap gap-1">
-                            {game.categories.slice(0, 2).map((category, index) => (
+                            {game.categories.slice(0, 3).map((category, index) => (
                               <Badge key={index} variant="secondary" className="text-xs">
                                 {category}
                               </Badge>
                             ))}
+                            {game.categories.length > 3 && (
+                              <Badge variant="outline" className="text-xs">
+                                +{game.categories.length - 3} more
+                              </Badge>
+                            )}
                           </div>
                         )}
                       </div>
                     </CardContent>
-                    <div className="flex items-center justify-between border-t bg-muted/50 p-4">
-                      <div className="text-xs text-muted-foreground">
-                        <span className="text-green-600 font-medium">Available</span>
+                    <div className="flex items-center justify-between border-t bg-gradient-to-r from-yellow-50 to-orange-50 p-4">
+                      <div className="text-xs">
+                        <span className="text-green-600 font-medium flex items-center gap-1">
+                          <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                          Available
+                        </span>
                       </div>
-                      <Button size="sm" className="bg-yellow-500 hover:bg-yellow-600" asChild>
+                      <Button size="sm" className="bg-gradient-to-r from-yellow-500 to-orange-500 hover:from-yellow-600 hover:to-orange-600 text-white font-semibold shadow-lg" asChild>
                         <Link href="/events">Find Events</Link>
                       </Button>
                     </div>
@@ -364,7 +436,7 @@ export default function BabyOlympicsPage() {
               </div>
               <div className="rounded-lg border p-4">
                 <h3 className="font-medium">What games are included in NIBOG?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">NIBOG includes 16 different games such as Baby Crawling, Baby Walker, Running Race, Hurdle Toddle, Cycle Race, Ring Holding, and more. Each game is designed for specific age groups.</p>
+                <p className="mt-1 text-sm text-muted-foreground">NIBOG includes {games.length || 'multiple'} different games such as Baby Crawling, Running Race, Baby Walker Race, High Jump, Shot Put, Jumping Ball, Ring Holding, Hurdle Toddle, and more. Each game is designed for specific age groups to ensure safe and fun participation.</p>
               </div>
               <div className="rounded-lg border p-4">
                 <h3 className="font-medium">What will my child receive for participating?</h3>
