@@ -248,4 +248,9 @@ export type EventListItem = {
   spotsLeft: number
   totalSpots: number
   isOlympics?: boolean
+  // Additional fields for enhanced event details
+  venueAddress?: string
+  cityState?: string
+  gameNames?: string[]
+  eventStatus?: string
 }

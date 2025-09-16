@@ -5,6 +5,7 @@ import { EventListItem } from '@/types'
 import { getAllEvents as fetchAllEvents } from '@/services/eventService'
 import { getAllPayments as fetchAllPayments } from '@/services/paymentService'
 import { getAllEventsWithGames } from '@/services/eventGameService'
+import { getAllEventsWithImagesFormatted } from '@/services/eventDetailsService'
 
 // Types for user bookings
 export interface UserBookingGame {
@@ -185,32 +186,40 @@ function transformEventsData(apiEvents: any[]): EventListItem[] {
 export function useEvents(initialData?: EventListItem[]) {
   const { data, error, isLoading, mutate } = useSWR<EventListItem[]>(
     'api/events',
-    // Use the comprehensive events API that includes games, cities, and venues
+    // Use the new events API with images as primary source
     async () => {
       try {
-        const apiEvents = await getAllEventsWithGames();
-        return transformEventsData(apiEvents);
+        console.log('Fetching events with images...');
+        const eventsWithImages = await getAllEventsWithImagesFormatted();
+        console.log(`Successfully fetched ${eventsWithImages.length} events with images`);
+        return eventsWithImages;
       } catch (err) {
-        console.error('Failed to fetch events with games, falling back to basic events:', err);
-        // Fallback to basic events API if comprehensive API fails
-        const basicEvents = await fetchAllEvents();
-        // Transform basic events to expected format (they have different structure)
-        return basicEvents.map((event: any) => ({
-          id: event.event_id?.toString() || Math.random().toString(),
-          title: event.event_title || 'Baby Game Event',
-          description: event.event_description || 'Fun baby games event',
-          minAgeMonths: 6,
-          maxAgeMonths: 84,
-          date: new Date(event.event_date).toISOString().split('T')[0],
-          time: "9:00 AM - 8:00 PM",
-          venue: event.venue_name || 'Indoor Stadium',
-          city: event.city_name || 'Unknown City',
-          price: 0, // Not displayed but kept for compatibility
-          image: '/images/baby-crawling.jpg',
-          spotsLeft: 0, // Not displayed but kept for compatibility
-          totalSpots: 0, // Not displayed but kept for compatibility
-          isOlympics: true,
-        }));
+        console.error('Failed to fetch events with images, falling back to events with games:', err);
+        try {
+          const apiEvents = await getAllEventsWithGames();
+          return transformEventsData(apiEvents);
+        } catch (fallbackErr) {
+          console.error('Failed to fetch events with games, falling back to basic events:', fallbackErr);
+          // Final fallback to basic events API
+          const basicEvents = await fetchAllEvents();
+          // Transform basic events to expected format (they have different structure)
+          return basicEvents.map((event: any) => ({
+            id: event.event_id?.toString() || Math.random().toString(),
+            title: event.event_title || 'Baby Game Event',
+            description: event.event_description || 'Fun baby games event',
+            minAgeMonths: 6,
+            maxAgeMonths: 84,
+            date: new Date(event.event_date).toISOString().split('T')[0],
+            time: "9:00 AM - 8:00 PM",
+            venue: event.venue_name || 'Indoor Stadium',
+            city: event.city_name || 'Unknown City',
+            price: 0, // Not displayed but kept for compatibility
+            image: '/images/baby-crawling.jpg',
+            spotsLeft: 0, // Not displayed but kept for compatibility
+            totalSpots: 0, // Not displayed but kept for compatibility
+            isOlympics: true,
+          }));
+        }
       }
     },
     {

@@ -59,17 +59,22 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
   const theme = getAgeTheme(minAgeMonths, maxAgeMonths)
 
   return (
-    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-105 rounded-3xl bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.borderColor} hover:border-sunshine-400`}>
-      <div className="relative h-52">
+    <Card className={`group overflow-hidden transition-all duration-300 hover:shadow-2xl hover:scale-[1.02] sm:hover:scale-105 rounded-3xl bg-gradient-to-br ${theme.bgGradient} border-2 ${theme.borderColor} hover:border-sunshine-400`}>
+      <div className="relative h-48 sm:h-52 md:h-56">
         <Image
-          src={event.image || "/placeholder.svg"}
+          src={event.image || "/images/baby-crawling.jpg"}
           alt={event.title}
           fill
           className="object-cover transition-transform group-hover:scale-110 duration-500 rounded-t-3xl"
-          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1024px) 33vw, (max-width: 1536px) 25vw, 20vw"
           loading="lazy"
           placeholder="blur"
-          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZWVlZWVlIi8+PC9zdmc+"
+          blurDataURL="data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iNDAwIiBoZWlnaHQ9IjMwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSIjZjNmNGY2Ii8+PHRleHQgeD0iNTAlIiB5PSI1MCUiIGZvbnQtZmFtaWx5PSJBcmlhbCIgZm9udC1zaXplPSIxOCIgZmlsbD0iIzk5YTNhZiIgdGV4dC1hbmNob3I9Im1pZGRsZSIgZHk9Ii4zZW0iPkxvYWRpbmcuLi48L3RleHQ+PC9zdmc+"
+          onError={(e) => {
+            // Fallback to default image if the API image fails to load
+            const target = e.target as HTMLImageElement;
+            target.src = "/images/baby-crawling.jpg";
+          }}
         />
         <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent rounded-t-3xl`} />
 
@@ -110,27 +115,27 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
         </Button>
       </div>
 
-      <CardContent className="p-6 space-y-4">
-        <div className="space-y-4">
-          <h3 className="text-xl font-bold leading-tight tracking-tight text-neutral-charcoal group-hover:text-sunshine-700 transition-colors">{event.title}</h3>
-          <p className="text-sm text-neutral-charcoal/70 leading-relaxed">{event.description}</p>
+      <CardContent className="p-4 sm:p-6 space-y-3 sm:space-y-4">
+        <div className="space-y-3 sm:space-y-4">
+          <h3 className="text-lg sm:text-xl font-bold leading-tight tracking-tight text-neutral-charcoal group-hover:text-sunshine-700 transition-colors line-clamp-2">{event.title}</h3>
+          <p className="text-xs sm:text-sm text-neutral-charcoal/70 leading-relaxed line-clamp-3">{event.description}</p>
         </div>
       </CardContent>
 
-      <CardFooter className="border-t-2 border-white/50 bg-white/80 backdrop-blur-sm p-6 rounded-b-3xl">
-        <div className="w-full space-y-4">
+      <CardFooter className="border-t-2 border-white/50 bg-white/80 backdrop-blur-sm p-4 sm:p-6 rounded-b-3xl">
+        <div className="w-full space-y-3 sm:space-y-4">
           {/* Complete Event Details */}
-          <div className="space-y-3 bg-gray-50 p-3 rounded-lg">
-            <h4 className="text-sm font-bold text-neutral-charcoal uppercase tracking-wide">Event Details</h4>
+          <div className="space-y-2 sm:space-y-3 bg-gray-50 p-2 sm:p-3 rounded-lg">
+            <h4 className="text-xs sm:text-sm font-bold text-neutral-charcoal uppercase tracking-wide">Event Details</h4>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+            <div className="grid grid-cols-1 gap-2 sm:gap-3">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-charcoal/70">
                 <div className="bg-sunshine-100 rounded-full p-1 flex-shrink-0">
-                  <Calendar className="h-3 w-3 text-sunshine-600" />
+                  <Calendar className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-sunshine-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <span className="font-medium text-neutral-charcoal">Date:</span>
-                  <span className="ml-1">
+                  <span className="ml-1 truncate">
                     {(() => {
                       try {
                         return new Date(event.date).toLocaleDateString('en-US', {
@@ -147,44 +152,44 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-charcoal/70">
                 <div className="bg-coral-100 rounded-full p-1 flex-shrink-0">
-                  <Clock className="h-3 w-3 text-coral-600" />
+                  <Clock className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-coral-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <span className="font-medium text-neutral-charcoal">Time:</span>
-                  <span className="ml-1">{event.time}</span>
+                  <span className="ml-1 truncate">{event.time}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-charcoal/70">
                 <div className="bg-mint-100 rounded-full p-1 flex-shrink-0">
-                  <MapPin className="h-3 w-3 text-mint-600" />
+                  <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-mint-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <span className="font-medium text-neutral-charcoal">Venue:</span>
-                  <span className="ml-1">{event.venue}</span>
+                  <span className="ml-1 truncate">{event.venue}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-charcoal/70">
                 <div className="bg-lavender-100 rounded-full p-1 flex-shrink-0">
-                  <MapPin className="h-3 w-3 text-lavender-600" />
+                  <MapPin className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-lavender-600" />
                 </div>
-                <div>
+                <div className="min-w-0 flex-1">
                   <span className="font-medium text-neutral-charcoal">City:</span>
-                  <span className="ml-1">{event.city}</span>
+                  <span className="ml-1 truncate">{event.city}</span>
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 text-sm text-neutral-charcoal/70 sm:col-span-2">
+              <div className="flex items-center gap-2 text-xs sm:text-sm text-neutral-charcoal/70">
                 <div className="bg-sunshine-100 rounded-full p-1 flex-shrink-0">
                   <span className="text-xs font-bold text-sunshine-600">👶</span>
                 </div>
-                <div>
-                  <span className="font-medium text-neutral-charcoal">Age Range:</span>
+                <div className="min-w-0 flex-1">
+                  <span className="font-medium text-neutral-charcoal">Age:</span>
                   <span className="ml-1">{minAgeMonths}-{maxAgeMonths} months</span>
-                  <span className="ml-1 text-xs text-neutral-charcoal/50">
+                  <span className="ml-1 text-xs text-neutral-charcoal/50 hidden sm:inline">
                     ({Math.floor(minAgeMonths/12)}-{Math.floor(maxAgeMonths/12)} years)
                   </span>
                 </div>
@@ -193,17 +198,17 @@ const EventCard = memo(({ event }: { event: EventListItem }) => {
           </div>
 
           {/* Register Button */}
-          <div className="pt-2">
+          <div className="pt-1 sm:pt-2">
             {isEventComplete ? (
               <Button
                 disabled
-                className="w-full bg-gray-400 text-white font-bold py-3 rounded-full border-2 border-white/50 cursor-not-allowed opacity-60"
+                className="w-full bg-gray-400 text-white font-bold py-2 sm:py-3 text-sm sm:text-base rounded-full border-2 border-white/50 cursor-not-allowed opacity-60"
               >
                 📅 Event Completed
               </Button>
             ) : (
               <Button
-                className={`w-full bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-bold py-3 rounded-full border-2 border-white/50 transform hover:scale-105 transition-all duration-300`}
+                className={`w-full bg-gradient-to-r ${theme.gradient} hover:shadow-lg text-white font-bold py-2 sm:py-3 text-sm sm:text-base rounded-full border-2 border-white/50 transform hover:scale-[1.02] sm:hover:scale-105 transition-all duration-300 touch-manipulation`}
                 asChild
               >
                 <Link href={`/register-event?city=${event.city}`}>
@@ -290,17 +295,18 @@ export default function EventList() {
     setPage(1);
   }, [searchParams]);
 
-  // Show loading state
+  // Show loading state with responsive skeleton
   if (isLoading) {
     return (
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-        {Array.from({ length: 6 }).map((_, index) => (
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
+        {Array.from({ length: 8 }).map((_, index) => (
           <div key={index} className="animate-pulse">
-            <div className="bg-gray-200 rounded-3xl h-52 mb-4"></div>
-            <div className="space-y-2">
+            <div className="bg-gray-200 rounded-3xl h-48 sm:h-52 mb-4"></div>
+            <div className="space-y-2 px-2">
               <div className="bg-gray-200 rounded h-4 w-3/4"></div>
               <div className="bg-gray-200 rounded h-4 w-1/2"></div>
               <div className="bg-gray-200 rounded h-4 w-2/3"></div>
+              <div className="bg-gray-200 rounded h-8 w-full mt-4"></div>
             </div>
           </div>
         ))}
@@ -346,7 +352,8 @@ export default function EventList() {
 
   return (
     <div>
-      <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+      {/* Responsive grid with improved breakpoints */}
+      <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-3 2xl:grid-cols-4">
         {visibleEvents.map((event) => (
           <EventCard key={event.id} event={event} />
         ))}

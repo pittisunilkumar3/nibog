@@ -152,4 +152,9 @@ export const PAYMENT_API = {
   EXPORT: "https://ai.alviongs.com/webhook/v1/nibog/payments/export", // GET
 };
 
+// Event Details with Image API endpoints
+export const EVENT_DETAILS_API = {
+  GET_WITH_IMAGES: "https://ai.alviongs.com/webhook/nibog/getting/eventdetailswithimage", // GET
+};
+
 // PhonePe API endpoints are now in config/phonepe.ts
