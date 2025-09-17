@@ -223,7 +223,19 @@ import { Badge } from "@/components/ui/badge"
 import CitySelector from "@/components/city-selector"
 import AgeSelector from "@/components/age-selector"
 import { AnimatedTestimonials } from "@/components/animated-testimonials"
-import { Star, Award, MapPin } from "lucide-react"
+import { DynamicTestimonialsSection } from "@/components/dynamic-testimonials"
+
+
+
+
+
+
+
+
+
+
+
+import { Award, MapPin } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
 import HomepageGamesSection from "@/components/homepage-games-section"
 
@@ -589,57 +601,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="container">
-        <div className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2 text-center">
-            <h2 className="text-2xl font-bold tracking-tight md:text-3xl">Children's Parents Speak for Us</h2>
-            <p className="mx-auto max-w-[700px] text-muted-foreground">
-              Hear what parents have to say about NIBOG events
-            </p>
-          </div>
-          <AnimatedTestimonials
-            testimonials={[
-              {
-                quote: "The annual NIBOG game has been a huge hit with my kids. They love competing in different challenges and games, and it's been great for their confidence and self-esteem. I love that they're learning important life skills like perseverance and determination while they're having fun.",
-                name: "Harikrishna",
-                location: "Hyderabad",
-                src: "/images/baby-crawling.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "New India Baby Olympic games has been a great experience for my kids. They love competing with other kids and showing off their skills, and it's been great for their hand-eye coordination and fine motor skills. I love that they're learning important life skills like teamwork and sportsmanship while they're having fun.",
-                name: "Durga Prasad",
-                location: "Bangalore",
-                src: "/images/baby-walker.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "My kids love participating in games. It's been great for their problem-solving skills, as they get to tackle different challenges and puzzles. They've also developed their critical thinking skills and made new friends from different schools.",
-                name: "Srujana",
-                location: "Vizag",
-                src: "/images/running-race.jpg",
-                event: "NIBOG Baby Olympics"
-              },
-              {
-                quote: "The organization of the event was flawless. From registration to the actual games, everything was well-planned. The staff was friendly and helpful, making it a stress-free experience for parents and an exciting day for the children.",
-                name: "Rajesh Kumar",
-                location: "Chennai",
-                src: "/images/hurdle-toddle.jpg",
-                event: "Chennai Little Champions"
-              },
-              {
-                quote: "What I appreciate most about NIBOG is how they make every child feel like a winner. The focus is on participation and having fun, not just winning. My daughter came home with a medal and the biggest smile I've ever seen!",
-                name: "Priya Sharma",
-                location: "Mumbai",
-                src: "/images/ball-throw.jpg",
-                event: "Mumbai Mini Olympics"
-              }
-            ]}
-            className="py-8"
-          />
-        </div>
-      </section>
+      {/* Testimonials Section - Now Dynamic */}
+      <DynamicTestimonialsSection />
 
       {/* Cities Section */}
       <section className="bg-muted/50 py-12">

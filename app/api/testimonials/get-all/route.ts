@@ -5,7 +5,7 @@ export async function GET() {
     console.log("Server API route: Getting testimonials from external API");
 
     // Call the external API
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/get-all', {
+    const response = await fetch('https://ai.alviongs.com/webhook/nibog/testmonialimages/get', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

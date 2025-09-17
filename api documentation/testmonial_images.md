@@ -53,3 +53,30 @@ Response :-
     }
 ]
 
+
+
+
+GET https://ai.alviongs.com/webhook/nibog/testmonialimages/get
+
+
+response :-
+
+[
+    {
+        "testimonial_id": 69,
+        "testimonial_name": "Test Updated Priority",
+        "city": "Delhi",
+        "event_id": 121,
+        "rating": 5,
+        "testimonial": "Testing priority update",
+        "submitted_at": "2025-09-14T18:30:00.000Z",
+        "status": "Published",
+        "image_id": 21,
+        "image_url": "./upload/testmonialimage/testimonial_1758035523364_5598.png",
+        "image_priority": 1,
+        "image_is_active": true,
+        "image_created_at": "2025-09-16T09:42:07.153Z",
+        "image_updated_at": "2025-09-16T09:42:07.153Z"
+    }
+]
+
