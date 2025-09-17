@@ -54,9 +54,17 @@ export default function EditTestimonialPage({ params }: Props) {
     if (path.startsWith('data:')) return path;
     // If it's already a full URL, return as is
     if (/^https?:\/\//.test(path)) return path;
-    // If it starts with './upload/' or 'upload/', convert to public URL
-    const cleaned = path.replace(/^\.\/?/, '/');
-    return cleaned;
+    // If it already starts with /api/serve-image/, return as is (already transformed)
+    if (path.startsWith('/api/serve-image/')) return path;
+    // If it starts with './upload/' or 'upload/', convert to serve-image API
+    if (path.startsWith('./upload/') || path.startsWith('upload/')) {
+      const cleanPath = path.replace(/^\.\//, '');
+      return `/api/serve-image/${cleanPath}`;
+    }
+    // If it starts with '/', assume it's already a valid path
+    if (path.startsWith('/')) return path;
+    // Default: assume it's a filename in testmonialimage directory
+    return `/api/serve-image/upload/testmonialimage/${path}`;
   }
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)

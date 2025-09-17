@@ -69,7 +69,7 @@ export async function POST(request: Request) {
     // Get the response data
     const responseText = await response.text();
     console.log(`Server API route: Raw response: ${responseText}`);
-    
+
     let data;
     try {
       // Try to parse the response as JSON
@@ -78,14 +78,51 @@ export async function POST(request: Request) {
     } catch (parseError) {
       console.error("Server API route: Error parsing response:", parseError);
       return NextResponse.json(
-        { 
-          error: "Failed to parse API response", 
-          rawResponse: responseText.substring(0, 500) 
+        {
+          error: "Failed to parse API response",
+          rawResponse: responseText.substring(0, 500)
         },
         { status: 500 }
       );
     }
-    
+
+    // Transform image URLs to use local image serving API (similar to events)
+    if (Array.isArray(data)) {
+      data = data.map(item => {
+        if (item && item.image_url) {
+          let imageUrl = item.image_url;
+
+          // Convert relative paths to use local serving API
+          if (imageUrl.startsWith('./')) {
+            // Remove the './' prefix and use local serving API
+            imageUrl = `/api/serve-image/${imageUrl.substring(2)}`;
+          } else if (imageUrl.startsWith('upload/')) {
+            // If it starts with 'upload/', use it directly with local serving API
+            imageUrl = `/api/serve-image/${imageUrl}`;
+          } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
+            // If it's a relative path without './', assume it's in upload directory
+            imageUrl = `/api/serve-image/upload/testmonialimage/${imageUrl}`;
+          } else if (imageUrl.includes('example.com') || imageUrl.includes('placeholder')) {
+            // Handle placeholder URLs - try to find actual local image
+            console.log(`Server API route: Found placeholder URL: ${imageUrl}, attempting to find local image for testimonial ${item.testimonial_id}`);
+            // For now, set to null so frontend can handle gracefully
+            imageUrl = null;
+          }
+          // If it already starts with http or /, leave it as is
+
+          console.log(`Server API route: Transformed image URL from "${item.image_url}" to "${imageUrl}"`);
+
+          return {
+            ...item,
+            image_url: imageUrl
+          };
+        }
+        return item;
+      });
+    }
+
+    console.log("Server API route: Final transformed data:", data);
+
     // Return the response with success status
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {
