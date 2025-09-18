@@ -228,7 +228,7 @@ EventCard.displayName = 'EventCard';
 export default function EventList() {
   const searchParams = useSearchParams();
   const [page, setPage] = useState(1);
-  const ITEMS_PER_PAGE = 6;
+  const ITEMS_PER_PAGE = 8;
 
   // Use SWR hook to fetch events data with caching
   const { events, isLoading, isError } = useEvents();
