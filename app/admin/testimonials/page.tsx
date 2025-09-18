@@ -12,7 +12,7 @@ import { Plus, Search, Filter, Eye, Edit, Trash, Star, AlertTriangle, Check, X, 
 import EnhancedDataTable, { Column, TableAction, BulkAction } from "@/components/admin/enhanced-data-table"
 import { ExportColumn } from "@/lib/export-utils"
 import { useToast } from "@/components/ui/use-toast"
-import { getAllTestimonials, deleteTestimonial, updateTestimonialStatus, type Testimonial } from "@/services/testimonialService"
+import { getAllTestimonials, deleteTestimonial, updateTestimonialStatus, type TestimonialWithImage } from "@/services/testimonialService"
 import { getAllEvents } from "@/services/eventService"
 import { getAllCities } from "@/services/cityService"
 
@@ -67,7 +67,7 @@ export default function TestimonialsPage() {
   const [selectedStatus, setSelectedStatus] = useState("all")
   const [selectedEvent, setSelectedEvent] = useState("all")
   const [selectedCity, setSelectedCity] = useState("all")
-  const [testimonialsList, setTestimonialsList] = useState<Testimonial[]>([])
+  const [testimonialsList, setTestimonialsList] = useState<TestimonialWithImage[]>([])
   const [events, setEvents] = useState<any[]>([])
   const [cities, setCities] = useState<any[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -365,7 +365,7 @@ export default function TestimonialsPage() {
   }
 
   // Define table columns for EnhancedDataTable
-  const columns: Column<Testimonial>[] = [
+  const columns: Column<TestimonialWithImage>[] = [
     {
       key: 'name',
       label: 'Parent Name',
@@ -427,48 +427,48 @@ export default function TestimonialsPage() {
   ]
 
   // Define table actions
-  const actions: TableAction<Testimonial>[] = [
+  const actions: TableAction<TestimonialWithImage>[] = [
     {
       label: "View",
       icon: <Eye className="h-4 w-4" />,
-      onClick: (testimonial: Testimonial) => {
+      onClick: (testimonial: TestimonialWithImage) => {
         window.location.href = `/admin/testimonials/${testimonial.id}`
       }
     },
     {
       label: "Edit",
       icon: <Edit className="h-4 w-4" />,
-      onClick: (testimonial: Testimonial) => {
+      onClick: (testimonial: TestimonialWithImage) => {
         window.location.href = `/admin/testimonials/${testimonial.id}/edit`
       }
     },
     {
       label: "Approve",
       icon: <Check className="h-4 w-4" />,
-      onClick: (testimonial: Testimonial) => handleApproveTestimonial(testimonial.id),
-      disabled: (testimonial: Testimonial) => testimonial.status?.toLowerCase() !== 'pending'
+      onClick: (testimonial: TestimonialWithImage) => handleApproveTestimonial(testimonial.id),
+      disabled: (testimonial: TestimonialWithImage) => testimonial.status?.toLowerCase() !== 'pending'
     },
     {
       label: "Reject",
       icon: <X className="h-4 w-4" />,
-      onClick: (testimonial: Testimonial) => handleRejectTestimonial(testimonial.id),
+      onClick: (testimonial: TestimonialWithImage) => handleRejectTestimonial(testimonial.id),
       variant: 'destructive',
-      disabled: (testimonial: Testimonial) => testimonial.status?.toLowerCase() !== 'pending'
+      disabled: (testimonial: TestimonialWithImage) => testimonial.status?.toLowerCase() !== 'pending'
     },
     {
       label: "Delete",
       icon: <Trash className="h-4 w-4" />,
-      onClick: (testimonial: Testimonial) => handleDeleteTestimonial(testimonial.id),
+      onClick: (testimonial: TestimonialWithImage) => handleDeleteTestimonial(testimonial.id),
       variant: 'destructive'
     }
   ]
 
   // Define bulk actions
-  const bulkActions: BulkAction<Testimonial>[] = [
+  const bulkActions: BulkAction<TestimonialWithImage>[] = [
     {
       label: "Approve Selected",
       icon: <Check className="h-4 w-4" />,
-      onClick: (selectedTestimonials: Testimonial[]) => {
+      onClick: (selectedTestimonials: TestimonialWithImage[]) => {
         selectedTestimonials.forEach(testimonial => {
           if (testimonial.status?.toLowerCase() === 'pending') {
             handleApproveTestimonial(testimonial.id)
@@ -479,7 +479,7 @@ export default function TestimonialsPage() {
     {
       label: "Delete Selected",
       icon: <Trash className="h-4 w-4" />,
-      onClick: (selectedTestimonials: Testimonial[]) => {
+      onClick: (selectedTestimonials: TestimonialWithImage[]) => {
         selectedTestimonials.forEach(testimonial => handleDeleteTestimonial(testimonial.id))
       },
       variant: 'destructive'
@@ -487,7 +487,7 @@ export default function TestimonialsPage() {
   ]
 
   // Define export columns
-  const exportColumns: ExportColumn<Testimonial>[] = [
+  const exportColumns: ExportColumn<TestimonialWithImage>[] = [
     { key: 'name', label: 'Parent Name' },
     { key: 'city', label: 'City' },
     { key: 'event_id', label: 'Event ID' },

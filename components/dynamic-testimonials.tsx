@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { AnimatedTestimonials } from '@/components/animated-testimonials';
 
 interface TestimonialData {
@@ -25,19 +25,26 @@ export function DynamicTestimonialsSection() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  console.log('🔥 DynamicTestimonialsSection: Component rendered');
+  console.log('🔥 DynamicTestimonialsSection: Component rendered at', new Date().toISOString());
   console.log('🔥 DynamicTestimonialsSection: Current state:', {
     testimonialsCount: testimonials.length,
     isLoading,
-    error
+    error,
+    isBrowser: typeof window !== 'undefined'
   });
+
+  if (testimonials.length > 0) {
+    console.log('🔥 DynamicTestimonialsSection: Have testimonials, first one:', testimonials[0]);
+  } else {
+    console.log('🔥 DynamicTestimonialsSection: No testimonials yet, isLoading:', isLoading, 'error:', error);
+  }
 
   // Fetch testimonials data
   const fetchTestimonials = async () => {
     try {
       console.log('🔥 DynamicTestimonialsSection: Starting fetch...');
 
-      const response = await fetch('http://localhost:3111/api/testimonials/get-all', {
+      const response = await fetch(`/api/testimonials/get-all?t=${Date.now()}`, {
         method: 'GET',
         cache: 'no-store',
         headers: {
@@ -57,6 +64,17 @@ export function DynamicTestimonialsSection() {
       console.log('🔥 DynamicTestimonialsSection: Raw API response:', data);
       console.log('🔥 DynamicTestimonialsSection: Number of testimonials received:', data.length);
 
+      // Debug each testimonial
+      data.forEach((testimonial: TestimonialData, index: number) => {
+        console.log(`🔥 DynamicTestimonialsSection: Testimonial ${index}:`, {
+          id: testimonial.testimonial_id,
+          name: testimonial.testimonial_name,
+          status: testimonial.status,
+          image_is_active: testimonial.image_is_active,
+          image_url: testimonial.image_url
+        });
+      });
+
       // Filter only published testimonials and sort by priority
       const publishedTestimonials = data
         .filter((testimonial: TestimonialData) => {
@@ -67,6 +85,7 @@ export function DynamicTestimonialsSection() {
         .sort((a: TestimonialData, b: TestimonialData) => a.image_priority - b.image_priority);
 
       console.log('🔥 DynamicTestimonialsSection: Filtered published testimonials:', publishedTestimonials.length);
+      console.log('🔥 DynamicTestimonialsSection: Setting testimonials state with:', publishedTestimonials);
       setTestimonials(publishedTestimonials);
       setIsLoading(false);
     } catch (error) {
@@ -79,32 +98,49 @@ export function DynamicTestimonialsSection() {
 
   useEffect(() => {
     console.log('🔥 DynamicTestimonialsSection: useEffect FINALLY CALLED! - starting fetch');
-    fetchTestimonials();
-    
+    console.log('🔥 DynamicTestimonialsSection: Browser check:', typeof window !== 'undefined');
 
+    // Only run on client side
+    if (typeof window === 'undefined') {
+      console.log('🔥 DynamicTestimonialsSection: Server side, skipping fetch');
+      return;
+    }
+
+    fetchTestimonials();
   }, []);
 
   // Transform testimonials to match AnimatedTestimonials format
   const transformedTestimonials = testimonials.map((testimonial) => {
     let imageUrl = testimonial.image_url;
-    
-    // Transform image URL to use local serving API
-    if (imageUrl.startsWith('./')) {
-      // Remove the './' prefix and use local serving API
-      imageUrl = `/api/serve-image/${imageUrl.substring(2)}`;
-    } else if (imageUrl.startsWith('/upload/')) {
-      // If it starts with '/upload/', remove the leading slash and use local serving API
-      imageUrl = `/api/serve-image${imageUrl}`;
+
+    // Transform API paths to use local image serving with path correction
+    if (imageUrl.startsWith('./upload/') || imageUrl.startsWith('/upload/')) {
+      // Remove the './' or '/' prefix
+      let cleanPath = imageUrl.replace(/^\.?\//, '');
+
+      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
+      if (cleanPath.startsWith('upload/testimonial/')) {
+        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
+      }
+
+      imageUrl = `/api/serve-image/${cleanPath}`;
     } else if (imageUrl.startsWith('upload/')) {
-      // If it starts with 'upload/', use it directly with local serving API
-      imageUrl = `/api/serve-image/${imageUrl}`;
-    } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/')) {
-      // If it's a relative path without './', assume it's in upload directory
+      // If it starts with 'upload/', fix path and use local serving API
+      let cleanPath = imageUrl;
+
+      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
+      if (cleanPath.startsWith('upload/testimonial/')) {
+        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
+      }
+
+      imageUrl = `/api/serve-image/${cleanPath}`;
+    } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/api/')) {
+      // If it's a relative path, assume it's in upload/testmonialimage directory
       imageUrl = `/api/serve-image/upload/testmonialimage/${imageUrl}`;
     }
-    // If it's already an absolute URL (http/https), keep it as is
+    // If it's already a full URL (http/https) or API route, keep it as is
 
-    console.log(`Testimonials: Transformed image URL from "${testimonial.image_url}" to "${imageUrl}"`);
+    console.log(`🖼️ Testimonials: Transformed image URL from "${testimonial.image_url}" to "${imageUrl}" for testimonial ${testimonial.testimonial_id}`);
 
     return {
       quote: testimonial.testimonial,
@@ -146,8 +182,13 @@ export function DynamicTestimonialsSection() {
 
   const showingFallback = transformedTestimonials.length === 0;
 
-  console.log('Testimonials: Final display testimonials:', displayTestimonials);
-  console.log('Testimonials: Showing fallback?', showingFallback);
+  console.log('🎯 Testimonials: Final display testimonials:', displayTestimonials);
+  console.log('🎯 Testimonials: Showing fallback?', showingFallback);
+  console.log('🎯 Testimonials: Transformed testimonials count:', transformedTestimonials.length);
+
+  if (transformedTestimonials.length > 0) {
+    console.log('🎯 Testimonials: First transformed testimonial:', transformedTestimonials[0]);
+  }
 
   return (
     <section className="container">
@@ -157,6 +198,7 @@ export function DynamicTestimonialsSection() {
           <p className="mx-auto max-w-[700px] text-muted-foreground">
             Hear what parents have to say about NIBOG events
           </p>
+
           {(error || showingFallback) && (
             <p className="text-sm text-muted-foreground">
               {error

@@ -75,7 +75,7 @@ export default function TestimonialDetailPage({ params }: Props) {
         setIsLoading(true)
         setError(null)
 
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/get', {
+        const response = await fetch('/api/testimonials/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ export default function TestimonialDetailPage({ params }: Props) {
       if (!testimonial) return;
       
       setIsProcessing("approve")
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/update', {
+      const response = await fetch('/api/testimonials/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

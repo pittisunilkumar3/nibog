@@ -6,7 +6,7 @@ payload
 
 {
   "name": "John Doe",
-  "city": "Mumbai",
+  "city_id": "Mumbai",
   "event_id": 11,
   "rating": 4,
   "testimonial": "Great experience!",

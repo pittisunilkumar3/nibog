@@ -223,7 +223,28 @@ import { Badge } from "@/components/ui/badge"
 import CitySelector from "@/components/city-selector"
 import AgeSelector from "@/components/age-selector"
 import { AnimatedTestimonials } from "@/components/animated-testimonials"
-import { DynamicTestimonialsSection } from "@/components/dynamic-testimonials"
+import dynamic from 'next/dynamic'
+
+const DynamicTestimonialsSection = dynamic(
+  () => import('@/components/dynamic-testimonials').then(mod => ({ default: mod.DynamicTestimonialsSection })),
+  {
+    ssr: false,
+    loading: () => (
+      <section className="py-16 bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              Children's Parents Speak for Us
+            </h2>
+            <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+              Loading testimonials...
+            </p>
+          </div>
+        </div>
+      </section>
+    )
+  }
+)
 
 
 

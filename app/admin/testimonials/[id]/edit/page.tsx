@@ -47,24 +47,43 @@ export default function EditTestimonialPage({ params }: Props) {
   // New fields for image upload and priority
   const [selectedImage, setSelectedImage] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string | null>(null)
+  const [existingImageUrl, setExistingImageUrl] = useState<string | null>(null)
   // Helper to convert local path to public URL
   const getImageUrl = (path: string | null) => {
     if (!path) return null;
+
     // If it's a data URL (from FileReader), return as is
-    if (path.startsWith('data:')) return path;
+    if (path.startsWith('data:')) {
+      return path;
+    }
+
     // If it's already a full URL, return as is
-    if (/^https?:\/\//.test(path)) return path;
+    if (/^https?:\/\//.test(path)) {
+      return path;
+    }
+
     // If it already starts with /api/serve-image/, return as is (already transformed)
-    if (path.startsWith('/api/serve-image/')) return path;
+    if (path.startsWith('/api/serve-image/')) {
+      return path;
+    }
+
+    // If it starts with '/upload/', use it directly with serve-image API
+    if (path.startsWith('/upload/')) {
+      return `/api/serve-image${path}`;
+    }
     // If it starts with './upload/' or 'upload/', convert to serve-image API
-    if (path.startsWith('./upload/') || path.startsWith('upload/')) {
+    else if (path.startsWith('./upload/') || path.startsWith('upload/')) {
       const cleanPath = path.replace(/^\.\//, '');
       return `/api/serve-image/${cleanPath}`;
     }
-    // If it starts with '/', assume it's already a valid path
-    if (path.startsWith('/')) return path;
+    // If it starts with '/', assume it's already a valid path but needs serve-image prefix
+    else if (path.startsWith('/')) {
+      return `/api/serve-image${path}`;
+    }
     // Default: assume it's a filename in testmonialimage directory
-    return `/api/serve-image/upload/testmonialimage/${path}`;
+    else {
+      return `/api/serve-image/upload/testmonialimage/${path}`;
+    }
   }
   const [isUploadingImage, setIsUploadingImage] = useState(false)
   const [uploadProgress, setUploadProgress] = useState(0)
@@ -107,7 +126,7 @@ export default function EditTestimonialPage({ params }: Props) {
   useEffect(() => {
     const fetchTestimonial = async () => {
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/get', {
+        const response = await fetch('/api/testimonials/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -180,14 +199,20 @@ export default function EditTestimonialPage({ params }: Props) {
         // Handle array response (API returns array)
         const imageData = Array.isArray(data) ? data[0] : data
         
-        if (imageData) {
+        if (imageData && imageData.image_url) {
           // Set the existing image data
-          setImagePreview(imageData.image_url)
+          console.log('📸 Loading existing image:', imageData.image_url)
+
+          // For existing images, store the URL separately and don't set imagePreview
+          // imagePreview should only be used for new uploads (data URLs)
+          setExistingImageUrl(imageData.image_url)
           setUploadedImagePath(imageData.image_url)
           setPriority(imageData.priority || 1)
-          
-          console.log('Loaded existing image:', imageData.image_url)
-          console.log('Loaded existing priority:', imageData.priority)
+
+          console.log('✅ Loaded existing image:', imageData.image_url)
+          console.log('✅ Loaded existing priority:', imageData.priority)
+        } else {
+          console.log('ℹ️ No existing image found for testimonial')
         }
       } catch (error) {
         console.error('Error fetching testimonial image:', error)
@@ -229,11 +254,15 @@ export default function EditTestimonialPage({ params }: Props) {
     }
     reader.readAsDataURL(file)
 
-    // Simulate upload process (since we're doing frontend-only implementation)
+    // Actually upload the file to the server
     setIsUploadingImage(true)
     setUploadProgress(0)
 
     try {
+      // Create FormData for file upload
+      const formData = new FormData()
+      formData.append('file', file)
+
       // Simulate upload progress
       const progressInterval = setInterval(() => {
         setUploadProgress(prev => {
@@ -245,24 +274,33 @@ export default function EditTestimonialPage({ params }: Props) {
         })
       }, 100)
 
-      // Simulate file processing delay
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Upload file to our API
+      const uploadResponse = await fetch('/api/testimonials/upload-image', {
+        method: 'POST',
+        body: formData
+      })
 
-      // Generate a mock file path for the uploaded image
-      const timestamp = Date.now()
-      const fileName = `testimonial_${timestamp}_${file.name.replace(/[^a-zA-Z0-9.]/g, '_')}`
-      const mockPath = `./upload/testimonial/${fileName}`
-
-      setUploadedImagePath(mockPath)
+      clearInterval(progressInterval)
       setUploadProgress(100)
 
-      console.log(`Image uploaded successfully: ${mockPath}`)
+      if (!uploadResponse.ok) {
+        const errorData = await uploadResponse.json()
+        throw new Error(errorData.error || 'Failed to upload image')
+      }
+
+      const uploadResult = await uploadResponse.json()
+      console.log('Upload result:', uploadResult)
+
+      // Set the uploaded image path from the server response
+      setUploadedImagePath(uploadResult.path)
+
+      console.log(`Image uploaded successfully: ${uploadResult.path}`)
       console.log(`Original file name: ${file.name}`)
       console.log(`File size: ${(file.size / 1024 / 1024).toFixed(2)} MB`)
 
     } catch (error) {
       console.error('Error uploading image:', error)
-      setError('Failed to upload image. Please try again.')
+      setError(error instanceof Error ? error.message : 'Failed to upload image. Please try again.')
     } finally {
       setIsUploadingImage(false)
     }
@@ -272,6 +310,7 @@ export default function EditTestimonialPage({ params }: Props) {
   const removeImage = () => {
     setSelectedImage(null)
     setImagePreview(null)
+    setExistingImageUrl(null)
     setUploadedImagePath(null)
     setUploadProgress(0)
     setError(null)
@@ -312,7 +351,7 @@ export default function EditTestimonialPage({ params }: Props) {
 
       console.log('Submitting update with data:', updateData)
 
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/update', {
+      const response = await fetch('/api/testimonials/update', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -596,7 +635,7 @@ export default function EditTestimonialPage({ params }: Props) {
                 )}
 
                 {/* Image Preview */}
-                {imagePreview && (
+                {(imagePreview || existingImageUrl) && (
                   <div className="space-y-2">
                     <div className="flex items-center justify-between">
                       <span className="text-sm font-medium">
@@ -614,11 +653,23 @@ export default function EditTestimonialPage({ params }: Props) {
                     </div>
                     <div className="relative w-32 h-32 border rounded-lg overflow-hidden">
                       <img
-                        src={getImageUrl(imagePreview) || '/placeholder-user.jpg'}
+                        src={
+                          imagePreview || // New upload (data URL)
+                          getImageUrl(existingImageUrl) || // Existing image (server path)
+                          '/placeholder-user.jpg'
+                        }
                         alt="Preview"
                         className="w-full h-full object-cover"
-                        onError={(e) => { e.currentTarget.src = '/placeholder-user.jpg'; }}
+                        onLoad={() => console.log('✅ Image loaded successfully')}
+                        onError={(e) => {
+                          console.error('❌ Image failed to load');
+                          e.currentTarget.src = '/placeholder-user.jpg';
+                        }}
                       />
+                    </div>
+                    {/* Status info */}
+                    <div className="text-xs text-gray-500">
+                      {selectedImage ? 'New image selected' : existingImageUrl ? 'Existing image loaded' : 'No image'}
                     </div>
                     {uploadedImagePath && (
                       <p className="text-xs text-green-600">

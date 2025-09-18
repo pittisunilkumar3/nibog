@@ -8,12 +8,42 @@ export interface Testimonial {
   testimonial: string;
   submitted_at: string;
   status: string;
+  // Image-related fields from testimonial images API
+  image_id?: number;
+  image_url?: string;
+  image_priority?: number;
+  image_is_active?: boolean;
+  image_created_at?: string;
+  image_updated_at?: string;
+}
+
+// Extended testimonial interface for testimonials with images
+export interface TestimonialWithImage {
+  // Standard testimonial fields (for compatibility)
+  id: number;
+  name: string;
+  city: string;
+  event_id: number;
+  rating: number;
+  testimonial: string;
+  submitted_at: string;
+  status: string;
+  // Original API response fields
+  testimonial_id: number;
+  testimonial_name: string;
+  // Image fields
+  image_id: number;
+  image_url: string;
+  image_priority: number;
+  image_is_active: boolean;
+  image_created_at: string;
+  image_updated_at: string;
 }
 
 // Create testimonial payload interface
 export interface CreateTestimonialPayload {
   name: string;
-  city: string;
+  city_id: string; // Changed from city to city_id to match API
   event_id: number;
   rating: number;
   testimonial: string;
@@ -34,15 +64,15 @@ export interface UpdateTestimonialPayload {
 }
 
 /**
- * Get all testimonials
- * @returns Promise with array of testimonials
+ * Get all testimonials with images
+ * @returns Promise with array of testimonials including image data
  */
-export async function getAllTestimonials(): Promise<Testimonial[]> {
+export async function getAllTestimonials(): Promise<TestimonialWithImage[]> {
   try {
-    console.log("Fetching all testimonials from database");
+    console.log("Fetching all testimonials with images from database");
 
-    // Use our internal API route to avoid CORS issues
-    const response = await fetch('/api/testimonials/get-all', {
+    // Use the testimonial images API endpoint that returns complete data
+    const response = await fetch('/api/testimonials/get-all-with-images', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",
