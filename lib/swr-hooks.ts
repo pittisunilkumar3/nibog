@@ -1,7 +1,7 @@
 "use client"
 
 import useSWR from 'swr'
-import { EventListItem } from '@/types'
+import { EventListItem, TestimonialData, TestimonialListItem } from '@/types'
 import { getAllEvents as fetchAllEvents } from '@/services/eventService'
 import { getAllPayments as fetchAllPayments } from '@/services/paymentService'
 import { getAllEventsWithGames } from '@/services/eventGameService'
@@ -328,6 +328,103 @@ export function useApi<T>(url: string | null, options = {}) {
 
   return {
     data,
+    isLoading,
+    isError: !!error,
+    mutate,
+  }
+}
+
+/**
+ * Fetch testimonials from the API
+ */
+async function fetchTestimonials(): Promise<TestimonialListItem[]> {
+  const response = await fetch('https://ai.alviongs.com/webhook/nibog/testmonialimages/get', {
+    method: 'GET',
+    headers: {
+      'Content-Type': 'application/json',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0'
+    },
+    cache: 'no-store',
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch testimonials: ${response.status}`);
+  }
+
+  const data: TestimonialData[] = await response.json();
+
+  // Filter only published testimonials with active images and sort by priority
+  const filteredTestimonials = data
+    .filter((testimonial) =>
+      testimonial.status === 'Published' &&
+      testimonial.image_is_active === true
+    )
+    .sort((a, b) => a.image_priority - b.image_priority);
+
+  // Transform to UI format
+  return filteredTestimonials.map((testimonial) => {
+    let imageUrl = testimonial.image_url;
+
+    // Transform API paths to use local image serving with path correction
+    if (imageUrl.startsWith('./upload/') || imageUrl.startsWith('/upload/')) {
+      // Remove the './' or '/' prefix
+      let cleanPath = imageUrl.replace(/^\.?\//, '');
+
+      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
+      if (cleanPath.startsWith('upload/testimonial/')) {
+        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
+      }
+
+      imageUrl = `/api/serve-image/${cleanPath}`;
+    } else if (imageUrl.startsWith('upload/')) {
+      // If it starts with 'upload/', fix path and use local serving API
+      let cleanPath = imageUrl;
+
+      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
+      if (cleanPath.startsWith('upload/testimonial/')) {
+        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
+      }
+
+      imageUrl = `/api/serve-image/${cleanPath}`;
+    } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/api/')) {
+      // If it's a relative path, assume it's in upload/testmonialimage directory
+      imageUrl = `/api/serve-image/upload/testmonialimage/${imageUrl}`;
+    }
+
+    return {
+      id: testimonial.testimonial_id.toString(),
+      name: testimonial.testimonial_name,
+      city: testimonial.city,
+      rating: testimonial.rating,
+      testimonial: testimonial.testimonial,
+      image: imageUrl,
+      eventId: testimonial.event_id.toString(),
+      submittedAt: testimonial.submitted_at,
+    };
+  });
+}
+
+/**
+ * Hook to fetch testimonials with SWR caching and revalidation
+ * @param initialData Optional initial data
+ * @returns Testimonials data and loading/error states
+ */
+export function useTestimonials(initialData?: TestimonialListItem[]) {
+  const { data, error, isLoading, mutate } = useSWR<TestimonialListItem[]>(
+    'testimonials-with-images',
+    fetchTestimonials,
+    {
+      fallbackData: initialData,
+      revalidateOnFocus: false,
+      revalidateOnReconnect: true,
+      dedupingInterval: 300000, // 5 minutes
+    }
+  )
+
+  return {
+    testimonials: data || [],
     isLoading,
     isError: !!error,
     mutate,

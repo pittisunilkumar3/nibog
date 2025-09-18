@@ -1,155 +1,23 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useMemo } from 'react';
 import { AnimatedTestimonials } from '@/components/animated-testimonials';
-
-interface TestimonialData {
-  testimonial_id: number;
-  testimonial_name: string;
-  city: string;
-  event_id: number;
-  rating: number;
-  testimonial: string;
-  submitted_at: string;
-  status: string;
-  image_id: number;
-  image_url: string;
-  image_priority: number;
-  image_is_active: boolean;
-  image_created_at: string;
-  image_updated_at: string;
-}
+import { useTestimonials } from '@/lib/swr-hooks';
 
 export function DynamicTestimonialsSection() {
-  const [testimonials, setTestimonials] = useState<TestimonialData[]>([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-
-  console.log('🔥 DynamicTestimonialsSection: Component rendered at', new Date().toISOString());
-  console.log('🔥 DynamicTestimonialsSection: Current state:', {
-    testimonialsCount: testimonials.length,
-    isLoading,
-    error,
-    isBrowser: typeof window !== 'undefined'
-  });
-
-  if (testimonials.length > 0) {
-    console.log('🔥 DynamicTestimonialsSection: Have testimonials, first one:', testimonials[0]);
-  } else {
-    console.log('🔥 DynamicTestimonialsSection: No testimonials yet, isLoading:', isLoading, 'error:', error);
-  }
-
-  // Fetch testimonials data
-  const fetchTestimonials = async () => {
-    try {
-      console.log('🔥 DynamicTestimonialsSection: Starting fetch...');
-
-      const response = await fetch(`/api/testimonials/get-all?t=${Date.now()}`, {
-        method: 'GET',
-        cache: 'no-store',
-        headers: {
-          'Cache-Control': 'no-cache, no-store, must-revalidate',
-          'Pragma': 'no-cache',
-          'Expires': '0'
-        }
-      });
-
-      console.log('🔥 DynamicTestimonialsSection: Response status:', response.status);
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const data = await response.json();
-      console.log('🔥 DynamicTestimonialsSection: Raw API response:', data);
-      console.log('🔥 DynamicTestimonialsSection: Number of testimonials received:', data.length);
-
-      // Debug each testimonial
-      data.forEach((testimonial: TestimonialData, index: number) => {
-        console.log(`🔥 DynamicTestimonialsSection: Testimonial ${index}:`, {
-          id: testimonial.testimonial_id,
-          name: testimonial.testimonial_name,
-          status: testimonial.status,
-          image_is_active: testimonial.image_is_active,
-          image_url: testimonial.image_url
-        });
-      });
-
-      // Filter only published testimonials and sort by priority
-      const publishedTestimonials = data
-        .filter((testimonial: TestimonialData) => {
-          const isValid = testimonial.status === 'Published' && testimonial.image_is_active;
-          console.log(`🔥 DynamicTestimonialsSection: Testimonial ${testimonial.testimonial_id}: status=${testimonial.status}, active=${testimonial.image_is_active}, valid=${isValid}`);
-          return isValid;
-        })
-        .sort((a: TestimonialData, b: TestimonialData) => a.image_priority - b.image_priority);
-
-      console.log('🔥 DynamicTestimonialsSection: Filtered published testimonials:', publishedTestimonials.length);
-      console.log('🔥 DynamicTestimonialsSection: Setting testimonials state with:', publishedTestimonials);
-      setTestimonials(publishedTestimonials);
-      setIsLoading(false);
-    } catch (error) {
-      console.error('🔥 DynamicTestimonialsSection: Error fetching data:', error);
-      setError(error instanceof Error ? error.message : 'Failed to load testimonials');
-      setTestimonials([]);
-      setIsLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    console.log('🔥 DynamicTestimonialsSection: useEffect FINALLY CALLED! - starting fetch');
-    console.log('🔥 DynamicTestimonialsSection: Browser check:', typeof window !== 'undefined');
-
-    // Only run on client side
-    if (typeof window === 'undefined') {
-      console.log('🔥 DynamicTestimonialsSection: Server side, skipping fetch');
-      return;
-    }
-
-    fetchTestimonials();
-  }, []);
+  // Use SWR hook to fetch testimonials data with caching
+  const { testimonials, isLoading, isError } = useTestimonials();
 
   // Transform testimonials to match AnimatedTestimonials format
-  const transformedTestimonials = testimonials.map((testimonial) => {
-    let imageUrl = testimonial.image_url;
-
-    // Transform API paths to use local image serving with path correction
-    if (imageUrl.startsWith('./upload/') || imageUrl.startsWith('/upload/')) {
-      // Remove the './' or '/' prefix
-      let cleanPath = imageUrl.replace(/^\.?\//, '');
-
-      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
-      if (cleanPath.startsWith('upload/testimonial/')) {
-        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
-      }
-
-      imageUrl = `/api/serve-image/${cleanPath}`;
-    } else if (imageUrl.startsWith('upload/')) {
-      // If it starts with 'upload/', fix path and use local serving API
-      let cleanPath = imageUrl;
-
-      // Fix path mismatch: API returns 'upload/testimonial/' but files are in 'upload/testmonialimage/'
-      if (cleanPath.startsWith('upload/testimonial/')) {
-        cleanPath = cleanPath.replace('upload/testimonial/', 'upload/testmonialimage/');
-      }
-
-      imageUrl = `/api/serve-image/${cleanPath}`;
-    } else if (!imageUrl.startsWith('http') && !imageUrl.startsWith('/api/')) {
-      // If it's a relative path, assume it's in upload/testmonialimage directory
-      imageUrl = `/api/serve-image/upload/testmonialimage/${imageUrl}`;
-    }
-    // If it's already a full URL (http/https) or API route, keep it as is
-
-    console.log(`🖼️ Testimonials: Transformed image URL from "${testimonial.image_url}" to "${imageUrl}" for testimonial ${testimonial.testimonial_id}`);
-
-    return {
+  const transformedTestimonials = useMemo(() => {
+    return testimonials.map((testimonial) => ({
       quote: testimonial.testimonial,
-      name: testimonial.testimonial_name,
+      name: testimonial.name,
       location: testimonial.city,
-      src: imageUrl,
-      event: `Event ID: ${testimonial.event_id}` // You might want to fetch event names separately
-    };
-  });
+      src: testimonial.image,
+      event: `NIBOG Event #${testimonial.eventId}`
+    }));
+  }, [testimonials]);
 
   // Fallback testimonials if API fails or no data
   const fallbackTestimonials = [
@@ -182,14 +50,6 @@ export function DynamicTestimonialsSection() {
 
   const showingFallback = transformedTestimonials.length === 0;
 
-  console.log('🎯 Testimonials: Final display testimonials:', displayTestimonials);
-  console.log('🎯 Testimonials: Showing fallback?', showingFallback);
-  console.log('🎯 Testimonials: Transformed testimonials count:', transformedTestimonials.length);
-
-  if (transformedTestimonials.length > 0) {
-    console.log('🎯 Testimonials: First transformed testimonial:', transformedTestimonials[0]);
-  }
-
   return (
     <section className="container">
       <div className="flex flex-col gap-6">
@@ -199,9 +59,9 @@ export function DynamicTestimonialsSection() {
             Hear what parents have to say about NIBOG events
           </p>
 
-          {(error || showingFallback) && (
+          {(isError || showingFallback) && (
             <p className="text-sm text-muted-foreground">
-              {error
+              {isError
                 ? "Showing sample testimonials (API temporarily unavailable)"
                 : "Showing sample testimonials (No testimonials available in database)"
               }

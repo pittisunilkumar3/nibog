@@ -254,3 +254,30 @@ export type EventListItem = {
   gameNames?: string[]
   eventStatus?: string
 }
+
+// Testimonial data structure from API
+export type TestimonialData = {
+  testimonial_id: number
+  testimonial_name: string
+  city: string
+  event_id: number
+  rating: number
+  testimonial: string
+  submitted_at: string
+  status: string
+  image_url: string
+  image_priority: number
+  image_is_active: boolean
+}
+
+// Testimonial item for display in UI components
+export type TestimonialListItem = {
+  id: string
+  name: string
+  city: string
+  rating: number
+  testimonial: string
+  image: string
+  eventId: string
+  submittedAt: string
+}
