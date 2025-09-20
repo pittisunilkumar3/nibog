@@ -1450,52 +1450,54 @@ export default function RegisterEventClientPage() {
   }, [apiEvents])
 
   return (
-    <div className="container py-4 sm:py-8 px-3 sm:px-4 lg:px-6 relative min-h-screen">
-      {/* Decorative background elements - hidden on mobile for better performance */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none dark:opacity-20 hidden sm:block">
-        <div className="absolute -top-10 -left-10 w-40 h-40 rounded-full bg-yellow-200 opacity-20 animate-pulse"></div>
-        <div className="absolute top-1/4 -right-10 w-32 h-32 rounded-full bg-blue-200 opacity-20 animate-pulse delay-700"></div>
-        <div className="absolute bottom-1/4 -left-10 w-36 h-36 rounded-full bg-green-200 opacity-20 animate-pulse delay-1000"></div>
-        <div className="absolute -bottom-10 -right-10 w-44 h-44 rounded-full bg-pink-200 opacity-20 animate-pulse delay-500"></div>
-        <div className="absolute top-1/3 left-1/3 w-24 h-24 rounded-full bg-purple-200 opacity-20 animate-pulse delay-300"></div>
+    <div className="container py-6 sm:py-12 px-3 sm:px-4 lg:px-6 relative min-h-screen bg-gradient-to-br from-skyblue-100 via-coral-100 to-mint-100 dark:from-skyblue-900/20 dark:via-coral-900/20 dark:to-mint-900/20">
+      {/* Homepage-style background elements */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30 dark:opacity-20 hidden sm:block">
+        <div className="absolute top-10 left-10 w-16 h-16 bg-skyblue-400 rounded-full opacity-20 animate-bounce-gentle"></div>
+        <div className="absolute top-20 right-20 w-12 h-12 bg-coral-400 rounded-full opacity-30 animate-float-delayed"></div>
+        <div className="absolute bottom-20 left-20 w-20 h-20 bg-mint-400 rounded-full opacity-25 animate-float-slow"></div>
+        <div className="absolute bottom-10 right-10 w-14 h-14 bg-lavender-400 rounded-full opacity-20 animate-bounce-gentle" style={{animationDelay: '1s'}}></div>
+        <div className="absolute top-1/2 left-1/4 w-10 h-10 bg-skyblue-300 rounded-full opacity-25 animate-float-delayed" style={{animationDelay: '0.5s'}}></div>
       </div>
 
-      <Card className="mx-auto w-full max-w-4xl relative overflow-hidden shadow-lg border-2 border-primary/10 bg-white/90 backdrop-blur-sm dark:bg-gray-800 dark:border-gray-700">
-        {/* Decorative top pattern */}
-        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-pink-500 via-purple-500 to-indigo-500"></div>
+      <Card className="mx-auto w-full max-w-4xl relative overflow-hidden shadow-2xl hover:shadow-3xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90 rounded-3xl">
+        {/* Homepage-style top gradient accent */}
+        <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-skyblue-400 via-coral-400 to-mint-400"></div>
 
-        {/* Decorative baby-themed elements */}
-        <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-yellow-100 opacity-50"></div>
-        <div className="absolute -left-8 -bottom-8 w-24 h-24 rounded-full bg-blue-100 opacity-50"></div>
+        {/* Homepage-style corner decorations */}
+        <div className="absolute -right-8 -top-8 w-24 h-24 rounded-full bg-skyblue-100 opacity-50 dark:bg-skyblue-900/50"></div>
+        <div className="absolute -left-8 -bottom-8 w-24 h-24 rounded-full bg-mint-100 opacity-50 dark:bg-mint-900/50"></div>
 
-        <CardHeader className="space-y-1 relative">
-          <div className="flex items-center gap-2">
-            <div className="bg-primary/10 p-2 rounded-full">
-              <CalendarIcon className="h-6 w-6 text-primary" />
+        <CardHeader className="space-y-6 relative pb-8">
+          <div className="flex items-center gap-4">
+            <div className="bg-gradient-to-br from-skyblue-400/20 to-coral-400/20 p-3 rounded-2xl shadow-lg border-2 border-skyblue-400/30">
+              <CalendarIcon className="h-8 w-8 text-skyblue-600" />
             </div>
-            <div>
-              <CardTitle className="text-2xl font-bold">
-                <span className="relative">
-                  <span 
-                    className="relative z-10 bg-clip-text text-transparent bg-gradient-to-r from-blue-600 via-purple-600 to-blue-600 bg-[length:200%_auto] animate-gradient"
-                    style={{
-                      WebkitBackgroundClip: 'text',
-                      WebkitTextFillColor: 'transparent',
-                    }}
-                  >
-                    Register for NIBOG Event
-                  </span>
-                  <span className="absolute inset-0 z-0 bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-purple-400 to-blue-400 bg-[length:200%_auto] animate-gradient opacity-70 blur-sm">
-                    Register for NIBOG Event
-                  </span>
+            <div className="flex-1">
+              <CardTitle className="text-3xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-skyblue-600 via-coral-600 to-mint-600 bg-clip-text text-transparent bg-[length:200%_auto] animate-rainbow-shift">
+                  🎯 Register for NIBOG Event 🎯
                 </span>
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-base mt-2 text-neutral-charcoal/70 dark:text-white/70">
                 {selectedCity
                   ? `Register your child for exciting baby games in ${selectedCity}`
-                  : "Register your child for exciting baby games"}
+                  : "Register your child for exciting baby games and create memorable moments"}
               </CardDescription>
             </div>
+          </div>
+
+          {/* Homepage-style progress indicator */}
+          <div className="flex items-center justify-center space-x-3 pt-4">
+            <div className={`w-10 h-3 rounded-full transition-all duration-300 ${step >= 1 ? 'bg-gradient-to-r from-skyblue-400 to-coral-400' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+            <div className={`w-10 h-3 rounded-full transition-all duration-300 ${step >= 2 ? 'bg-gradient-to-r from-coral-400 to-mint-400' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+            <div className={`w-10 h-3 rounded-full transition-all duration-300 ${step >= 3 ? 'bg-gradient-to-r from-mint-400 to-lavender-400' : 'bg-gray-200 dark:bg-gray-700'}`}></div>
+          </div>
+
+          <div className="text-center">
+            <p className="text-sm text-neutral-charcoal/70 dark:text-white/70 font-semibold">
+              Step {step} of 3: {step === 1 ? '📝 Registration Details' : step === 2 ? '🎁 Add-ons & Extras' : '💳 Payment & Confirmation'}
+            </p>
           </div>
         </CardHeader>
 
@@ -1725,21 +1727,21 @@ export default function RegisterEventClientPage() {
 
               </div>
 
-              <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
-                <h3 className="text-sm font-medium text-primary flex items-center gap-2">
-                  <div className="bg-primary/10 p-1 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+              <div className="p-6 rounded-3xl border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300 space-y-6 dark:bg-gray-800/90">
+                <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-skyblue-400/20 to-coral-400/20 p-3 rounded-2xl shadow-lg border-2 border-skyblue-400/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-skyblue-600">
                       <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                   </div>
-                  Parent Information
+                  👨‍👩‍👧‍👦 Parent Information
                 </h3>
-                <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-                  <div className="space-y-2">
-                    <Label htmlFor="parent-name" className="flex items-center gap-1">
+                <div className="grid gap-4 sm:gap-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+                  <div className="space-y-3">
+                    <Label htmlFor="parent-name" className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
                       <span>Parent's Full Name</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
+                      <span className="text-xs text-skyblue-700 bg-skyblue-100 px-2 py-0.5 rounded-full border border-skyblue-300">Required</span>
                     </Label>
                     <Input
                       id="parent-name"
@@ -1747,13 +1749,13 @@ export default function RegisterEventClientPage() {
                       value={parentName}
                       onChange={(e) => setParentName(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
+                      className="border-2 border-skyblue-200 focus:border-skyblue-400 focus:ring-2 focus:ring-skyblue-200 bg-white hover:bg-skyblue-50 dark:bg-gray-800 dark:border-skyblue-600 dark:hover:bg-gray-700 dark:text-white h-12 text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email" className="flex items-center gap-1">
-                      <span>Email</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
+                  <div className="space-y-3">
+                    <Label htmlFor="email" className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
+                      <span>Email Address</span>
+                      <span className="text-xs text-coral-700 bg-coral-100 px-2 py-0.5 rounded-full border border-coral-300">Required</span>
                     </Label>
                     <Input
                       id="email"
@@ -1762,13 +1764,13 @@ export default function RegisterEventClientPage() {
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
+                      className="border-2 border-coral-200 focus:border-coral-400 focus:ring-2 focus:ring-coral-200 bg-white hover:bg-coral-50 dark:bg-gray-800 dark:border-coral-600 dark:hover:bg-gray-700 dark:text-white h-12 text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="phone" className="flex items-center gap-1">
+                  <div className="space-y-3">
+                    <Label htmlFor="phone" className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
                       <span>Mobile Number</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
+                      <span className="text-xs text-mint-700 bg-mint-100 px-2 py-0.5 rounded-full border border-mint-300">Required</span>
                     </Label>
                     <Input
                       id="phone"
@@ -1777,29 +1779,29 @@ export default function RegisterEventClientPage() {
                       value={phone}
                       onChange={(e) => setPhone(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
+                      className="border-2 border-mint-200 focus:border-mint-400 focus:ring-2 focus:ring-mint-200 bg-white hover:bg-mint-50 dark:bg-gray-800 dark:border-mint-600 dark:hover:bg-gray-700 dark:text-white h-12 text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
                     />
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
-                <h3 className="text-sm font-medium text-primary flex items-center gap-2">
-                  <div className="bg-primary/10 p-1 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-primary">
+              <div className="p-6 rounded-3xl border-0 bg-white/90 backdrop-blur-sm shadow-2xl hover:shadow-3xl transition-all duration-300 space-y-6 dark:bg-gray-800/90">
+                <h3 className="text-xl font-bold text-neutral-charcoal dark:text-white flex items-center gap-3">
+                  <div className="bg-gradient-to-br from-coral-400/20 to-mint-400/20 p-3 rounded-2xl shadow-lg border-2 border-coral-400/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-coral-600">
                       <path d="M9 12h.01"></path>
                       <path d="M15 12h.01"></path>
                       <path d="M10 16c.5.3 1.1.5 2 .5s1.5-.2 2-.5"></path>
                       <path d="M19 6.3a9 9 0 0 1 1.8 3.9 2 2 0 0 1 0 3.6 9 9 0 0 1-17.6 0 2 2 0 0 1 0-3.6A9 9 0 0 1 12 3c2 0 3.5 1.1 3.5 2.5s-.9 2.5-2 2.5c-.8 0-1.5-.4-1.5-1"></path>
                     </svg>
                   </div>
-                  Child Information
+                  👶 Child Information
                 </h3>
                 <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2">
-                  <div className="space-y-2">
-                    <Label htmlFor="child-name" className="flex items-center gap-1">
+                  <div className="space-y-3">
+                    <Label htmlFor="child-name" className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
                       <span>Child's Full Name</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
+                      <span className="text-xs text-skyblue-700 bg-skyblue-100 px-2 py-0.5 rounded-full border border-skyblue-300">Required</span>
                     </Label>
                     <Input
                       id="child-name"
@@ -1807,21 +1809,23 @@ export default function RegisterEventClientPage() {
                       value={childName}
                       onChange={(e) => setChildName(e.target.value)}
                       required
-                      className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
+                      className="border-2 border-skyblue-200 focus:border-skyblue-400 focus:ring-2 focus:ring-skyblue-200 bg-white hover:bg-skyblue-50 dark:bg-gray-800 dark:border-skyblue-600 dark:hover:bg-gray-700 dark:text-white h-12 text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="flex items-center gap-1">
+                  <div className="space-y-3">
+                    <Label className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
                       <span>Child's Date of Birth</span>
-                      <span className="text-xs text-primary/70">(Required)</span>
+                      <span className="text-xs text-coral-700 bg-coral-100 px-2 py-0.5 rounded-full border border-coral-300">Required</span>
                     </Label>
                     <Popover>
                       <PopoverTrigger asChild>
                         <Button
                           variant="outline"
                           className={cn(
-                            "w-full justify-start text-left font-normal border-dashed transition-all duration-200 h-11 sm:h-10 text-base sm:text-sm touch-manipulation",
-                            !dob ? "text-muted-foreground border-muted-foreground/40" : "border-primary/40 bg-primary/5"
+                            "w-full justify-start text-left font-normal transition-all duration-200 h-12 text-base rounded-2xl shadow-lg hover:shadow-xl border-2",
+                            !dob
+                              ? "text-neutral-charcoal border-coral-200 hover:border-coral-300 hover:bg-coral-50 dark:border-coral-600 dark:hover:bg-gray-700 dark:text-white"
+                              : "border-coral-400 bg-coral-50 hover:bg-coral-100 text-neutral-charcoal dark:text-white dark:bg-coral-900/20"
                           )}
                           onClick={() => {
                             console.log("=== DOB BUTTON CLICKED ===");
@@ -1871,12 +1875,10 @@ export default function RegisterEventClientPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="school-name" className="flex items-center gap-1">
+                <div className="space-y-3">
+                  <Label htmlFor="school-name" className="flex items-center gap-2 text-sm font-bold text-neutral-charcoal dark:text-white">
                     <span>School Name</span>
-                    
-                      <span className="text-xs text-primary/70">(Required)</span>
-                   
+                    <span className="text-xs text-mint-700 bg-mint-100 px-2 py-0.5 rounded-full border border-mint-300">Required</span>
                   </Label>
                   <Input
                     id="school-name"
@@ -1884,10 +1886,12 @@ export default function RegisterEventClientPage() {
                     value={schoolName}
                     onChange={(e) => setSchoolName(e.target.value)}
                     required={childAgeMonths ? childAgeMonths >= 36 : false}
-                    className="border-primary/20 focus:border-primary/40 bg-white/90 dark:bg-black dark:border-gray-700 dark:text-gray-50 h-11 sm:h-10 text-base sm:text-sm"
+                    className="border-2 border-mint-200 focus:border-mint-400 focus:ring-2 focus:ring-mint-200 bg-white hover:bg-mint-50 dark:bg-gray-800 dark:border-mint-600 dark:hover:bg-gray-700 dark:text-white h-12 text-base rounded-2xl transition-all duration-200 shadow-lg hover:shadow-xl"
                   />
                   {childAgeMonths && childAgeMonths < 36 && (
-                    <p className="text-xs text-muted-foreground mt-1">For children under 3 years, you can enter "Home", "Daycare", or the name of their playschool</p>
+                    <p className="text-xs text-neutral-charcoal dark:text-white mt-2 p-3 bg-gradient-to-r from-skyblue-50 to-coral-50 dark:from-skyblue-900/20 dark:to-coral-900/20 rounded-2xl border-2 border-skyblue-200 dark:border-skyblue-800 shadow-lg">
+                      💡 For children under 3 years, you can enter "Home", "Daycare", or the name of their playschool
+                    </p>
                   )}
                 </div>
               </div>
@@ -1953,21 +1957,21 @@ export default function RegisterEventClientPage() {
                     </p>
                     
                     {isLoadingGames ? (
-                      <div className="flex items-center justify-center p-6">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                        <span className="ml-2 text-sm text-muted-foreground">Loading games...</span>
+                      <div className="flex items-center justify-center p-8 bg-gradient-to-r from-skyblue-50 via-coral-50 to-mint-50 rounded-3xl border-2 border-skyblue-200 shadow-lg">
+                        <Loader2 className="h-8 w-8 animate-spin text-skyblue-600" />
+                        <span className="ml-3 text-base font-semibold text-neutral-charcoal">🎮 Loading games...</span>
                       </div>
                     ) : gameError ? (
-                      <div className="rounded-lg bg-gradient-to-r from-red-50 to-rose-50 p-4 dark:from-red-950 dark:to-rose-950 border border-red-100 dark:border-red-900 shadow-inner">
+                      <div className="rounded-3xl bg-gradient-to-r from-coral-50 to-skyblue-50 p-6 dark:from-coral-950/50 dark:to-skyblue-950/50 border-2 border-coral-200 dark:border-coral-800 shadow-2xl">
                         <div className="flex items-start">
-                          <div className="flex-shrink-0 bg-red-100 dark:bg-red-900 rounded-full p-1">
-                            <AlertCircle className="h-5 w-5 text-red-500 dark:text-red-400" aria-hidden="true" />
+                          <div className="flex-shrink-0 bg-gradient-to-br from-coral-100 to-skyblue-100 dark:bg-coral-900 rounded-2xl p-2 shadow-lg">
+                            <AlertCircle className="h-6 w-6 text-coral-600 dark:text-coral-400" aria-hidden="true" />
                           </div>
-                          <div className="ml-3">
-                            <h3 className="text-sm font-medium text-red-800 dark:text-red-300">
-                              Error loading games
+                          <div className="ml-4">
+                            <h3 className="text-base font-bold text-neutral-charcoal dark:text-white">
+                              ⚠️ Error loading games
                             </h3>
-                            <div className="mt-2 text-sm text-red-700 dark:text-red-400">
+                            <div className="mt-2 text-sm text-neutral-charcoal/70 dark:text-white/70 font-medium">
                               <p>{gameError}</p>
                             </div>
                           </div>
@@ -1977,30 +1981,30 @@ export default function RegisterEventClientPage() {
                       <>
                         {/* Selection Status Indicator */}
                         <div className={cn(
-                          "mb-4 p-3 rounded-lg border text-sm",
+                          "mb-6 p-4 rounded-3xl border-2 text-base font-semibold shadow-lg",
                           selectedGames.length === 0
-                            ? "bg-gray-50 border-gray-200 text-gray-600"
+                            ? "bg-gradient-to-r from-skyblue-50 to-coral-50 border-skyblue-200 text-neutral-charcoal"
                             : selectedGames.length === 1
-                            ? "bg-green-50 border-green-200 text-green-700"
-                            : "bg-red-50 border-red-200 text-red-700"
+                            ? "bg-gradient-to-r from-mint-50 to-skyblue-50 border-mint-300 text-neutral-charcoal"
+                            : "bg-gradient-to-r from-coral-50 to-skyblue-50 border-coral-300 text-neutral-charcoal"
                         )}>
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-3">
                             {selectedGames.length === 0 && (
                               <>
-                                <div className="w-2 h-2 rounded-full bg-gray-400"></div>
-                                <span>No game selected - Please select one game and time slot</span>
+                                <div className="w-3 h-3 rounded-full bg-skyblue-400 animate-pulse"></div>
+                                <span>🎯 No game selected - Please select one game and time slot</span>
                               </>
                             )}
                             {selectedGames.length === 1 && (
                               <>
-                                <div className="w-2 h-2 rounded-full bg-green-500"></div>
-                                <span>✓ One game selected - Ready to continue</span>
+                                <div className="w-3 h-3 rounded-full bg-mint-500 animate-bounce-gentle"></div>
+                                <span>✅ One game selected - Ready to continue!</span>
                               </>
                             )}
                             {selectedGames.length > 1 && (
                               <>
-                                <div className="w-2 h-2 rounded-full bg-red-500"></div>
-                                <span>⚠ Multiple games selected - Please select only one</span>
+                                <div className="w-3 h-3 rounded-full bg-coral-500 animate-pulse"></div>
+                                <span>⚠️ Multiple games selected - Please select only one</span>
                               </>
                             )}
                           </div>
@@ -2193,27 +2197,28 @@ export default function RegisterEventClientPage() {
               </div>
 
               <Button
+                size="lg"
                 className={cn(
-                  "w-full relative overflow-hidden group transition-all duration-300 h-12 sm:h-11 text-base sm:text-sm font-semibold touch-manipulation",
+                  "w-full relative overflow-hidden group transition-all duration-300 h-16 text-lg font-bold touch-manipulation rounded-3xl shadow-2xl hover:shadow-3xl transform hover:scale-105 border-2 border-white/50 animate-medal-shine",
                   (!selectedCity || !dob || !selectedEventType || !selectedEvent || selectedGames.length !== 1 || childAgeMonths === null || !parentName || !email || !phone || !childName ||
                  (childAgeMonths && childAgeMonths >= 36 && !schoolName) || !termsAccepted || isProcessingPayment)
-                    ? "opacity-50"
-                    : "bg-gradient-to-r from-primary to-purple-600 hover:from-primary/90 hover:to-purple-700"
+                    ? "opacity-50 cursor-not-allowed bg-gray-400"
+                    : "bg-gradient-to-r from-skyblue-400 via-coral-400 to-mint-400 hover:from-skyblue-500 hover:via-coral-500 hover:to-mint-500 text-white"
                 )}
                 onClick={handleRegistration}
                 disabled={!selectedCity || !dob || !selectedEventType || !selectedEvent || selectedGames.length !== 1 || childAgeMonths === null || !parentName || !email || !phone || !childName ||
                          (childAgeMonths && childAgeMonths >= 36 && !schoolName) || !termsAccepted || isProcessingPayment}
               >
-                <span className="relative z-10 flex items-center">
+                <span className="relative z-10 flex items-center justify-center">
                   {isProcessingPayment ? (
                     <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      <Loader2 className="mr-3 h-6 w-6 animate-spin" />
                       Processing...
                     </>
                   ) : (
                     <>
-                      {isAuthenticated ? "Continue to Add-ons" : "Continue (Login Required)"}
-                      <ChevronRight className="ml-2 h-4 w-4 group-hover:translate-x-1 transition-transform duration-200" />
+                      🎯 {isAuthenticated ? "Continue to Add-ons" : "Continue (Login Required)"} 🎯
+                      <ChevronRight className="ml-3 h-6 w-6 group-hover:translate-x-1 transition-transform duration-200" />
                     </>
                   )}
                 </span>
@@ -2685,19 +2690,19 @@ export default function RegisterEventClientPage() {
                     <ArrowLeft className="mr-2 h-4 w-4" /> Back
                   </Button>
                   <Button
-                    className="w-full h-12 sm:h-10 text-base sm:text-sm font-semibold touch-manipulation"
+                    className="w-full h-16 text-lg font-bold touch-manipulation bg-gradient-to-r from-skyblue-400 via-coral-400 to-mint-400 hover:from-skyblue-500 hover:via-coral-500 hover:to-mint-500 text-white shadow-2xl transform transition-all hover:scale-105 rounded-3xl border-2 border-white/50 animate-medal-shine"
                     onClick={handlePayment}
                     disabled={isProcessingPayment}
                   >
                     {isProcessingPayment ? (
                       <>
-                        <div className="animate-spin mr-2 h-4 w-4 border-2 border-white border-t-transparent rounded-full"></div>
-                        <span className="text-sm sm:text-base">Processing...</span>
+                        <div className="animate-spin mr-3 h-6 w-6 border-2 border-neutral-charcoal border-t-transparent rounded-full"></div>
+                        <span className="text-lg">Processing Payment...</span>
                       </>
                     ) : (
                       <>
-                        <span className="hidden sm:inline">Pay with PhonePe ₹{calculateTotalPrice()}</span>
-                        <span className="sm:hidden">Pay ₹{calculateTotalPrice()}</span>
+                        <span className="hidden sm:inline">💳 Pay with PhonePe ₹{calculateTotalPrice()} 💳</span>
+                        <span className="sm:hidden">💳 Pay ₹{calculateTotalPrice()} 💳</span>
                       </>
                     )}
                   </Button>
@@ -2705,22 +2710,23 @@ export default function RegisterEventClientPage() {
             </>
           )}
         </CardContent>
-        <CardFooter className="flex flex-col space-y-2 border-t border-dashed border-primary/10 bg-gradient-to-b from-white/0 to-primary/5 px-3 sm:px-6 py-4 sm:py-6">
-          <div className="text-center text-sm">
-            <div className="flex items-center justify-center gap-2 mb-1">
-              <div className="h-1 w-1 rounded-full bg-primary/20"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/30"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/40"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/50"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/40"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/30"></div>
-              <div className="h-1 w-1 rounded-full bg-primary/20"></div>
+        <CardFooter className="flex flex-col space-y-3 border-t-2 border-skyblue-200 bg-gradient-to-r from-skyblue-50 via-coral-50 to-mint-50 dark:from-skyblue-900/20 dark:via-coral-900/20 dark:to-mint-900/20 px-6 py-6 rounded-b-3xl">
+          <div className="text-center">
+            <div className="flex items-center justify-center gap-2 mb-2">
+              <div className="h-2 w-2 rounded-full bg-skyblue-400 animate-bounce-gentle"></div>
+              <div className="h-2 w-2 rounded-full bg-coral-400 animate-bounce-gentle" style={{animationDelay: '0.2s'}}></div>
+              <div className="h-2 w-2 rounded-full bg-mint-400 animate-bounce-gentle" style={{animationDelay: '0.4s'}}></div>
+              <div className="h-2 w-2 rounded-full bg-lavender-400 animate-bounce-gentle" style={{animationDelay: '0.6s'}}></div>
+              <div className="h-2 w-2 rounded-full bg-mint-400 animate-bounce-gentle" style={{animationDelay: '0.4s'}}></div>
+              <div className="h-2 w-2 rounded-full bg-coral-400 animate-bounce-gentle" style={{animationDelay: '0.2s'}}></div>
+              <div className="h-2 w-2 rounded-full bg-skyblue-400 animate-bounce-gentle"></div>
             </div>
-            <div className="text-muted-foreground">
-              Need help? Contact us at{" "}
-              <Link href="mailto:newindiababyolympics@gmail.com" className="text-primary font-medium underline-offset-4 hover:underline transition-colors">
+            <div className="text-neutral-charcoal/70 dark:text-white/70 font-semibold">
+              🏆 Need help? Contact us at{" "}
+              <Link href="mailto:newindiababyolympics@gmail.com" className="text-skyblue-600 font-bold underline-offset-4 hover:underline transition-colors hover:text-coral-600">
                 newindiababyolympics@gmail.com
               </Link>
+              {" "}🏆
             </div>
           </div>
         </CardFooter>

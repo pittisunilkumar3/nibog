@@ -171,66 +171,70 @@
 
 @layer base {
   :root {
-    /* NIBOG Baby Olympics Theme - Light Mode */
+    /* NIBOG Baby Olympics Theme - Light Mode - Matching Homepage Design */
     --background: 0 0% 99.6%; /* Soft white */
     --foreground: 0 0% 18.4%; /* Charcoal for text */
     --card: 0 0% 100%;
     --card-foreground: 0 0% 18.4%;
     --popover: 0 0% 100%;
     --popover-foreground: 0 0% 18.4%;
-    --primary: 51 100% 50%; /* Sunshine yellow */
-    --primary-foreground: 0 0% 18.4%;
+    --primary: 199 89% 48%; /* Sky Blue - Child-friendly & Accessible */
+    --primary-foreground: 0 0% 98%; /* White text on blue */
     --secondary: 197 71% 73%; /* Sky blue */
     --secondary-foreground: 0 0% 18.4%;
     --muted: 0 0% 96.1%; /* Warm gray */
     --muted-foreground: 220 8.9% 46.1%; /* Medium gray */
-    --accent: 120 93% 79%; /* Mint green */
+    --accent: 120 93% 79%; /* Mint Green - Matching Homepage */
     --accent-foreground: 0 0% 18.4%;
     --destructive: 0 84.2% 60.2%;
     --destructive-foreground: 210 40% 98%;
     --border: 220 13% 91%; /* Light border */
     --input: 220 13% 91%;
-    --ring: 51 100% 50%; /* Sunshine yellow focus ring */
+    --ring: 199 89% 48%; /* Sky Blue focus ring */
     --radius: 1rem; /* More rounded for baby-friendly feel */
 
-    /* Custom NIBOG colors */
-    --sunshine: 51 100% 50%;
-    --coral: 0 100% 75%;
-    --mint: 120 93% 79%;
-    --lavender: 240 67% 94%;
-    --rainbow-orange: 39 100% 50%;
-    --bubblegum: 351 100% 86%;
+    /* Custom NIBOG colors - Sky Blue Primary Palette */
+    --skyblue: 199 89% 48%; /* #38bdf8 */
+    --coral: 0 100% 75%; /* #FF7F7F */
+    --mint: 120 93% 79%; /* #98FB98 */
+    --lavender: 240 67% 94%; /* #E6E6FA */
+    --rainbow-orange: 39 100% 50%; /* #FFA500 */
+    --bubblegum: 351 100% 86%; /* #FFB6C1 */
+    --success: 120 93% 79%; /* Mint green for success states */
+    --warning: 39 100% 50%; /* Orange for warnings */
   }
 
   .dark {
-    /* NIBOG Baby Olympics Theme - Dark Mode */
+    /* NIBOG Baby Olympics Theme - Dark Mode - Matching Homepage Design */
     --background: 224 71% 4%;
     --foreground: 213 31% 91%;
     --card: 224 71% 4%;
     --card-foreground: 213 31% 91%;
     --popover: 224 71% 4%;
     --popover-foreground: 213 31% 91%;
-    --primary: 51 100% 50%; /* Keep sunshine yellow bright */
-    --primary-foreground: 0 0% 18.4%;
+    --primary: 199 89% 48%; /* Keep sky blue consistent */
+    --primary-foreground: 0 0% 98%;
     --secondary: 197 71% 25%; /* Darker sky blue */
     --secondary-foreground: 213 31% 91%;
     --muted: 223 47% 11%;
     --muted-foreground: 215.4 16.3% 56.9%;
-    --accent: 120 93% 25%; /* Darker mint */
+    --accent: 120 93% 35%; /* Darker mint */
     --accent-foreground: 213 31% 91%;
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
     --border: 223 47% 11%;
     --input: 223 47% 11%;
-    --ring: 51 100% 50%;
+    --ring: 199 89% 48%;
 
-    /* Custom NIBOG colors for dark mode */
-    --sunshine: 51 100% 50%;
+    /* Custom NIBOG colors for dark mode - Sky Blue Primary Palette */
+    --skyblue: 199 89% 48%;
     --coral: 0 100% 65%;
     --mint: 120 93% 35%;
     --lavender: 240 67% 25%;
     --rainbow-orange: 39 100% 45%;
     --bubblegum: 351 100% 76%;
+    --success: 120 93% 35%;
+    --warning: 39 100% 45%;
   }
 }
 
@@ -394,10 +398,10 @@
 
 /* Baby-friendly button styles */
 .btn-baby-primary {
-  @apply bg-gradient-to-r from-sunshine-400 to-sunshine-600 hover:from-sunshine-500 hover:to-sunshine-700;
-  @apply text-neutral-charcoal font-semibold rounded-2xl px-8 py-4;
+  @apply bg-gradient-to-r from-skyblue-400 to-skyblue-600 hover:from-skyblue-500 hover:to-skyblue-700;
+  @apply text-white font-semibold rounded-2xl px-8 py-4;
   @apply shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300;
-  @apply border-2 border-sunshine-500 hover:border-sunshine-600;
+  @apply border-2 border-skyblue-500 hover:border-skyblue-600;
 }
 
 .btn-baby-secondary {
@@ -660,4 +664,73 @@
   .crypto-error-mobile .crypto-error-icon {
     @apply text-amber-500;
   }
+}
+
+/* Enhanced Professional Animations for Registration Page */
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes scale-in {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes gradient-shift {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.animate-slide-up {
+  animation: slide-up 0.5s ease-out;
+}
+
+.animate-fade-in {
+  animation: fade-in 0.3s ease-out;
+}
+
+.animate-scale-in {
+  animation: scale-in 0.3s ease-out;
+}
+
+.animate-gradient-shift {
+  animation: gradient-shift 3s ease infinite;
+}
+
+/* Enhanced form focus states */
+.form-focus-ring:focus-within {
+  @apply ring-2 ring-primary/20 border-primary;
+}
+
+/* Professional hover effects */
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px -8px rgba(0, 0, 0, 0.1);
 }
