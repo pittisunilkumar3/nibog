@@ -156,10 +156,10 @@ export default function SettingsPage() {
   }
 
   // Social media settings
-  const [facebook, setFacebook] = useState("https://facebook.com/nibog")
-  const [instagram, setInstagram] = useState("https://instagram.com/nibog")
-  const [twitter, setTwitter] = useState("https://twitter.com/nibog")
-  const [youtube, setYoutube] = useState("https://youtube.com/nibog")
+  const [facebook, setFacebook] = useState("https://www.facebook.com/share/1K8H6SPtR5/")
+  const [instagram, setInstagram] = useState("https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr")
+  const [linkedin, setLinkedin] = useState("https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app")
+  const [youtube, setYoutube] = useState("https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB")
   const [socialMediaId, setSocialMediaId] = useState<number | undefined>(undefined)
   const [isSavingSocialMedia, setIsSavingSocialMedia] = useState(false)
   const [isLoadingSocialMedia, setIsLoadingSocialMedia] = useState(true)
@@ -176,7 +176,7 @@ export default function SettingsPage() {
         if (data) {
           setFacebook(data.facebook_url)
           setInstagram(data.instagram_url)
-          setTwitter(data.twitter_url)
+          setLinkedin(data.linkedin_url)
           setYoutube(data.youtube_url)
           setSocialMediaId(data.id)
           setSocialMediaSettingsExist(true)
@@ -216,7 +216,7 @@ export default function SettingsPage() {
         if (data) {
           setFacebook(data.facebook_url)
           setInstagram(data.instagram_url)
-          setTwitter(data.twitter_url)
+          setLinkedin(data.linkedin_url)
           setYoutube(data.youtube_url)
         }
       } catch (error) {
@@ -224,10 +224,10 @@ export default function SettingsPage() {
       }
     } else {
       // Reset to default values if no settings exist
-      setFacebook("https://facebook.com/nibog")
-      setInstagram("https://instagram.com/nibog")
-      setTwitter("https://twitter.com/nibog")
-      setYoutube("https://youtube.com/nibog")
+      setFacebook("https://www.facebook.com/share/1K8H6SPtR5/")
+      setInstagram("https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr")
+      setLinkedin("https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app")
+      setYoutube("https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB")
     }
   }
 
@@ -658,8 +658,8 @@ export default function SettingsPage() {
                             <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md break-all">{instagram || "Not configured"}</p>
                           </div>
                           <div className="space-y-2">
-                            <Label className="text-sm font-medium text-muted-foreground">Twitter</Label>
-                            <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md break-all">{twitter || "Not configured"}</p>
+                            <Label className="text-sm font-medium text-muted-foreground">LinkedIn</Label>
+                            <p className="text-sm font-mono bg-muted px-3 py-2 rounded-md break-all">{linkedin || "Not configured"}</p>
                           </div>
                           <div className="space-y-2">
                             <Label className="text-sm font-medium text-muted-foreground">YouTube</Label>
@@ -717,11 +717,11 @@ export default function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="twitter">Twitter</Label>
+                    <Label htmlFor="linkedin">LinkedIn</Label>
                     <Input
-                      id="twitter"
-                      value={twitter}
-                      onChange={(e) => setTwitter(e.target.value)}
+                      id="linkedin"
+                      value={linkedin}
+                      onChange={(e) => setLinkedin(e.target.value)}
                     />
                   </div>
                   <div className="space-y-2">
@@ -755,7 +755,7 @@ export default function SettingsPage() {
                       id: socialMediaId,
                       facebook_url: facebook,
                       instagram_url: instagram,
-                      twitter_url: twitter,
+                      linkedin_url: linkedin,
                       youtube_url: youtube
                     }
 

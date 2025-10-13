@@ -3,7 +3,7 @@ export interface SocialMedia {
   id?: number;
   facebook_url: string;
   instagram_url: string;
-  twitter_url: string;
+  linkedin_url: string;
   youtube_url: string;
   created_at?: string;
   updated_at?: string;

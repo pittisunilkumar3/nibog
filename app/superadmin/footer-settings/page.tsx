@@ -28,7 +28,7 @@ export default function FooterSettingsPage() {
     copyright_text: "",
     facebook_url: "",
     instagram_url: "",
-    twitter_url: "",
+    linkedin_url: "",
     youtube_url: ""
   })
 
@@ -52,7 +52,7 @@ export default function FooterSettingsPage() {
           copyright_text: settings.copyright_text,
           facebook_url: settings.facebook_url || "",
           instagram_url: settings.instagram_url || "",
-          twitter_url: settings.twitter_url || "",
+          linkedin_url: settings.linkedin_url || "",
           youtube_url: settings.youtube_url || ""
         })
       } else {
@@ -67,7 +67,7 @@ export default function FooterSettingsPage() {
           copyright_text: "© 2025 Nibog. All rights reserved.",
           facebook_url: "",
           instagram_url: "",
-          twitter_url: "",
+          linkedin_url: "",
           youtube_url: ""
         })
       }
@@ -228,7 +228,7 @@ export default function FooterSettingsPage() {
                     type="url"
                     value={formData.facebook_url}
                     onChange={(e) => handleInputChange('facebook_url', e.target.value)}
-                    placeholder="https://facebook.com/yourpage"
+                    placeholder="https://www.facebook.com/share/1K8H6SPtR5/"
                   />
                 </div>
                 <div className="space-y-2">
@@ -238,17 +238,17 @@ export default function FooterSettingsPage() {
                     type="url"
                     value={formData.instagram_url}
                     onChange={(e) => handleInputChange('instagram_url', e.target.value)}
-                    placeholder="https://instagram.com/yourpage"
+                    placeholder="https://www.instagram.com/nibog_100"
                   />
                 </div>
                 <div className="space-y-2">
-                  <Label htmlFor="twitter_url">Twitter URL</Label>
+                  <Label htmlFor="linkedin_url">LinkedIn URL</Label>
                   <Input
-                    id="twitter_url"
+                    id="linkedin_url"
                     type="url"
-                    value={formData.twitter_url}
-                    onChange={(e) => handleInputChange('twitter_url', e.target.value)}
-                    placeholder="https://twitter.com/yourpage"
+                    value={formData.linkedin_url}
+                    onChange={(e) => handleInputChange('linkedin_url', e.target.value)}
+                    placeholder="https://www.linkedin.com/in/new-india-baby-olympicgames"
                   />
                 </div>
                 <div className="space-y-2">
@@ -258,7 +258,7 @@ export default function FooterSettingsPage() {
                     type="url"
                     value={formData.youtube_url}
                     onChange={(e) => handleInputChange('youtube_url', e.target.value)}
-                    placeholder="https://youtube.com/yourchannel"
+                    placeholder="https://youtube.com/@newindiababyolympics"
                   />
                 </div>
               </div>

@@ -23,9 +23,9 @@ export async function POST(request: Request) {
       );
     }
     
-    if (!socialMediaData.twitter_url) {
+    if (!socialMediaData.linkedin_url) {
       return NextResponse.json(
-        { error: "Twitter URL is required" },
+        { error: "LinkedIn URL is required" },
         { status: 400 }
       );
     }

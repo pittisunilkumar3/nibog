@@ -31,7 +31,7 @@ const testFooterService = async () => {
         console.log('  Social Media URLs:');
         console.log('    Facebook:', footerData.facebook_url);
         console.log('    Instagram:', footerData.instagram_url);
-        console.log('    Twitter:', footerData.twitter_url);
+        console.log('    LinkedIn:', footerData.linkedin_url);
         console.log('    YouTube:', footerData.youtube_url);
       }
     } else {

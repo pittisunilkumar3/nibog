@@ -17,10 +17,6 @@ import {
   Plus,
   Trash,
   ExternalLink,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
   MapPin,
   Phone,
   Mail,
@@ -77,10 +73,10 @@ const defaultFooterContent: FooterContent = {
   companyName: "NIBOG",
   companyDescription: "India's biggest baby Olympic games platform, executing in 21 cities across India. NIBOG is focused exclusively on conducting baby games for children aged 5-84 months.",
   socialMediaLinks: [
-    { id: "1", platform: "Facebook", url: "https://facebook.com", enabled: true },
-    { id: "2", platform: "Instagram", url: "https://instagram.com", enabled: true },
-    { id: "3", platform: "Twitter", url: "https://twitter.com", enabled: true },
-    { id: "4", platform: "YouTube", url: "https://youtube.com", enabled: true },
+    { id: "1", platform: "Facebook", url: "https://www.facebook.com/share/1K8H6SPtR5/", enabled: true },
+    { id: "2", platform: "Instagram", url: "https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr", enabled: true },
+    { id: "3", platform: "LinkedIn", url: "https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app", enabled: true },
+    { id: "4", platform: "YouTube", url: "https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB", enabled: true },
   ],
   quickLinks: [
     { id: "1", label: "All Events", url: "/events", enabled: true },
@@ -130,7 +126,7 @@ export default function FooterManagement() {
           socialMediaLinks: [
             { id: "1", platform: "Facebook", url: footerSettings.facebook_url || "", enabled: !!footerSettings.facebook_url },
             { id: "2", platform: "Instagram", url: footerSettings.instagram_url || "", enabled: !!footerSettings.instagram_url },
-            { id: "3", platform: "Twitter", url: footerSettings.twitter_url || "", enabled: !!footerSettings.twitter_url },
+            { id: "3", platform: "LinkedIn", url: footerSettings.linkedin_url || "", enabled: !!footerSettings.linkedin_url },
             { id: "4", platform: "YouTube", url: footerSettings.youtube_url || "", enabled: !!footerSettings.youtube_url },
           ],
           quickLinks: defaultFooterContent.quickLinks, // Keep existing quick links
@@ -272,7 +268,7 @@ export default function FooterManagement() {
         copyright_text: footerContent.copyrightText,
         facebook_url: footerContent.socialMediaLinks.find(link => link.platform === 'Facebook')?.url || "",
         instagram_url: footerContent.socialMediaLinks.find(link => link.platform === 'Instagram')?.url || "",
-        twitter_url: footerContent.socialMediaLinks.find(link => link.platform === 'Twitter')?.url || "",
+        linkedin_url: footerContent.socialMediaLinks.find(link => link.platform === 'LinkedIn')?.url || "",
         youtube_url: footerContent.socialMediaLinks.find(link => link.platform === 'YouTube')?.url || ""
       }
 
@@ -304,10 +300,10 @@ export default function FooterManagement() {
   // Social media platform icons
   const getSocialIcon = (platform: string) => {
     switch (platform.toLowerCase()) {
-      case 'facebook': return <Facebook className="h-4 w-4" />
-      case 'instagram': return <Instagram className="h-4 w-4" />
-      case 'twitter': return <Twitter className="h-4 w-4" />
-      case 'youtube': return <Youtube className="h-4 w-4" />
+      case 'facebook': return <Globe className="h-4 w-4" />
+      case 'instagram': return <Globe className="h-4 w-4" />
+      case 'linkedin': return <Globe className="h-4 w-4" />
+      case 'youtube': return <Globe className="h-4 w-4" />
       default: return <Globe className="h-4 w-4" />
     }
   }

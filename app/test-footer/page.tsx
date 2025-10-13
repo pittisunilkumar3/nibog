@@ -101,7 +101,7 @@ export default function TestFooterPage() {
                   <div className="mt-1 grid grid-cols-2 gap-2 text-sm">
                     <div>Facebook: {footerData.facebook_url || 'Not set'}</div>
                     <div>Instagram: {footerData.instagram_url || 'Not set'}</div>
-                    <div>Twitter: {footerData.twitter_url || 'Not set'}</div>
+                    <div>LinkedIn: {footerData.linkedin_url || 'Not set'}</div>
                     <div>YouTube: {footerData.youtube_url || 'Not set'}</div>
                   </div>
                 </div>

@@ -13,10 +13,10 @@ const testFooterAPI = async () => {
     email: "test@nibog.com",
     newsletter_enabled: true,
     copyright_text: "© 2025 Nibog Test. All rights reserved.",
-    facebook_url: "https://facebook.com/nibog/test",
-    instagram_url: "https://instagram.com/nibog/test",
-    twitter_url: "https://twitter.com/nibog/test",
-    youtube_url: "https://youtube.com/nibog/test"
+    facebook_url: "https://www.facebook.com/share/1K8H6SPtR5/",
+    instagram_url: "https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr",
+    linkedin_url: "https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app",
+    youtube_url: "https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB"
   };
 
   try {
@@ -62,7 +62,7 @@ const testFooterAPI = async () => {
         console.log('Social Media URLs:');
         console.log('  Facebook:', footerData.facebook_url);
         console.log('  Instagram:', footerData.instagram_url);
-        console.log('  Twitter:', footerData.twitter_url);
+        console.log('  LinkedIn:', footerData.linkedin_url);
         console.log('  YouTube:', footerData.youtube_url);
       }
     } else {

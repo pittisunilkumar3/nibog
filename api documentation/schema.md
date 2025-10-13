@@ -121,15 +121,15 @@ CREATE TABLE employee (
 
 CREATE TABLE social_media_settings (
     id SERIAL PRIMARY KEY,
-    facebook_url TEXT NOT NULL DEFAULT 'https://facebook.com/nibog',
-    instagram_url TEXT NOT NULL DEFAULT 'https://instagram.com/nibog',
-    twitter_url TEXT NOT NULL DEFAULT 'https://twitter.com/nibog',
-    youtube_url TEXT NOT NULL DEFAULT 'https://youtube.com/nibog',
+    facebook_url TEXT NOT NULL DEFAULT 'https://www.facebook.com/share/1K8H6SPtR5/',
+    instagram_url TEXT NOT NULL DEFAULT 'https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr',
+    linkedin_url TEXT NOT NULL DEFAULT 'https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app',
+    youtube_url TEXT NOT NULL DEFAULT 'https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB',
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    CONSTRAINT chk_facebook_url CHECK (facebook_url LIKE 'https://facebook.com/%'),
-    CONSTRAINT chk_instagram_url CHECK (instagram_url LIKE 'https://instagram.com/%'),
-    CONSTRAINT chk_twitter_url CHECK (twitter_url LIKE 'https://twitter.com/%'),
+    CONSTRAINT chk_facebook_url CHECK (facebook_url LIKE 'https://%facebook.com/%'),
+    CONSTRAINT chk_instagram_url CHECK (instagram_url LIKE 'https://%instagram.com/%'),
+    CONSTRAINT chk_linkedin_url CHECK (linkedin_url LIKE 'https://%linkedin.com/%'),
     CONSTRAINT chk_youtube_url CHECK (youtube_url LIKE 'https://youtube.com/%')
 );
 
