@@ -18,7 +18,7 @@ import {
   HelpCircle
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-import { getAllFAQs, type FAQ } from "@/services/faqService"
+import { getAllFAQs, deleteFAQ, type FAQ } from "@/services/faqService"
 
 // Update interface to match API response
 interface FAQItem {
@@ -119,18 +119,27 @@ export default function FAQListPage() {
     }
 
     try {
-      // TODO: Implement actual API call for deletion
-      // For now, just remove from local state
-      setFaqs(prev => prev.filter(f => f.id !== id))
+      console.log(`🗑️ Attempting to delete FAQ ID: ${id}`)
+      
+      // Call the actual API to delete FAQ
+      const result = await deleteFAQ(id)
+      
+      if (result.success) {
+        // Remove from local state after successful deletion
+        setFaqs(prev => prev.filter(f => f.id !== id))
 
-      toast({
-        title: "FAQ Deleted",
-        description: "FAQ has been deleted successfully.",
-      })
+        toast({
+          title: "FAQ Deleted Successfully! ✅",
+          description: "The FAQ has been permanently deleted.",
+        })
+        
+        console.log(`✅ FAQ ${id} deleted from UI`)
+      }
     } catch (error) {
+      console.error('❌ Error deleting FAQ:', error)
       toast({
-        title: "Error",
-        description: "Failed to delete FAQ.",
+        title: "Error Deleting FAQ",
+        description: error instanceof Error ? error.message : "Failed to delete FAQ. Please try again.",
         variant: "destructive",
       })
     }

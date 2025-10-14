@@ -169,10 +169,10 @@ export const TESTIMONIALS_API = {
 // FAQ API endpoints
 export const FAQ_API = {
   CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create", // POST
-  GET: `${API_BASE_URL}/faq/get`, // POST with id in body
+  GET_SINGLE: "https://ai.alviongs.com/webhook/nibog/v1/faq/get_single", // POST with id in body
   GET_ALL: "https://ai.alviongs.com/webhook/nibog/v1/faq/getall", // GET
-  UPDATE: `${API_BASE_URL}/faq/update`, // POST
-  DELETE: `${API_BASE_URL}/faq/delete`, // POST with id in body
+  UPDATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/updated", // POST
+  DELETE: "https://ai.alviongs.com/webhook/nibog/v1/faq/delete", // POST with id in body
 };
 
 // PhonePe API endpoints are now in config/phonepe.ts

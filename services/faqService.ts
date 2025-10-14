@@ -204,26 +204,83 @@ export async function createFAQ(faqData: {
 }
 
 /**
- * Update an existing FAQ
+ * Get a single FAQ by ID
  */
-export async function updateFAQ(id: number, faqData: Partial<FAQ>): Promise<FAQ> {
+export async function getSingleFAQ(id: number): Promise<FAQ> {
   try {
+    console.log(`📖 Fetching FAQ with ID: ${id}`);
+    
+    const response = await fetch(FAQ_API.GET_SINGLE, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ id }),
+    });
+
+    console.log('📖 FAQ Get Single API response status:', response.status);
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ FAQ Get Single API error:', errorText);
+      throw new Error(`Failed to fetch FAQ: ${response.status}`);
+    }
+
+    const data = await response.json();
+    console.log('📖 FAQ Get Single API response:', data);
+
+    // API returns array: [{ id, question, answer, ... }]
+    const faq = Array.isArray(data) ? data[0] : data;
+    
+    if (!faq) {
+      throw new Error('FAQ not found');
+    }
+
+    console.log(`✅ FAQ ${id} fetched successfully`);
+    return faq;
+  } catch (error) {
+    console.error('❌ Error fetching FAQ:', error);
+    throw error;
+  }
+}
+
+/**
+ * Update a FAQ
+ */
+export async function updateFAQ(faqData: FAQ): Promise<FAQ> {
+  try {
+    console.log('📝 Updating FAQ:', faqData);
+    
     const response = await fetch(FAQ_API.UPDATE, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify({ id, ...faqData }),
+      body: JSON.stringify(faqData),
     });
 
+    console.log('📝 FAQ Update API response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ FAQ Update API error:', errorText);
       throw new Error(`Failed to update FAQ: ${response.status}`);
     }
 
     const data = await response.json();
-    return data.data || data.faq || data;
+    console.log('📝 FAQ Update API response:', data);
+
+    // API returns array: [{ id, question, answer, ... }]
+    const updatedFaq = Array.isArray(data) ? data[0] : data;
+    
+    if (!updatedFaq) {
+      throw new Error('Update operation failed');
+    }
+
+    console.log(`✅ FAQ ${faqData.id} updated successfully`);
+    return updatedFaq;
   } catch (error) {
-    console.error('Error updating FAQ:', error);
+    console.error('❌ Error updating FAQ:', error);
     throw error;
   }
 }
@@ -231,8 +288,10 @@ export async function updateFAQ(id: number, faqData: Partial<FAQ>): Promise<FAQ>
 /**
  * Delete a FAQ
  */
-export async function deleteFAQ(id: number): Promise<void> {
+export async function deleteFAQ(id: number): Promise<{ success: boolean }> {
   try {
+    console.log(`🗑️ Deleting FAQ with ID: ${id}`);
+    
     const response = await fetch(FAQ_API.DELETE, {
       method: 'POST',
       headers: {
@@ -241,11 +300,28 @@ export async function deleteFAQ(id: number): Promise<void> {
       body: JSON.stringify({ id }),
     });
 
+    console.log('🗑️ FAQ Delete API response status:', response.status);
+
     if (!response.ok) {
+      const errorText = await response.text();
+      console.error('❌ FAQ Delete API error:', errorText);
       throw new Error(`Failed to delete FAQ: ${response.status}`);
     }
+
+    const data = await response.json();
+    console.log('🗑️ FAQ Delete API response:', data);
+
+    // API returns array: [{ success: true }]
+    const result = Array.isArray(data) ? data[0] : data;
+    
+    if (result && result.success === true) {
+      console.log(`✅ FAQ ${id} deleted successfully`);
+      return { success: true };
+    }
+
+    throw new Error('Delete operation failed');
   } catch (error) {
-    console.error('Error deleting FAQ:', error);
+    console.error('❌ Error deleting FAQ:', error);
     throw error;
   }
 }

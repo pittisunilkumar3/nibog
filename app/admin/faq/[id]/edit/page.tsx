@@ -11,30 +11,20 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Save, HelpCircle, Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
-
-interface FAQ {
-  id: number
-  question: string
-  answer: string
-  category?: string
-  priority: number
-  status: 'active' | 'inactive'
-  createdAt: string
-  updatedAt: string
-}
+import { getSingleFAQ, updateFAQ, FAQ } from "@/services/faqService"
 
 interface FormData {
   question: string
   answer: string
   category: string
-  priority: number
-  status: 'active' | 'inactive'
+  display_priority: number
+  status: string
 }
 
 interface FormErrors {
   question?: string
   answer?: string
-  priority?: string
+  display_priority?: string
 }
 
 export default function EditFAQPage() {
@@ -49,8 +39,8 @@ export default function EditFAQPage() {
     question: '',
     answer: '',
     category: '',
-    priority: 1,
-    status: 'active'
+    display_priority: 1,
+    status: 'Active'
   })
   
   const [errors, setErrors] = useState<FormErrors>({})
@@ -64,38 +54,29 @@ export default function EditFAQPage() {
     'Locations',
     'Pricing',
     'Events',
-    'Support'
+    'Support',
+    'Rules'
   ]
 
-  // Mock data for now - replace with actual API calls
+  // Fetch FAQ from API
   useEffect(() => {
     const fetchFAQ = async () => {
       try {
-        // Simulate API call
-        await new Promise(resolve => setTimeout(resolve, 500))
+        setLoading(true)
+        const faqData = await getSingleFAQ(parseInt(faqId))
         
-        const mockFaq: FAQ = {
-          id: parseInt(faqId),
-          question: "What is the age limit for participation?",
-          answer: "NIBOG events are designed for children aged 5-84 months. Different games have specific age categories to ensure fair competition.",
-          category: "General",
-          priority: 1,
-          status: 'active',
-          createdAt: "2024-01-15T10:00:00Z",
-          updatedAt: "2024-01-15T10:00:00Z"
-        }
-        
-        setFaq(mockFaq)
+        setFaq(faqData)
         setFormData({
-          question: mockFaq.question,
-          answer: mockFaq.answer,
-          category: mockFaq.category || '',
-          priority: mockFaq.priority,
-          status: mockFaq.status
+          question: faqData.question,
+          answer: faqData.answer,
+          category: faqData.category || '',
+          display_priority: faqData.display_priority || 1,
+          status: faqData.status || 'Active'
         })
       } catch (error) {
+        console.error('Error fetching FAQ:', error)
         toast({
-          title: "Error",
+          title: "❌ Error Loading FAQ",
           description: "Failed to load FAQ details.",
           variant: "destructive",
         })
@@ -125,8 +106,8 @@ export default function EditFAQPage() {
       newErrors.answer = 'Answer must be at least 20 characters long'
     }
 
-    if (formData.priority < 1) {
-      newErrors.priority = 'Priority must be at least 1'
+    if (formData.display_priority < 1) {
+      newErrors.display_priority = 'Priority must be at least 1'
     }
 
     setErrors(newErrors)
@@ -156,11 +137,26 @@ export default function EditFAQPage() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      if (!faq?.id) {
+        throw new Error('FAQ ID is missing')
+      }
+
+      // Prepare update payload with all required fields
+      const updatePayload: FAQ = {
+        id: faq.id,
+        question: formData.question,
+        answer: formData.answer,
+        category: formData.category,
+        display_priority: formData.display_priority,
+        status: formData.status,
+        created_at: faq.created_at,
+        updated_at: faq.updated_at
+      }
+
+      const updatedFaq = await updateFAQ(updatePayload)
       
       toast({
-        title: "FAQ Updated Successfully! ✅",
+        title: "✅ FAQ Updated Successfully!",
         description: "The FAQ has been updated on your website.",
       })
       
@@ -168,8 +164,8 @@ export default function EditFAQPage() {
     } catch (error) {
       console.error('FAQ update error:', error)
       toast({
-        title: "Error Updating FAQ",
-        description: "An unexpected error occurred. Please try again.",
+        title: "❌ Error Updating FAQ",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -234,8 +230,8 @@ export default function EditFAQPage() {
           <CardHeader>
             <CardTitle>FAQ Details</CardTitle>
             <p className="text-sm text-muted-foreground">
-              Created: {new Date(faq.createdAt).toLocaleDateString()} | 
-              Last updated: {new Date(faq.updatedAt).toLocaleDateString()}
+              Created: {faq.created_at ? new Date(faq.created_at).toLocaleDateString() : 'N/A'} | 
+              Last updated: {faq.updated_at ? new Date(faq.updated_at).toLocaleDateString() : 'N/A'}
             </p>
           </CardHeader>
           <CardContent>
@@ -299,20 +295,20 @@ export default function EditFAQPage() {
 
               {/* Priority */}
               <div className="space-y-2">
-                <Label htmlFor="priority">Display Priority *</Label>
+                <Label htmlFor="display_priority">Display Priority *</Label>
                 <Input
-                  id="priority"
+                  id="display_priority"
                   type="number"
                   min="1"
-                  value={formData.priority}
-                  onChange={(e) => handleInputChange('priority', parseInt(e.target.value) || 1)}
+                  value={formData.display_priority}
+                  onChange={(e) => handleInputChange('display_priority', parseInt(e.target.value) || 1)}
                   placeholder="Enter display priority (1 = highest)"
-                  className={errors.priority ? 'border-red-500 focus:border-red-500' : ''}
+                  className={errors.display_priority ? 'border-red-500 focus:border-red-500' : ''}
                 />
-                {errors.priority && (
+                {errors.display_priority && (
                   <p className="text-red-500 text-sm flex items-center">
                     <AlertCircle className="h-4 w-4 mr-1" />
-                    {errors.priority}
+                    {errors.display_priority}
                   </p>
                 )}
                 <p className="text-sm text-muted-foreground">
@@ -325,14 +321,14 @@ export default function EditFAQPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'active' | 'inactive') => handleInputChange('status', value)}
+                  onValueChange={(value: string) => handleInputChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">
