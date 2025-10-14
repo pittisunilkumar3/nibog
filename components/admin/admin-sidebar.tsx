@@ -173,6 +173,12 @@ const adminRoutes: AdminRouteSection[] = [
         description: "Homepage content",
       },
       {
+        href: "/admin/partners",
+        label: "Partners",
+        icon: <Trophy className="h-4 w-4" />,
+        description: "Partner logos & management",
+      },
+      {
         href: "/admin/footer",
         label: "Footer Management",
         icon: <Layout className="h-4 w-4" />,

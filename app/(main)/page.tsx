@@ -259,6 +259,7 @@ const DynamicTestimonialsSection = dynamic(
 import { Award, MapPin } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
 import HomepageGamesSection from "@/components/homepage-games-section"
+import { PartnersSection } from "@/components/partners-section"
 
 // Dynamic Stats Component
 function DynamicStatsSection() {
@@ -517,7 +518,7 @@ export default function Home() {
       </section>
 
       {/* Featured Events Section */}
-      <section className="container">
+      {/* <section className="container">
         <div className="flex flex-col gap-6">
           <div className="flex flex-col gap-2">
             <div className="flex items-center justify-between">
@@ -531,7 +532,10 @@ export default function Home() {
             <p className="text-muted-foreground dark:text-gray-700">Join us for these exciting events featuring multiple baby games in cities across India</p>
           </div>
         </div>
-      </section>
+      </section> */}
+
+      {/* Partners Section */}
+      <PartnersSection />
 
       {/* NIBOG Games by Age Group Section - Now Dynamic */}
       <HomepageGamesSection />
