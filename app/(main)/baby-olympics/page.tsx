@@ -417,39 +417,6 @@ export default function BabyOlympicsPage() {
       </section>
 
 
-      {/* FAQ Section */}
-      <section className="container">
-        <div className="mx-auto max-w-3xl">
-          <div className="flex flex-col gap-6">
-            <div className="flex flex-col gap-2 text-center">
-              <h2 className="text-2xl font-bold tracking-tight md:text-3xl dark:text-white">Frequently Asked Questions</h2>
-              <p className="text-slate-700 dark:text-slate-500 font-medium">Everything you need to know about NIBOG events</p>
-            </div>
-            <div className="space-y-4">
-              <div className="rounded-lg border p-4">
-                <h3 className="font-medium">What is the age limit for participation?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">NIBOG events are designed for children aged 5-84 months. Different games have specific age categories to ensure fair competition.</p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <h3 className="font-medium">How do I register for NIBOG events?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">You can register for NIBOG events through our website. Simply select your city, choose the games you want your child to participate in, and complete the registration process.</p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <h3 className="font-medium">What games are included in NIBOG?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">NIBOG includes {games.length || 'multiple'} different games such as Baby Crawling, Running Race, Baby Walker Race, High Jump, Shot Put, Jumping Ball, Ring Holding, Hurdle Toddle, and more. Each game is designed for specific age groups to ensure safe and fun participation.</p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <h3 className="font-medium">What will my child receive for participating?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">Every participant receives a medal and certificate. Professional photographs of your child participating in the events will also be available.</p>
-              </div>
-              <div className="rounded-lg border p-4">
-                <h3 className="font-medium">In which cities are NIBOG events held?</h3>
-                <p className="mt-1 text-sm text-muted-foreground">NIBOG events are held in 21 cities across India including Hyderabad, Bangalore, Chennai, Vizag, Mumbai, Delhi, Kolkata, Pune, and many more.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
       </div>
     </AnimatedBackground>
   );

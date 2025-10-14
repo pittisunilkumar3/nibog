@@ -11,13 +11,14 @@ import { Textarea } from "@/components/ui/textarea"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { ArrowLeft, Save, HelpCircle, Loader2, AlertCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { createFAQ } from "@/services/faqService"
 
 interface FormData {
   question: string
   answer: string
   category: string
   priority: number
-  status: 'active' | 'inactive'
+  status: 'Active' | 'Inactive'
 }
 
 interface FormErrors {
@@ -33,9 +34,9 @@ export default function NewFAQPage() {
   const [formData, setFormData] = useState<FormData>({
     question: '',
     answer: '',
-    category: '',
+    category: 'General',
     priority: 1,
-    status: 'active'
+    status: 'Active'
   })
   
   const [errors, setErrors] = useState<FormErrors>({})
@@ -44,11 +45,13 @@ export default function NewFAQPage() {
   const categories = [
     'General',
     'Registration',
+    'Events',
+    'Rules',
+    'Prizes & Certificates',
     'Games',
     'Rewards',
     'Locations',
     'Pricing',
-    'Events',
     'Support'
   ]
 
@@ -98,20 +101,33 @@ export default function NewFAQPage() {
     setIsSubmitting(true)
 
     try {
-      // Simulate API call - replace with actual API endpoint
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      // Call the actual API to create FAQ
+      const payload = {
+        question: formData.question.trim(),
+        answer: formData.answer.trim(),
+        category: formData.category,
+        display_priority: formData.priority,
+        status: formData.status
+      }
+
+      console.log('📝 Submitting FAQ with payload:', payload)
+      
+      const result = await createFAQ(payload)
+      
+      console.log('✅ FAQ created successfully:', result)
       
       toast({
         title: "FAQ Created Successfully! ✅",
-        description: "The new FAQ has been added to your website.",
+        description: `The new FAQ has been added with ID: ${result.id}`,
       })
       
+      // Redirect to FAQ list page
       router.push('/admin/faq')
     } catch (error) {
-      console.error('FAQ creation error:', error)
+      console.error('❌ FAQ creation error:', error)
       toast({
         title: "Error Creating FAQ",
-        description: "An unexpected error occurred. Please try again.",
+        description: error instanceof Error ? error.message : "An unexpected error occurred. Please try again.",
         variant: "destructive",
       })
     } finally {
@@ -187,13 +203,13 @@ export default function NewFAQPage() {
 
               {/* Category */}
               <div className="space-y-2">
-                <Label htmlFor="category">Category</Label>
+                <Label htmlFor="category">Category *</Label>
                 <Select
                   value={formData.category}
                   onValueChange={(value) => handleInputChange('category', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="Select a category (optional)" />
+                    <SelectValue placeholder="Select a category" />
                   </SelectTrigger>
                   <SelectContent>
                     {categories.map((category) => (
@@ -233,14 +249,14 @@ export default function NewFAQPage() {
                 <Label htmlFor="status">Status</Label>
                 <Select
                   value={formData.status}
-                  onValueChange={(value: 'active' | 'inactive') => handleInputChange('status', value)}
+                  onValueChange={(value: 'Active' | 'Inactive') => handleInputChange('status', value)}
                 >
                   <SelectTrigger>
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="active">Active</SelectItem>
-                    <SelectItem value="inactive">Inactive</SelectItem>
+                    <SelectItem value="Active">Active</SelectItem>
+                    <SelectItem value="Inactive">Inactive</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-sm text-muted-foreground">

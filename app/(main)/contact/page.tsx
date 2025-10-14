@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Separator } from "@/components/ui/separator"
-import { Phone, Mail, MapPin, Clock, Send, MessageSquare, HelpCircle, Loader2, CheckCircle, AlertCircle } from "lucide-react"
+import { Phone, Mail, MapPin, Clock, Send, MessageSquare, Loader2, CheckCircle, AlertCircle } from "lucide-react"
 import { AnimatedBackground } from "@/components/animated-background"
 import { useToast } from "@/hooks/use-toast"
 
@@ -466,73 +466,7 @@ export default function ContactPage() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="relative py-12 sm:py-16 md:py-24">
-        <div className="absolute inset-0 bg-slate-50 dark:bg-slate-800/50 -z-10"></div>
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(147,197,253,0.15),transparent_60%),radial-gradient(circle_at_70%_70%,rgba(216,180,254,0.15),transparent_60%)] blur-xl opacity-80 dark:opacity-20 -z-10"></div>
-        <div className="container px-4 sm:px-6">
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-block rounded-lg bg-blue-100 px-3 py-1 text-sm font-medium text-blue-800 dark:bg-blue-900/50 dark:text-blue-300">
-              FAQs
-            </div>
-            <h2 className="mt-4 text-2xl sm:text-3xl font-bold tracking-tight">Frequently Asked Questions</h2>
-            <p className="mt-4 text-base sm:text-lg text-slate-600 dark:text-slate-300">
-              Find answers to common questions about NIBOG events and registration
-            </p>
-          </div>
 
-          <div className="mt-8 sm:mt-12 grid gap-4 sm:gap-6 md:grid-cols-2">
-            {[
-              {
-                question: "How do I register my child for a NIBOG event?",
-                answer: "You can register your child through our website by visiting the Events page, selecting an event in your city, and following the registration process. You'll need to provide your child's details and make the registration payment online.",
-              },
-              {
-                question: "What age groups can participate in NIBOG events?",
-                answer: "NIBOG events are designed for children aged 5 months to 7 years. Different events have specific age categories, and children can only participate in events appropriate for their age group.",
-              },
-              {
-                question: "How are winners determined in the competitions?",
-                answer: "At NIBOG, every child is a winner! We focus on participation, growth, and enjoyment. All participants receive a medal and a certificate to celebrate their involvement and build confidence. Our events foster inclusivity and camaraderie, making the experience memorable and motivating for every child.",
-              },
-              {
-                question: "What should my child wear to the event?",
-                answer: "Children should wear comfortable clothing that allows for easy movement. Sports attire is recommended. For crawling events, knee pads are optional but recommended.",
-              },
-              {
-                question: "Can parents accompany their children during the events?",
-                answer: "Yes, parents can accompany very young children (especially in the baby crawling and baby walker categories). For older children, parents will be seated in the designated viewing area. A maximum of 4 family members are allowed with one child.",
-              },
-              {
-                question: "What happens if my child doesn't want to participate on the day?",
-                answer: "We understand that young children may sometimes feel uncomfortable in new environments. Our staff will try to make your child comfortable, but we never force participation. Unfortunately, registration fees are non-refundable in such cases.",
-              },
-            ].map((faq, i) => (
-              <Card key={i} className="bg-white dark:bg-slate-800/90">
-                <CardContent className="pt-6">
-                  <div className="flex items-start gap-4">
-                    <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-full bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300">
-                      <HelpCircle className="h-5 w-5" />
-                    </div>
-                    <div>
-                      <h3 className="font-medium">{faq.question}</h3>
-                      <p className="mt-2 text-slate-600 dark:text-slate-300">{faq.answer}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-
-          <div className="mt-12 text-center">
-            <p className="text-slate-600 dark:text-slate-300">
-              Don't see your question here? Contact us directly and we'll be happy to help!
-            </p>
-          </div>
-        </div>
-      </section>
-
-      
 
       {/* CTA */}
       <section className="bg-purple-600 py-12 sm:py-16 md:py-24 text-white dark:bg-purple-900">
