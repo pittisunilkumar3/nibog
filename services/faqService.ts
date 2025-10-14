@@ -79,6 +79,8 @@ export async function getAllActiveFAQs(): Promise<FAQ[]> {
  */
 export async function getAllFAQs(): Promise<FAQ[]> {
   try {
+    console.log('📋 Fetching all FAQs from API (admin)...');
+    
     const response = await fetch(FAQ_API.GET_ALL, {
       method: 'GET',
       headers: {
@@ -87,24 +89,34 @@ export async function getAllFAQs(): Promise<FAQ[]> {
       cache: 'no-store',
     });
 
+    console.log('📋 FAQ GET_ALL API response status:', response.status);
+
     if (!response.ok) {
       throw new Error(`Failed to fetch FAQs: ${response.status}`);
     }
 
     const data = await response.json();
+    console.log('📋 FAQ GET_ALL API response:', data);
 
-    // Handle different response formats
+    // API returns array directly
     if (Array.isArray(data)) {
-      return data.sort((a: FAQ, b: FAQ) => (a.display_order || 0) - (b.display_order || 0));
+      const sortedFaqs = data.sort((a: FAQ, b: FAQ) => (a.display_priority || a.display_order || 0) - (b.display_priority || b.display_order || 0));
+      console.log(`✅ Fetched ${sortedFaqs.length} FAQs (admin)`);
+      return sortedFaqs;
     } else if (data.data && Array.isArray(data.data)) {
-      return data.data.sort((a: FAQ, b: FAQ) => (a.display_order || 0) - (b.display_order || 0));
+      const sortedFaqs = data.data.sort((a: FAQ, b: FAQ) => (a.display_priority || a.display_order || 0) - (b.display_priority || b.display_order || 0));
+      console.log(`✅ Fetched ${sortedFaqs.length} FAQs (admin)`);
+      return sortedFaqs;
     } else if (data.faqs && Array.isArray(data.faqs)) {
-      return data.faqs.sort((a: FAQ, b: FAQ) => (a.display_order || 0) - (b.display_order || 0));
+      const sortedFaqs = data.faqs.sort((a: FAQ, b: FAQ) => (a.display_priority || a.display_order || 0) - (b.display_priority || b.display_order || 0));
+      console.log(`✅ Fetched ${sortedFaqs.length} FAQs (admin)`);
+      return sortedFaqs;
     }
 
+    console.warn('⚠️ Unexpected API response format:', data);
     return [];
   } catch (error) {
-    console.error('Error fetching FAQs:', error);
+    console.error('❌ Error fetching FAQs:', error);
     throw error;
   }
 }

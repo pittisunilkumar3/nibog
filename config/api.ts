@@ -170,7 +170,7 @@ export const TESTIMONIALS_API = {
 export const FAQ_API = {
   CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create", // POST
   GET: `${API_BASE_URL}/faq/get`, // POST with id in body
-  GET_ALL: `${API_BASE_URL}/faq/get-all`, // GET
+  GET_ALL: "https://ai.alviongs.com/webhook/nibog/v1/faq/getall", // GET
   UPDATE: `${API_BASE_URL}/faq/update`, // POST
   DELETE: `${API_BASE_URL}/faq/delete`, // POST with id in body
 };

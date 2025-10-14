@@ -18,84 +18,63 @@ import {
   HelpCircle
 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
+import { getAllFAQs, type FAQ } from "@/services/faqService"
 
-interface FAQ {
+// Update interface to match API response
+interface FAQItem {
   id: number
   question: string
   answer: string
-  category?: string
-  priority: number
-  status: 'active' | 'inactive'
-  createdAt: string
-  updatedAt: string
+  category: string
+  display_priority: number
+  status: string  // "Active" or "Inactive"
+  created_at: string
+  updated_at: string
 }
 
 export default function FAQListPage() {
   const { toast } = useToast()
-  const [faqs, setFaqs] = useState<FAQ[]>([])
+  const [faqs, setFaqs] = useState<FAQItem[]>([])
   const [loading, setLoading] = useState(true)
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState<'all' | 'active' | 'inactive'>('all')
+  const [filterStatus, setFilterStatus] = useState<'all' | 'Active' | 'Inactive'>('all')
 
-  // Mock data for now - replace with actual API calls
+  // Fetch FAQs from API
   useEffect(() => {
-    const mockFaqs: FAQ[] = [
-      {
-        id: 1,
-        question: "What is the age limit for participation?",
-        answer: "NIBOG events are designed for children aged 5-84 months. Different games have specific age categories to ensure fair competition.",
-        category: "General",
-        priority: 1,
-        status: 'active',
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z"
-      },
-      {
-        id: 2,
-        question: "How do I register for NIBOG events?",
-        answer: "You can register for NIBOG events through our website. Simply select your city, choose the games you want your child to participate in, and complete the registration process.",
-        category: "Registration",
-        priority: 2,
-        status: 'active',
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z"
-      },
-      {
-        id: 3,
-        question: "What games are included in NIBOG?",
-        answer: "NIBOG includes 16 different games such as Baby Crawling, Baby Walker, Running Race, Hurdle Toddle, Cycle Race, Ring Holding, and more. Each game is designed for specific age groups.",
-        category: "Games",
-        priority: 3,
-        status: 'active',
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z"
-      },
-      {
-        id: 4,
-        question: "What will my child receive for participating?",
-        answer: "Every participant receives a medal and certificate. Professional photographs of your child participating in the events will also be available.",
-        category: "Rewards",
-        priority: 4,
-        status: 'active',
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z"
-      },
-      {
-        id: 5,
-        question: "In which cities are NIBOG events held?",
-        answer: "NIBOG events are held in 21 cities across India including Hyderabad, Bangalore, Chennai, Vizag, Mumbai, Delhi, Kolkata, Pune, and many more.",
-        category: "Locations",
-        priority: 5,
-        status: 'active',
-        createdAt: "2024-01-15T10:00:00Z",
-        updatedAt: "2024-01-15T10:00:00Z"
+    const fetchFAQs = async () => {
+      try {
+        setLoading(true)
+        console.log('🔄 Fetching FAQs from API...')
+        
+        const data = await getAllFAQs()
+        console.log('✅ FAQs fetched:', data)
+        
+        // Transform FAQ to FAQItem format
+        const transformedData: FAQItem[] = data.map(faq => ({
+          id: faq.id || 0,
+          question: faq.question,
+          answer: faq.answer,
+          category: faq.category,
+          display_priority: faq.display_priority || faq.display_order || 0,
+          status: faq.status || (faq.is_active !== false ? 'Active' : 'Inactive'),
+          created_at: faq.created_at || new Date().toISOString(),
+          updated_at: faq.updated_at || new Date().toISOString(),
+        }))
+        
+        setFaqs(transformedData)
+      } catch (error) {
+        console.error('❌ Error fetching FAQs:', error)
+        toast({
+          title: "Error Loading FAQs",
+          description: "Failed to fetch FAQs from the server. Please try again.",
+          variant: "destructive",
+        })
+      } finally {
+        setLoading(false)
       }
-    ]
-    
-    setTimeout(() => {
-      setFaqs(mockFaqs)
-      setLoading(false)
-    }, 500)
+    }
+
+    fetchFAQs()
   }, [])
 
   const filteredFaqs = faqs.filter(faq => {
@@ -106,23 +85,24 @@ export default function FAQListPage() {
     const matchesStatus = filterStatus === 'all' || faq.status === filterStatus
     
     return matchesSearch && matchesStatus
-  }).sort((a, b) => a.priority - b.priority)
+  }).sort((a, b) => a.display_priority - b.display_priority)
 
   const handleToggleStatus = async (id: number) => {
     try {
       const faq = faqs.find(f => f.id === id)
       if (!faq) return
 
-      const newStatus = faq.status === 'active' ? 'inactive' : 'active'
+      const newStatus = faq.status === 'Active' ? 'Inactive' : 'Active'
       
-      // Update local state
+      // TODO: Implement actual API call for status update
+      // For now, just update local state
       setFaqs(prev => prev.map(f => 
-        f.id === id ? { ...f, status: newStatus, updatedAt: new Date().toISOString() } : f
+        f.id === id ? { ...f, status: newStatus, updated_at: new Date().toISOString() } : f
       ))
 
       toast({
         title: "Status Updated",
-        description: `FAQ ${newStatus === 'active' ? 'activated' : 'deactivated'} successfully.`,
+        description: `FAQ ${newStatus === 'Active' ? 'activated' : 'deactivated'} successfully.`,
       })
     } catch (error) {
       toast({
@@ -139,7 +119,8 @@ export default function FAQListPage() {
     }
 
     try {
-      // Remove from local state
+      // TODO: Implement actual API call for deletion
+      // For now, just remove from local state
       setFaqs(prev => prev.filter(f => f.id !== id))
 
       toast({
@@ -160,25 +141,27 @@ export default function FAQListPage() {
       const currentFaq = faqs.find(f => f.id === id)
       if (!currentFaq) return
 
-      const sortedFaqs = [...faqs].sort((a, b) => a.priority - b.priority)
+      const sortedFaqs = [...faqs].sort((a, b) => a.display_priority - b.display_priority)
       const currentIndex = sortedFaqs.findIndex(f => f.id === id)
       
       if (direction === 'up' && currentIndex > 0) {
         const targetFaq = sortedFaqs[currentIndex - 1]
-        const tempPriority = currentFaq.priority
+        const tempPriority = currentFaq.display_priority
         
+        // TODO: Implement actual API call for priority update
         setFaqs(prev => prev.map(f => {
-          if (f.id === currentFaq.id) return { ...f, priority: targetFaq.priority }
-          if (f.id === targetFaq.id) return { ...f, priority: tempPriority }
+          if (f.id === currentFaq.id) return { ...f, display_priority: targetFaq.display_priority }
+          if (f.id === targetFaq.id) return { ...f, display_priority: tempPriority }
           return f
         }))
       } else if (direction === 'down' && currentIndex < sortedFaqs.length - 1) {
         const targetFaq = sortedFaqs[currentIndex + 1]
-        const tempPriority = currentFaq.priority
+        const tempPriority = currentFaq.display_priority
         
+        // TODO: Implement actual API call for priority update
         setFaqs(prev => prev.map(f => {
-          if (f.id === currentFaq.id) return { ...f, priority: targetFaq.priority }
-          if (f.id === targetFaq.id) return { ...f, priority: tempPriority }
+          if (f.id === currentFaq.id) return { ...f, display_priority: targetFaq.display_priority }
+          if (f.id === targetFaq.id) return { ...f, display_priority: tempPriority }
           return f
         }))
       }
@@ -255,18 +238,18 @@ export default function FAQListPage() {
                   All ({faqs.length})
                 </Button>
                 <Button
-                  variant={filterStatus === 'active' ? 'default' : 'outline'}
+                  variant={filterStatus === 'Active' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFilterStatus('active')}
+                  onClick={() => setFilterStatus('Active')}
                 >
-                  Active ({faqs.filter(f => f.status === 'active').length})
+                  Active ({faqs.filter(f => f.status === 'Active').length})
                 </Button>
                 <Button
-                  variant={filterStatus === 'inactive' ? 'default' : 'outline'}
+                  variant={filterStatus === 'Inactive' ? 'default' : 'outline'}
                   size="sm"
-                  onClick={() => setFilterStatus('inactive')}
+                  onClick={() => setFilterStatus('Inactive')}
                 >
-                  Inactive ({faqs.filter(f => f.status === 'inactive').length})
+                  Inactive ({faqs.filter(f => f.status === 'Inactive').length})
                 </Button>
               </div>
             </div>
@@ -301,14 +284,14 @@ export default function FAQListPage() {
                     <div className="flex-1">
                       <CardTitle className="text-lg">{faq.question}</CardTitle>
                       <div className="flex items-center gap-2 mt-2">
-                        <Badge variant={faq.status === 'active' ? 'default' : 'secondary'}>
+                        <Badge variant={faq.status === 'Active' ? 'default' : 'secondary'}>
                           {faq.status}
                         </Badge>
                         {faq.category && (
                           <Badge variant="outline">{faq.category}</Badge>
                         )}
                         <span className="text-sm text-muted-foreground">
-                          Priority: {faq.priority}
+                          Priority: {faq.display_priority}
                         </span>
                       </div>
                     </div>
@@ -333,9 +316,9 @@ export default function FAQListPage() {
                         variant="ghost"
                         size="sm"
                         onClick={() => handleToggleStatus(faq.id)}
-                        title={faq.status === 'active' ? 'Deactivate' : 'Activate'}
+                        title={faq.status === 'Active' ? 'Deactivate' : 'Activate'}
                       >
-                        {faq.status === 'active' ? (
+                        {faq.status === 'Active' ? (
                           <EyeOff className="h-4 w-4" />
                         ) : (
                           <Eye className="h-4 w-4" />
@@ -361,8 +344,8 @@ export default function FAQListPage() {
                 <CardContent className="pt-0">
                   <p className="text-muted-foreground line-clamp-3">{faq.answer}</p>
                   <div className="flex justify-between items-center mt-3 text-sm text-muted-foreground">
-                    <span>Created: {new Date(faq.createdAt).toLocaleDateString()}</span>
-                    <span>Updated: {new Date(faq.updatedAt).toLocaleDateString()}</span>
+                    <span>Created: {new Date(faq.created_at).toLocaleDateString()}</span>
+                    <span>Updated: {new Date(faq.updated_at).toLocaleDateString()}</span>
                   </div>
                 </CardContent>
               </Card>
