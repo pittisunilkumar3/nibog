@@ -46,6 +46,7 @@ interface EventListItem {
   event_status: string;
   city_id: number;
   venue_id: number;
+  venue_name?: string;
 }
 
 // Interface for game from API (matching frontend structure exactly)
@@ -850,6 +851,12 @@ export default function NewBookingPage() {
         throw new Error("Please enter a valid email address")
       }
 
+      // Validate phone number format (must be exactly 10 digits)
+      const phoneDigits = phone.replace(/\D/g, '')
+      if (phoneDigits.length !== 10) {
+        throw new Error("Please enter a valid 10-digit mobile number")
+      }
+
       // Validate date of birth
       const birthDate = new Date(childDateOfBirth)
       const today = new Date()
@@ -938,7 +945,7 @@ export default function NewBookingPage() {
         parent: {
           parent_name: parentName,
           email: email,
-          additional_phone: phone.startsWith('+') ? phone : `+91${phone}`
+          additional_phone: `+91${phoneDigits}` // Use validated phone digits with +91 prefix
         },
         child: {
           full_name: childName,
@@ -1026,7 +1033,7 @@ export default function NewBookingPage() {
       setCreatedBookingId(bookingId)
       setCreatedBookingRef(bookingData.booking.booking_ref)
       setCreatedBookingAmount(totalAmount)
-      setCreatedBookingPhone(phone.startsWith('+') ? phone : `+91${phone}`)
+      setCreatedBookingPhone(`+91${phoneDigits}`) // Store validated phone with +91 prefix
       setCreatedBookingEmail(email)
       setCreatedBookingParentName(parentName)
       setCreatedBookingChildName(childName)
@@ -1728,11 +1735,29 @@ export default function NewBookingPage() {
                 <Label htmlFor="phone">Phone</Label>
                 <Input
                   id="phone"
+                  type="tel"
                   value={phone}
-                  onChange={(e) => setPhone(e.target.value)}
-                  placeholder="Enter phone number"
+                  onChange={(e) => {
+                    // Only allow digits and limit to 10 characters
+                    const value = e.target.value.replace(/\D/g, '').slice(0, 10)
+                    setPhone(value)
+                  }}
+                  placeholder="Enter 10-digit mobile number"
                   required
+                  maxLength={10}
+                  pattern="[0-9]{10}"
+                  className="font-mono"
                 />
+                {phone && phone.length !== 10 && (
+                  <p className="text-sm text-red-600">
+                    Mobile number must be exactly 10 digits
+                  </p>
+                )}
+                {phone && phone.length === 10 && (
+                  <p className="text-sm text-green-600">
+                    ✓ Valid mobile number
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>
