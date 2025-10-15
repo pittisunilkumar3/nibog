@@ -209,6 +209,12 @@ const adminRoutes: AdminRouteSection[] = [
         description: "Manage privacy policy content",
       },
       {
+        href: "/admin/refund-policy",
+        label: "Refund Policy",
+        icon: <FileText className="h-4 w-4" />,
+        description: "Manage refund policy content",
+      },
+      {
         href: "/admin/terms-conditions",
         label: "Terms & Conditions",
         icon: <FileText className="h-4 w-4" />,
