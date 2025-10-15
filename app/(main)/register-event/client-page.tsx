@@ -100,7 +100,7 @@ export default function RegisterEventClientPage() {
   const [termsAccepted, setTermsAccepted] = useState<boolean>(false)
   const [selectedAddOns, setSelectedAddOns] = useState<{ addOn: AddOnType; quantity: number; variantId?: string }[]>([])
   const [cities, setCities] = useState<{ id: string | number; name: string }[]>([])
-  const [isLoadingCities, setIsLoadingCities] = useState<boolean>(false)
+  const [isLoadingCities, setIsLoadingCities] = useState<boolean>(true) // Start as true to show loading state immediately
   const [cityError, setCityError] = useState<string | null>(null)
   const [apiEvents, setApiEvents] = useState<EventListItem[]>([])
   const [isLoadingEvents, setIsLoadingEvents] = useState<boolean>(false)
@@ -1268,6 +1268,7 @@ export default function RegisterEventClientPage() {
   useEffect(() => {
     const fetchCities = async () => {
       try {
+        // Ensure loading state is set at the start
         setIsLoadingCities(true)
         setCityError(null)
 
@@ -1290,6 +1291,11 @@ export default function RegisterEventClientPage() {
         setIsLoadingCities(false)
       }
     }
+
+    // Reset state on mount to ensure clean slate on navigation
+    setCities([])
+    setCityError(null)
+    setIsLoadingCities(true)
 
     fetchCities()
   }, []) // Empty dependency array means this effect runs once on mount
@@ -1449,6 +1455,39 @@ export default function RegisterEventClientPage() {
     }
   }, [apiEvents])
 
+  // Show initial loading state while cities are being fetched
+  // Show loading if: cities are being loaded AND (no cities loaded yet OR no error yet)
+  if (isLoadingCities && cities.length === 0 && !cityError) {
+    return (
+      <div className="container py-6 sm:py-12 px-3 sm:px-4 lg:px-6 relative min-h-screen bg-gradient-to-br from-skyblue-100 via-coral-100 to-mint-100 dark:from-skyblue-900/20 dark:via-coral-900/20 dark:to-mint-900/20">
+        {/* Homepage-style background elements */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none opacity-30 dark:opacity-20 hidden sm:block">
+          <div className="absolute top-10 left-10 w-16 h-16 bg-skyblue-400 rounded-full opacity-20 animate-bounce-gentle"></div>
+          <div className="absolute top-20 right-20 w-12 h-12 bg-coral-400 rounded-full opacity-30 animate-float-delayed"></div>
+          <div className="absolute bottom-20 left-20 w-20 h-20 bg-mint-400 rounded-full opacity-25 animate-float-slow"></div>
+          <div className="absolute bottom-10 right-10 w-14 h-14 bg-lavender-400 rounded-full opacity-20 animate-bounce-gentle" style={{animationDelay: '1s'}}></div>
+          <div className="absolute top-1/2 left-1/4 w-10 h-10 bg-skyblue-300 rounded-full opacity-25 animate-float-delayed" style={{animationDelay: '0.5s'}}></div>
+        </div>
+
+        <Card className="mx-auto w-full max-w-4xl relative overflow-hidden shadow-2xl transition-all duration-300 border-0 bg-white/90 backdrop-blur-sm dark:bg-gray-800/90 rounded-3xl">
+          {/* Homepage-style top gradient accent */}
+          <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-skyblue-400 via-coral-400 to-mint-400"></div>
+
+          <CardContent className="flex flex-col items-center justify-center py-16 space-y-6">
+            <div className="relative">
+              <div className="animate-spin h-16 w-16 border-4 border-primary border-t-transparent rounded-full"></div>
+              <div className="absolute inset-0 animate-ping h-16 w-16 border-4 border-primary/20 rounded-full"></div>
+            </div>
+            <div className="text-center space-y-2">
+              <h3 className="text-xl font-semibold text-primary">Loading Event Registration</h3>
+              <p className="text-muted-foreground">Please wait while we prepare the registration form...</p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
+
   return (
     <div className="container py-6 sm:py-12 px-3 sm:px-4 lg:px-6 relative min-h-screen bg-gradient-to-br from-skyblue-100 via-coral-100 to-mint-100 dark:from-skyblue-900/20 dark:via-coral-900/20 dark:to-mint-900/20">
       {/* Homepage-style background elements */}
@@ -1590,7 +1629,23 @@ export default function RegisterEventClientPage() {
           {step === 1 && (
             <>
               {/* City Selection - Moved to the top */}
-              <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50">
+              <div className="p-4 rounded-lg border border-dashed border-primary/20 bg-white/80 space-y-4 mb-2 dark:bg-gray-800 dark:border-gray-700 dark:text-gray-50 relative">
+                {/* Loading overlay when city is selected and events are being fetched */}
+                {isLoadingEvents && selectedCity && (
+                  <div className="absolute inset-0 bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-lg z-10 flex items-center justify-center">
+                    <div className="flex flex-col items-center space-y-3">
+                      <div className="relative">
+                        <div className="animate-spin h-12 w-12 border-4 border-primary border-t-transparent rounded-full"></div>
+                        <div className="absolute inset-0 animate-ping h-12 w-12 border-4 border-primary/20 rounded-full"></div>
+                      </div>
+                      <div className="text-center">
+                        <p className="text-sm font-medium text-primary">Loading events for {selectedCity}...</p>
+                        <p className="text-xs text-muted-foreground mt-1">Please wait</p>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
                 <h3 className="text-sm font-medium text-primary flex items-center gap-2">
                     <div className="bg-primary/10 p-1 rounded-full">
                       <MapPin className="h-4 w-4 text-primary" />
@@ -1612,7 +1667,7 @@ export default function RegisterEventClientPage() {
                         {cityError}
                       </div>
                     ) : (
-                      <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0}>
+                      <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0 || isLoadingEvents}>
                         <SelectTrigger className={cn(
                           "border-dashed transition-all duration-200 h-11 sm:h-10 text-base sm:text-sm",
                           selectedCity ? "border-primary/40 bg-primary/5" : "border-muted-foreground/40 text-muted-foreground"
