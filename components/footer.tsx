@@ -39,6 +39,7 @@ export default function Footer() {
   const instagramUrl = footerData?.instagram_url || "https://www.instagram.com/nibog_100?igsh=MWlnYXBiNDFydGQxYg%3D%3D&utm_source=qr"
   const linkedinUrl = footerData?.linkedin_url || "https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=share&utm_campaign=share_via&utm_content=profile&utm_medium=ios_app"
   const youtubeUrl = footerData?.youtube_url || "https://youtube.com/@newindiababyolympics?si=gdXw5mGsXA93brxB"
+  const decathlonUrl = "https://www.decathlon.in"
 
   // Debug logging (only in development)
   if (process.env.NODE_ENV === 'development') {
@@ -111,6 +112,16 @@ export default function Footer() {
                     <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
                   </svg>
                   <span className="sr-only">YouTube</span>
+                </Link>
+              )}
+              {decathlonUrl && (
+                <Link href={decathlonUrl} className="bg-[#0082C3] hover:bg-[#006BA6] rounded-lg px-4 py-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 flex items-center" target="_blank" rel="noopener noreferrer">
+                  <img 
+                    src="/decathlon-play-logo.png" 
+                    alt="Decathlon Play" 
+                    className="h-6 w-auto"
+                  />
+                  <span className="sr-only">Decathlon Play</span>
                 </Link>
               )}
             </div>
