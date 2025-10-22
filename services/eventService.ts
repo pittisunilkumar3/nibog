@@ -661,124 +661,150 @@ export function formatEventDataForUpdate(
 }
 
 /**
- * Get upcoming events by city ID
+ * Get upcoming events by city ID with automatic retry logic
  * @param cityId City ID to retrieve events for
+ * @param maxRetries Maximum number of retry attempts (default: 3)
+ * @param retryDelay Delay between retries in milliseconds (default: 1000)
  * @returns Promise with array of upcoming events for the specified city
  */
-export async function getEventsByCityId(cityId: number): Promise<EventListItem[]> {
+export async function getEventsByCityId(
+  cityId: number,
+  maxRetries: number = 3,
+  retryDelay: number = 1000
+): Promise<EventListItem[]> {
   if (!cityId || isNaN(Number(cityId)) || Number(cityId) <= 0) {
     throw new Error("Invalid city ID. ID must be a positive number.");
   }
 
-  try {
-    console.log(`Fetching upcoming events for city ID: ${cityId}`);
-    
-    // Use the upcoming events API endpoint
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events-by-cityid', {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ city_id: Number(cityId) }),
-    });
+  let lastError: Error | null = null;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Error response from upcoming events API:', errorText);
-      throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`);
-    }
+  // Retry loop
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Events API] Attempt ${attempt}/${maxRetries} to fetch events for city ID: ${cityId}`);
 
-    const events = await response.json();
-    
-    if (!Array.isArray(events)) {
-      console.error('Unexpected API response format:', events);
-      throw new Error('Invalid response format: expected an array of events');
-    }
+      // Create AbortController for timeout handling
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-    console.log(`Found ${events.length} upcoming events for city ${cityId}`);
+      // Use the upcoming events API endpoint
+      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events-by-cityid', {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ city_id: Number(cityId) }),
+        signal: controller.signal,
+      });
 
-    if (events.length > 0) {
-      const firstEvent = events[0];
-      console.log(`First event venue fields: venue_name="${firstEvent.venue_name}", venue="${firstEvent.venue}", venue_id="${firstEvent.venue_id}"`);
-    }
+      clearTimeout(timeoutId);
 
-    // Helper function to fetch venue name by venue_id
-    const fetchVenueName = async (venueId: number): Promise<string> => {
-      try {
-        if (!venueId) return 'Event Venue';
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('[Events API] Error response from upcoming events API:', errorText);
+        throw new Error(`Failed to fetch events: ${response.status} ${response.statusText}`);
+      }
 
-        const response = await fetch('/api/venues/get', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ id: venueId }),
-        });
+      const events = await response.json();
 
-        if (response.ok) {
-          const venueData = await response.json();
-          const venueName = venueData.venue_name || venueData.name || 'Event Venue';
-          if (venueName !== 'Event Venue') {
-            console.log(`Fetched venue ${venueId}: "${venueName}"`);
+      if (!Array.isArray(events)) {
+        console.error('[Events API] Unexpected API response format:', events);
+        throw new Error('Invalid response format: expected an array of events');
+      }
+
+      console.log(`[Events API] Successfully fetched ${events.length} upcoming events for city ${cityId} on attempt ${attempt}`);
+
+      if (events.length > 0) {
+        const firstEvent = events[0];
+        console.log(`[Events API] First event venue fields: venue_name="${firstEvent.venue_name}", venue="${firstEvent.venue}", venue_id="${firstEvent.venue_id}"`);
+      }
+
+      // Helper function to fetch venue name by venue_id
+      const fetchVenueName = async (venueId: number): Promise<string> => {
+        try {
+          if (!venueId) return 'Event Venue';
+
+          const response = await fetch('/api/venues/get', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ id: venueId }),
+          });
+
+          if (response.ok) {
+            const venueData = await response.json();
+            const venueName = venueData.venue_name || venueData.name || 'Event Venue';
+            if (venueName !== 'Event Venue') {
+              console.log(`[Events API] Fetched venue ${venueId}: "${venueName}"`);
+            }
+            return venueName;
           }
-          return venueName;
+        } catch (error) {
+          console.error('[Events API] Error fetching venue:', error);
         }
-      } catch (error) {
-        console.error('Error fetching venue:', error);
-      }
-      return 'Event Venue';
-    };
-
-    // Convert the raw API response to match the expected EventListItem format
-    // First, try to get venue names for events that don't have them
-    const formattedEvents: EventListItem[] = await Promise.all(events.map(async (event: any) => {
-
-      let venueName = event.venue_name || event.venue || event.location || event.address || event.place || event.site || event.event_venue;
-
-      // If no venue name found but we have a venue_id, try to fetch it
-      if (!venueName && event.venue_id) {
-        venueName = await fetchVenueName(event.venue_id);
-      }
-
-      // Final fallback
-      if (!venueName) {
-        venueName = 'Event Venue';
-      }
-
-      if (venueName !== 'Event Venue') {
-        console.log(`Event ${event.id}: Found venue "${venueName}"`);
-      }
-
-      return {
-        event_id: event.id,
-        event_title: event.title,
-        event_description: event.description || '',
-        event_date: event.event_date,
-        event_status: event.status || 'Published',
-        event_created_at: event.created_at || new Date().toISOString(),
-        event_updated_at: event.updated_at || new Date().toISOString(),
-        city_id: event.city_id,
-        city_name: '', // Will be filled in if needed by UI
-        state: '',
-        city_is_active: true,
-        city_created_at: new Date().toISOString(),
-        city_updated_at: new Date().toISOString(),
-        venue_id: event.venue_id || 0,
-        venue_name: venueName,
-        venue_address: '',
-        venue_capacity: 0,
-        venue_is_active: true,
-        venue_created_at: new Date().toISOString(),
-        venue_updated_at: new Date().toISOString(),
-        games: [] // Initialize with empty games array, will be populated separately if needed
+        return 'Event Venue';
       };
-    }));
 
-    return formattedEvents;
-  } catch (error) {
-    console.error('Error in getEventsByCityId:', error);
-    throw error;
+      // Convert the raw API response to match the expected EventListItem format
+      // First, try to get venue names for events that don't have them
+      const formattedEvents: EventListItem[] = await Promise.all(events.map(async (event: any) => {
+
+        let venueName = event.venue_name || event.venue || event.location || event.address || event.place || event.site || event.event_venue;
+
+        // If no venue name found but we have a venue_id, try to fetch it
+        if (!venueName && event.venue_id) {
+          venueName = await fetchVenueName(event.venue_id);
+        }
+
+        // Final fallback
+        if (!venueName) {
+          venueName = 'Event Venue';
+        }
+
+        if (venueName !== 'Event Venue') {
+          console.log(`[Events API] Event ${event.id}: Found venue "${venueName}"`);
+        }
+
+        return {
+          event_id: event.id,
+          event_title: event.title,
+          event_description: event.description || '',
+          event_date: event.event_date,
+          event_status: event.status || 'Published',
+          event_created_at: event.created_at || new Date().toISOString(),
+          event_updated_at: event.updated_at || new Date().toISOString(),
+          city_id: event.city_id,
+          city_name: '', // Will be filled in if needed by UI
+          state: '',
+          city_is_active: true,
+          city_created_at: new Date().toISOString(),
+          city_updated_at: new Date().toISOString(),
+          venue_id: event.venue_id || 0,
+          venue_name: venueName,
+          venue_address: '',
+          venue_capacity: 0,
+          venue_is_active: true,
+          venue_created_at: new Date().toISOString(),
+          venue_updated_at: new Date().toISOString(),
+          games: [] // Initialize with empty games array, will be populated separately if needed
+        };
+      }));
+
+      return formattedEvents;
+    } catch (error: any) {
+      lastError = error;
+      console.error(`[Events API] Attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      if (attempt < maxRetries) {
+        console.log(`[Events API] Retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
+    }
   }
+
+  console.error("[Events API] All retry attempts failed. Last error:", lastError?.message);
+  throw lastError || new Error("Failed to fetch events after multiple attempts");
 }
 
 /**

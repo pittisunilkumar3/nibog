@@ -339,23 +339,8 @@ export default function RegisterEventClientPage() {
     }
   }
 
-  // Handle city change and fetch events for the selected city
-  const handleCityChange = async (city: string) => {
-    setSelectedCity(city)
-    setSelectedEventType("") // Reset event type when city changes
-    setSelectedEvent("") // Reset selected event when city changes
-    setEligibleEvents([]) // Reset eligible events
-    setEligibleGames([]) // Reset eligible games
-    setSelectedGames([]) // Reset selected games
-
-    // Find city ID from the cities list
-    const cityObj = cities.find(c => c.name === city)
-    if (!cityObj) return
-
-    const cityId = Number(cityObj.id)
-    setSelectedCityId(cityId);
-
-    // Fetch events for the selected city
+  // Fetch events for a specific city - extracted as a separate function for reusability
+  const fetchEventsForCity = useCallback(async (cityId: number, cityName: string) => {
     try {
       setIsLoadingEvents(true);
       setEventError(null);
@@ -368,7 +353,7 @@ export default function RegisterEventClientPage() {
 
       // No need to filter events by age anymore - games will be fetched separately
       // when both event and DOB are selected
-      
+
       // Convert API events to the format expected by the UI for display purposes
       if (eventsData.length > 0) {
         const apiEventsMapped = eventsData.map(event => {
@@ -393,15 +378,15 @@ export default function RegisterEventClientPage() {
             date: event.event_date.split('T')[0], // Format the date
             time: "9:00 AM - 8:00 PM", // Default time
             venue: venueValue,
-            city: event.city_name || city,
+            city: event.city_name || cityName,
             price: 1800, // Default price
             image: "/images/baby-crawling.jpg" // Default image
           };
         });
-        
+
         // Set all events as eligible without age filtering
         setEligibleEvents(apiEventsMapped);
-        
+
         // Get unique dates for this city from API events
         const dates = apiEventsMapped.map(event => new Date(event.date));
         const uniqueDates = Array.from(new Set(dates.map(date => date.toISOString())))
@@ -416,13 +401,33 @@ export default function RegisterEventClientPage() {
     } catch (error: any) {
       console.error(`Failed to fetch events for city ID ${cityId}:`, error);
       setEventError("Failed to load events. Please try again.");
-      
+
       // Clear events on error
       setEligibleEvents([]);
       setAvailableDates([]);
     } finally {
       setIsLoadingEvents(false);
     }
+  }, []);
+
+  // Handle city change and fetch events for the selected city
+  const handleCityChange = async (city: string) => {
+    setSelectedCity(city)
+    setSelectedEventType("") // Reset event type when city changes
+    setSelectedEvent("") // Reset selected event when city changes
+    setEligibleEvents([]) // Reset eligible events
+    setEligibleGames([]) // Reset eligible games
+    setSelectedGames([]) // Reset selected games
+
+    // Find city ID from the cities list
+    const cityObj = cities.find(c => c.name === city)
+    if (!cityObj) return
+
+    const cityId = Number(cityObj.id)
+    setSelectedCityId(cityId);
+
+    // Fetch events for the selected city
+    await fetchEventsForCity(cityId, city);
   }
 
   // Handle event type change
@@ -1264,41 +1269,52 @@ export default function RegisterEventClientPage() {
     }
   }
 
+  // Fetch cities from API - extracted as a separate function for reusability
+  const fetchCitiesData = useCallback(async () => {
+    try {
+      setIsLoadingCities(true)
+      setCityError(null)
+
+      console.log("Fetching cities from API...")
+      const citiesData = await getAllCities()
+
+      console.log("Cities data from API:", citiesData)
+
+      // Map the API response to the format expected by the dropdown
+      const formattedCities = citiesData.map(city => ({
+        id: city.id || 0,
+        name: city.city_name
+      }))
+
+      console.log("Formatted cities for dropdown:", formattedCities)
+      setCities(formattedCities)
+    } catch (error: any) {
+      console.error("Failed to fetch cities:", error)
+      setCityError("Failed to load cities. Please try again.")
+    } finally {
+      setIsLoadingCities(false)
+    }
+  }, [])
+
   // Fetch cities from API when component mounts
   useEffect(() => {
+    let isMounted = true; // Track if component is still mounted
+
     const fetchCities = async () => {
-      try {
-        // Ensure loading state is set at the start
-        setIsLoadingCities(true)
-        setCityError(null)
+      // Only update state if component is still mounted
+      if (!isMounted) return;
 
-        console.log("Fetching cities from API...")
-        const citiesData = await getAllCities()
-        console.log("Cities data from API:", citiesData)
-
-        // Map the API response to the format expected by the dropdown
-        const formattedCities = citiesData.map(city => ({
-          id: city.id || 0,
-          name: city.city_name
-        }))
-
-        console.log("Formatted cities for dropdown:", formattedCities)
-        setCities(formattedCities)
-      } catch (error: any) {
-        console.error("Failed to fetch cities:", error)
-        setCityError("Failed to load cities. Please try again.")
-      } finally {
-        setIsLoadingCities(false)
-      }
+      await fetchCitiesData()
     }
 
-    // Reset state on mount to ensure clean slate on navigation
-    setCities([])
-    setCityError(null)
-    setIsLoadingCities(true)
-
+    // Start fetching immediately
     fetchCities()
-  }, []) // Empty dependency array means this effect runs once on mount
+
+    // Cleanup function to prevent state updates on unmounted component
+    return () => {
+      isMounted = false
+    }
+  }, [fetchCitiesData]) // Depend on fetchCitiesData
 
   // Log authentication state for debugging
   useEffect(() => {
@@ -1663,8 +1679,22 @@ export default function RegisterEventClientPage() {
                         <span className="text-muted-foreground">Loading cities...</span>
                       </div>
                     ) : cityError ? (
-                      <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                        {cityError}
+                      <div className="flex flex-col gap-2">
+                        <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
+                          {cityError}
+                        </div>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={fetchCitiesData}
+                          className="w-full sm:w-auto"
+                        >
+                          <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                          </svg>
+                          Retry Loading Cities
+                        </Button>
                       </div>
                     ) : (
                       <Select value={selectedCity} onValueChange={handleCityChange} disabled={cities.length === 0 || isLoadingEvents}>
@@ -1702,8 +1732,26 @@ export default function RegisterEventClientPage() {
                           <span className="text-muted-foreground">Loading events...</span>
                         </div>
                       ) : eventError ? (
-                        <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
-                          {eventError}
+                        <div className="flex flex-col gap-2">
+                          <div className="flex h-10 items-center rounded-md border border-destructive px-3 py-2 text-sm text-destructive">
+                            {eventError}
+                          </div>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              if (selectedCityId) {
+                                fetchEventsForCity(selectedCityId, selectedCity);
+                              }
+                            }}
+                            className="w-full sm:w-auto"
+                          >
+                            <svg className="mr-2 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                            </svg>
+                            Retry Loading Events
+                          </Button>
                         </div>
                       ) : getUniqueEventTypes().length > 0 ? (
                         <Select

@@ -12,55 +12,83 @@ export interface City {
 }
 
 /**
- * Get all cities
+ * Get all cities with retry logic
+ * @param maxRetries Maximum number of retry attempts (default: 3)
+ * @param retryDelay Delay between retries in milliseconds (default: 1000)
  * @returns Promise with array of cities
  */
-export const getAllCities = async (): Promise<City[]> => {
-  try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count', {
-      method: "GET",
-      headers: {
-        "Content-Type": "application/json",
-      },
-    });
+export const getAllCities = async (maxRetries: number = 3, retryDelay: number = 1000): Promise<City[]> => {
+  let lastError: Error | null = null;
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      let errorMessage = `Error fetching cities: ${response.status}`;
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`[Cities API] Attempt ${attempt}/${maxRetries} to fetch cities...`);
 
-      try {
-        const errorData = JSON.parse(errorText);
-        if (errorData.error) {
-          errorMessage = errorData.error;
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
+      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count', {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeoutId);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        let errorMessage = `Error fetching cities: ${response.status}`;
+
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error) {
+            errorMessage = errorData.error;
+          }
+        } catch (e) {
+          // If we can't parse the error as JSON, use the status code
         }
-      } catch (e) {
-        // If we can't parse the error as JSON, use the status code
+
+        throw new Error(errorMessage);
       }
 
-      throw new Error(errorMessage);
+      const data = await response.json();
+
+      // Validate the data structure
+      if (!Array.isArray(data)) {
+        console.warn("[Cities API] API returned non-array data, returning empty array");
+        return [];
+      }
+
+      console.log(`[Cities API] Successfully fetched ${data.length} cities on attempt ${attempt}`);
+
+      // Map API response to local City interface
+      return data.map((item: any) => ({
+        id: item.city_id ?? item.id,
+        city_name: item.city_name,
+        state: item.state,
+        is_active: item.is_active ?? true,
+        created_at: item.created_at,
+        updated_at: item.updated_at,
+        venues: Number(item.venue_count) || 0,
+        events: Number(item.event_count) || 0,
+      }));
+    } catch (error: any) {
+      lastError = error;
+      console.error(`[Cities API] Attempt ${attempt}/${maxRetries} failed:`, error.message);
+
+      // If this is not the last attempt, wait before retrying
+      if (attempt < maxRetries) {
+        console.log(`[Cities API] Retrying in ${retryDelay}ms...`);
+        await new Promise(resolve => setTimeout(resolve, retryDelay));
+      }
     }
-
-    const data = await response.json();
-
-    // Validate the data structure
-    if (!Array.isArray(data)) {
-      return [];
-    }
-
-    // Map API response to local City interface
-    return data.map((item: any) => ({
-      id: item.city_id ?? item.id,
-      city_name: item.city_name,
-      state: item.state,
-      is_active: item.is_active ?? true,
-      created_at: item.created_at,
-      updated_at: item.updated_at,
-      venues: Number(item.venue_count) || 0,
-      events: Number(item.event_count) || 0,
-    }));
-  } catch (error) {
-    throw error;
   }
+
+  // All retries failed
+  console.error("[Cities API] All retry attempts failed. Last error:", lastError?.message);
+  throw lastError || new Error("Failed to fetch cities after multiple attempts");
 };
 
 /**
