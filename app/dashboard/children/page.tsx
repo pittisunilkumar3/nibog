@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
@@ -9,10 +9,13 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Calendar } from "@/components/ui/calendar"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
-import { CalendarIcon, Plus, Edit, Trash2, Baby } from "lucide-react"
+import { CalendarIcon, Plus, Edit, Trash2, Baby, Loader2, AlertTriangle } from "lucide-react"
 import { format } from "date-fns"
 import { cn } from "@/lib/utils"
 import { formatAge, calculateAgeInMonths } from "@/lib/age-calculation"
+import { useAuth } from "@/contexts/auth-context"
+import { useRouter } from "next/navigation"
+import { useCustomerProfile } from "@/lib/swr-hooks"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,25 +37,10 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog"
 
-// Mock data - in a real app, this would come from an API
-const children = [
-  {
-    id: "1",
-    name: "Aryan",
-    dob: "2023-02-15",
-    notes: "Loves music and bright colors. Allergic to peanuts.",
-    createdAt: "2023-03-01",
-  },
-  {
-    id: "2",
-    name: "Zara",
-    dob: "2023-06-10",
-    notes: "Very active, enjoys physical activities.",
-    createdAt: "2023-07-01",
-  },
-]
-
 export default function ChildrenPage() {
+  const { user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
+  const { customerProfile, isLoading: profileLoading, isError, mutate } = useCustomerProfile(user?.user_id || null)
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false)
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false)
   const [selectedChild, setSelectedChild] = useState<any>(null)
@@ -131,11 +119,61 @@ export default function ChildrenPage() {
   // Open edit dialog with child data
   const openEditDialog = (child: any) => {
     setSelectedChild(child)
-    setEditChildName(child.name)
-    setEditChildDob(new Date(child.dob))
-    setEditChildNotes(child.notes || "")
+    setEditChildName(child.child_name)
+    setEditChildDob(new Date(child.date_of_birth))
+    setEditChildNotes("")
     setIsEditDialogOpen(true)
   }
+
+  // Show loading state while checking authentication or loading profile
+  if (authLoading || profileLoading) {
+    return (
+      <div className="container py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">My Children</h1>
+          <p className="text-muted-foreground">Manage your children's profiles</p>
+        </div>
+        <Card>
+          <CardContent className="flex items-center justify-center py-12">
+            <div className="flex items-center gap-2">
+              <Loader2 className="h-6 w-6 animate-spin" />
+              <span>Loading children profiles...</span>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  // Redirect to login if not authenticated (after loading is complete)
+  if (!user) {
+    router.push('/login')
+    return null
+  }
+
+  // Show error state
+  if (isError || !customerProfile) {
+    return (
+      <div className="container py-8">
+        <div className="mb-6">
+          <h1 className="text-3xl font-bold tracking-tight">My Children</h1>
+          <p className="text-muted-foreground">Manage your children's profiles</p>
+        </div>
+        <Card>
+          <CardContent className="flex flex-col items-center justify-center py-12 text-center">
+            <AlertTriangle className="h-12 w-12 text-amber-500 mb-4" />
+            <h3 className="text-lg font-semibold mb-2">Unable to Load Children</h3>
+            <p className="text-sm text-muted-foreground mb-4">
+              We couldn't load your children's profiles. Please try again later.
+            </p>
+            <Button onClick={() => mutate()}>Retry</Button>
+          </CardContent>
+        </Card>
+      </div>
+    )
+  }
+
+  const children = customerProfile.children || []
 
   return (
     <div className="container py-8">
@@ -165,20 +203,25 @@ export default function ChildrenPage() {
       ) : (
         <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
           {children.map((child) => {
-            const ageInMonths = getAgeInMonths(child.dob)
-            
             return (
-              <Card key={child.id} className="overflow-hidden">
+              <Card key={child.child_id} className="overflow-hidden">
                 <CardHeader className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/20 dark:to-pink-950/20">
-                  <CardTitle>{child.name}</CardTitle>
+                  <CardTitle>{child.child_name}</CardTitle>
                   <CardDescription>
-                    {format(new Date(child.dob), "PPP")} ({formatAge(ageInMonths)})
+                    {child.date_of_birth} ({formatAge(child.age_in_months)})
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="p-6">
-                  {child.notes && (
-                    <p className="text-sm text-muted-foreground">{child.notes}</p>
-                  )}
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Age:</span>
+                      <span className="font-medium">{child.age_in_months} months</span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">Child ID:</span>
+                      <span className="font-medium">{child.child_id}</span>
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter className="flex justify-between border-t bg-muted/50 px-6 py-4">
                   <Button variant="outline" size="sm" onClick={() => openEditDialog(child)}>
@@ -196,14 +239,14 @@ export default function ChildrenPage() {
                       <AlertDialogHeader>
                         <AlertDialogTitle>Delete Child Profile</AlertDialogTitle>
                         <AlertDialogDescription>
-                          Are you sure you want to delete {child.name}'s profile? This action cannot be undone.
+                          Are you sure you want to delete {child.child_name}'s profile? This action cannot be undone.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>Cancel</AlertDialogCancel>
                         <AlertDialogAction
                           className="bg-red-500 hover:bg-red-600"
-                          onClick={() => handleDeleteChild(child.id)}
+                          onClick={() => handleDeleteChild(child.child_id.toString())}
                         >
                           Delete
                         </AlertDialogAction>

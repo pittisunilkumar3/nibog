@@ -21,28 +21,30 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
 import { useAuth } from "@/contexts/auth-context"
-import { useUserBookings, UserBooking } from "@/lib/swr-hooks"
+import { useCustomerProfile, CustomerProfileBooking } from "@/lib/swr-hooks"
+import { useRouter } from "next/navigation"
 
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState("upcoming")
   const [searchQuery, setSearchQuery] = useState("")
-  const { user } = useAuth()
+  const { user, isLoading: authLoading } = useAuth()
+  const router = useRouter()
 
-  // Fetch user bookings
-  const { userBookings, isLoading, isError } = useUserBookings(user?.user_id || null)
+  // Fetch customer profile with bookings
+  const { customerProfile, isLoading: profileLoading, isError } = useCustomerProfile(user?.user_id || null)
 
   // Process and categorize bookings
   const { upcomingBookings, pastBookings } = useMemo(() => {
-    if (!userBookings?.bookings || !Array.isArray(userBookings.bookings)) {
+    if (!customerProfile?.bookings || !Array.isArray(customerProfile.bookings)) {
       return { upcomingBookings: [], pastBookings: [] }
     }
 
     const now = new Date()
-    const upcoming: UserBooking[] = []
-    const past: UserBooking[] = []
+    const upcoming: CustomerProfileBooking[] = []
+    const past: CustomerProfileBooking[] = []
 
-    userBookings.bookings.forEach((booking) => {
-      const eventDate = new Date(booking.event.event_date)
+    customerProfile.bookings.forEach((booking) => {
+      const eventDate = new Date(booking.event_date)
       if (eventDate >= now) {
         upcoming.push(booking)
       } else {
@@ -51,7 +53,7 @@ export default function BookingsPage() {
     })
 
     return { upcomingBookings: upcoming, pastBookings: past }
-  }, [userBookings])
+  }, [customerProfile])
 
   // Filter bookings based on search query
   const filteredUpcomingBookings = upcomingBookings.filter((booking) => {
@@ -59,7 +61,7 @@ export default function BookingsPage() {
 
     const query = searchQuery.toLowerCase()
     return (
-      booking.event.title.toLowerCase().includes(query) ||
+      booking.event_name.toLowerCase().includes(query) ||
       booking.booking_ref.toLowerCase().includes(query) ||
       (booking.games && booking.games.some(game => game.game_name.toLowerCase().includes(query)))
     )
@@ -70,13 +72,11 @@ export default function BookingsPage() {
 
     const query = searchQuery.toLowerCase()
     return (
-      booking.event.title.toLowerCase().includes(query) ||
+      booking.event_name.toLowerCase().includes(query) ||
       booking.booking_ref.toLowerCase().includes(query) ||
       (booking.games && booking.games.some(game => game.game_name.toLowerCase().includes(query)))
     )
   })
-
-
 
   // Handle booking cancellation
   const handleCancelBooking = (bookingId: number) => {
@@ -93,34 +93,8 @@ export default function BookingsPage() {
     })
   }
 
-  // Format time for display
-  const formatTime = (game: any) => {
-    if (game?.slot_info?.start_time && game?.slot_info?.end_time) {
-      return `${game.slot_info.start_time} - ${game.slot_info.end_time}`
-    }
-    return "Time TBD"
-  }
-
-  // Get game display info with proper fallbacks
-  const getGameDisplayInfo = (game: any) => {
-    // If slot_info exists and has the required fields, use it
-    if (game?.slot_info && game.slot_info.custom_title && game.slot_info.custom_description) {
-      return {
-        title: game.slot_info.custom_title,
-        description: game.slot_info.custom_description,
-        price: game.slot_info.slot_price || game.slot_info.custom_price || null
-      }
-    }
-
-    // Fallback to game data
-    return {
-      title: game?.game_name || 'Game',
-      description: game?.description || 'No description available',
-      price: null // No fallback price from total_amount as it includes multiple items
-    }
-  }
-
-  if (isLoading) {
+  // Show loading state while checking authentication or loading profile
+  if (authLoading || profileLoading) {
     return (
       <div className="container py-8">
         <div className="mb-6">
@@ -137,6 +111,12 @@ export default function BookingsPage() {
         </Card>
       </div>
     )
+  }
+
+  // Redirect to login if not authenticated (after loading is complete)
+  if (!user) {
+    router.push('/login')
+    return null
   }
 
   if (isError) {
@@ -213,16 +193,16 @@ export default function BookingsPage() {
                       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-semibold">{booking.event.title}</h3>
-                            {booking.status.toLowerCase() === "confirmed" && (
+                            <h3 className="text-xl font-semibold">{booking.event_name}</h3>
+                            {booking.status === "Confirmed" && (
                               <Badge className="bg-green-500 hover:bg-green-600">Confirmed</Badge>
                             )}
-                            {booking.status.toLowerCase() === "pending" && (
+                            {booking.status === "Pending" && (
                               <Badge variant="outline">Pending</Badge>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline">{formatDate(booking.event.event_date)}</Badge>
+                            <Badge variant="outline">{formatDate(booking.event_date)}</Badge>
                             <Badge variant="outline">₹{booking.total_amount}</Badge>
                           </div>
 
@@ -230,39 +210,44 @@ export default function BookingsPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">Games:</p>
                             {booking.games && booking.games.length > 0 ? (
-                              booking.games.map((game, index) => {
-                                const gameInfo = getGameDisplayInfo(game)
-                                return (
-                                  <div key={index} className="ml-4 space-y-1">
-                                    <p className="text-sm font-medium">{gameInfo.title}</p>
-                                    <p className="text-xs text-muted-foreground">{gameInfo.description}</p>
-                                    <div className="flex gap-2">
-                                      <Badge variant="outline" className="text-xs">
-                                        {formatTime(game)}
-                                      </Badge>
-                                      {gameInfo.price && (
-                                        <Badge variant="outline" className="text-xs">
-                                          ₹{gameInfo.price}
-                                        </Badge>
-                                      )}
-                                    </div>
+                              booking.games.map((game, index) => (
+                                <div key={index} className="ml-4 space-y-1">
+                                  <p className="text-sm font-medium">{game.game_name}</p>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      ₹{game.game_price}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      {game.attendance_status}
+                                    </Badge>
                                   </div>
-                                )
-                              })
+                                </div>
+                              ))
                             ) : (
                               <p className="ml-4 text-xs text-muted-foreground">No games available</p>
                             )}
                           </div>
 
-                          {/* Display Add-ons */}
-                          {booking.addons && booking.addons.length > 0 && (
+                          {/* Display Payments */}
+                          {booking.payments && booking.payments.length > 0 && (
                             <div className="space-y-2">
-                              <p className="text-sm font-medium">Add-ons:</p>
-                              {booking.addons.map((addon, index) => (
+                              <p className="text-sm font-medium">Payments:</p>
+                              {booking.payments.map((payment, index) => (
                                 <div key={index} className="ml-4 space-y-1">
-                                  <p className="text-sm">{addon.name} (Qty: {addon.quantity})</p>
-                                  <p className="text-xs text-muted-foreground">{addon.description}</p>
-                                  <Badge variant="outline" className="text-xs">₹{addon.price}</Badge>
+                                  <p className="text-sm">
+                                    {payment.payment_method} - ₹{payment.amount}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Transaction ID: {payment.transaction_id}
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {payment.payment_status}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      {formatDate(payment.payment_date)}
+                                    </Badge>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -272,13 +257,10 @@ export default function BookingsPage() {
                             <span className="font-medium">Booking Reference:</span> {booking.booking_ref}
                           </p>
                           <p className="text-sm">
-                            <span className="font-medium">Booked on:</span> {formatDate(booking.created_at)}
-                          </p>
-                          <p className="text-sm">
                             <span className="font-medium">Payment:</span>{" "}
-                            {booking.payment_status.toLowerCase() === "paid" ? (
+                            {booking.payment_status === "Paid" ? (
                               <span className="text-green-600">Paid</span>
-                            ) : booking.payment_status.toLowerCase() === "pending" ? (
+                            ) : booking.payment_status === "Pending" ? (
                               <span className="text-amber-600">Pending</span>
                             ) : (
                               <span className="text-gray-600">{booking.payment_status}</span>
@@ -287,7 +269,7 @@ export default function BookingsPage() {
                         </div>
                         <div className="flex flex-row gap-2 sm:flex-col">
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/dashboard/bookings/${booking.booking_id}`}>
+                            <Link href={`/dashboard/bookings/${booking.booking_ref}`}>
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </Link>
@@ -298,47 +280,7 @@ export default function BookingsPage() {
                               Download Ticket
                             </Link>
                           </Button>
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                className="text-red-500 hover:bg-red-50 hover:text-red-600 dark:hover:bg-red-950/20"
-                              >
-                                <AlertTriangle className="mr-2 h-4 w-4" />
-                                Cancel Booking
-                              </Button>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent>
-                              <AlertDialogHeader>
-                                <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
-                                <AlertDialogDescription>
-                                  <p>
-                                    Are you sure you want to cancel this booking? This action cannot be undone.
-                                  </p>
-                                  <div className="mt-4 rounded-md bg-muted p-3">
-                                    <p className="font-medium">{booking.event.title}</p>
-                                    <p className="text-sm text-muted-foreground">
-                                      {formatDate(booking.event.event_date)}
-                                    </p>
-                                  </div>
-                                  <Separator className="my-4" />
-                                  <p className="text-sm text-muted-foreground">
-                                    <strong>Cancellation Policy:</strong> Full refund if cancelled at least 24 hours before the event. No refund for cancellations within 24 hours of the event.
-                                  </p>
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel>Keep Booking</AlertDialogCancel>
-                                <AlertDialogAction
-                                  className="bg-red-500 hover:bg-red-600"
-                                  onClick={() => handleCancelBooking(booking.booking_id)}
-                                >
-                                  Yes, Cancel Booking
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                          
                         </div>
                       </div>
                     </div>
@@ -369,16 +311,16 @@ export default function BookingsPage() {
                       <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-start">
                         <div className="space-y-2">
                           <div className="flex items-center gap-2">
-                            <h3 className="text-xl font-semibold">{booking.event.title}</h3>
-                            {booking.status.toLowerCase() === "confirmed" && (
+                            <h3 className="text-xl font-semibold">{booking.event_name}</h3>
+                            {booking.status === "Confirmed" && (
                               <Badge className="bg-blue-500 hover:bg-blue-600">Completed</Badge>
                             )}
-                            {booking.status.toLowerCase() === "cancelled" && (
+                            {booking.status === "Cancelled" && (
                               <Badge className="bg-red-500 hover:bg-red-600">Cancelled</Badge>
                             )}
                           </div>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="outline">{formatDate(booking.event.event_date)}</Badge>
+                            <Badge variant="outline">{formatDate(booking.event_date)}</Badge>
                             <Badge variant="outline">₹{booking.total_amount}</Badge>
                           </div>
 
@@ -386,42 +328,44 @@ export default function BookingsPage() {
                           <div className="space-y-2">
                             <p className="text-sm font-medium">Games:</p>
                             {booking.games && booking.games.length > 0 ? (
-                              booking.games.map((game, index) => {
-                                const gameInfo = getGameDisplayInfo(game)
-                                return (
-                                  <div key={index} className="ml-4 space-y-1">
-                                    <p className="text-sm font-medium">{gameInfo.title}</p>
-                                    <p className="text-xs text-muted-foreground">{gameInfo.description}</p>
-                                    <div className="flex gap-2">
-                                      <Badge variant="outline" className="text-xs">
-                                        {formatTime(game)}
-                                      </Badge>
-                                      {gameInfo.price && (
-                                        <Badge variant="outline" className="text-xs">
-                                          ₹{gameInfo.price}
-                                        </Badge>
-                                      )}
-                                      <Badge variant="outline" className="text-xs">
-                                        {game?.attendance_status || 'Unknown'}
-                                      </Badge>
-                                    </div>
+                              booking.games.map((game, index) => (
+                                <div key={index} className="ml-4 space-y-1">
+                                  <p className="text-sm font-medium">{game.game_name}</p>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      ₹{game.game_price}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      {game.attendance_status}
+                                    </Badge>
                                   </div>
-                                )
-                              })
+                                </div>
+                              ))
                             ) : (
                               <p className="ml-4 text-xs text-muted-foreground">No games available</p>
                             )}
                           </div>
 
-                          {/* Display Add-ons */}
-                          {booking.addons && booking.addons.length > 0 && (
+                          {/* Display Payments */}
+                          {booking.payments && booking.payments.length > 0 && (
                             <div className="space-y-2">
-                              <p className="text-sm font-medium">Add-ons:</p>
-                              {booking.addons.map((addon, index) => (
+                              <p className="text-sm font-medium">Payments:</p>
+                              {booking.payments.map((payment, index) => (
                                 <div key={index} className="ml-4 space-y-1">
-                                  <p className="text-sm">{addon.name} (Qty: {addon.quantity})</p>
-                                  <p className="text-xs text-muted-foreground">{addon.description}</p>
-                                  <Badge variant="outline" className="text-xs">₹{addon.price}</Badge>
+                                  <p className="text-sm">
+                                    {payment.payment_method} - ₹{payment.amount}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground">
+                                    Transaction ID: {payment.transaction_id}
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <Badge variant="outline" className="text-xs">
+                                      {payment.payment_status}
+                                    </Badge>
+                                    <Badge variant="outline" className="text-xs">
+                                      {formatDate(payment.payment_date)}
+                                    </Badge>
+                                  </div>
                                 </div>
                               ))}
                             </div>
@@ -431,15 +375,12 @@ export default function BookingsPage() {
                             <span className="font-medium">Booking Reference:</span> {booking.booking_ref}
                           </p>
                           <p className="text-sm">
-                            <span className="font-medium">Booked on:</span> {formatDate(booking.created_at)}
-                          </p>
-                          <p className="text-sm">
                             <span className="font-medium">Payment:</span>{" "}
-                            {booking.payment_status.toLowerCase() === "paid" ? (
+                            {booking.payment_status === "Paid" ? (
                               <span className="text-green-600">Paid</span>
-                            ) : booking.payment_status.toLowerCase() === "refunded" ? (
+                            ) : booking.payment_status === "Refunded" ? (
                               <span className="text-blue-600">Refunded</span>
-                            ) : booking.payment_status.toLowerCase() === "pending" ? (
+                            ) : booking.payment_status === "Pending" ? (
                               <span className="text-amber-600">Pending</span>
                             ) : (
                               <span className="text-gray-600">{booking.payment_status}</span>
@@ -448,14 +389,14 @@ export default function BookingsPage() {
                         </div>
                         <div className="flex flex-row gap-2 sm:flex-col">
                           <Button variant="outline" size="sm" asChild>
-                            <Link href={`/dashboard/bookings/${booking.booking_id}`}>
+                            <Link href={`/dashboard/bookings/${booking.booking_ref}`}>
                               <Eye className="mr-2 h-4 w-4" />
                               View Details
                             </Link>
                           </Button>
-                          {booking.status.toLowerCase() === "confirmed" && (
+                          {booking.status === "Confirmed" && (
                             <Button variant="outline" size="sm" asChild>
-                              <Link href={`/dashboard/bookings/${booking.booking_id}/review`}>
+                              <Link href={`/dashboard/bookings/${booking.booking_ref}/review`}>
                                 Write Review
                               </Link>
                             </Button>

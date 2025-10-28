@@ -7,6 +7,58 @@ import { getAllPayments as fetchAllPayments } from '@/services/paymentService'
 import { getAllEventsWithGames } from '@/services/eventGameService'
 import { getAllEventsWithImagesFormatted } from '@/services/eventDetailsService'
 
+// Types for customer profile API
+export interface CustomerProfileChild {
+  child_id: number;
+  child_name: string;
+  age_in_months: number;
+  date_of_birth: string;
+}
+
+export interface CustomerProfileGame {
+  game_id: number;
+  game_name: string;
+  game_price: number;
+  attendance_status: string;
+}
+
+export interface CustomerProfilePayment {
+  amount: number;
+  payment_id: number;
+  payment_date: string;
+  payment_method: string;
+  payment_status: string;
+  transaction_id: string;
+}
+
+export interface CustomerProfileBooking {
+  games: CustomerProfileGame[];
+  status: string;
+  payments: CustomerProfilePayment[];
+  venue_id: number;
+  booking_id: number;
+  event_date: string;
+  event_name: string;
+  booking_ref: string;
+  total_amount: number;
+  payment_status: string;
+}
+
+export interface CustomerProfile {
+  user_id: number;
+  user_name: string;
+  email: string;
+  email_status: string;
+  phone: string;
+  phone_status: string;
+  city: string | null;
+  parent_id: number;
+  parent_name: string;
+  parent_email: string;
+  children: CustomerProfileChild[];
+  bookings: CustomerProfileBooking[];
+}
+
 // Types for user bookings
 export interface UserBookingGame {
   game_id: number;
@@ -429,4 +481,61 @@ export function useTestimonials(initialData?: TestimonialListItem[]) {
     isError: !!error,
     mutate,
   }
+}
+
+/**
+ * Hook to fetch customer profile with SWR caching and revalidation
+ * @param userId The user ID to fetch profile for
+ * @returns Customer profile data and loading/error states
+ */
+export function useCustomerProfile(userId: number | null) {
+  const { data, error, isLoading, mutate } = useSWR<CustomerProfile>(
+    userId ? `api/customer/profile/${userId}` : null,
+    async () => {
+      if (!userId) {
+        return null;
+      }
+
+      // Use the Next.js API proxy to avoid CORS issues
+      const response = await fetch('/api/customer/profile', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ user_id: userId }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        console.error('Failed to fetch customer profile:', response.status, errorData);
+        throw new Error(`Failed to fetch customer profile: ${response.status}`);
+      }
+
+      const result = await response.json();
+
+      // The API returns an array with one object containing user data
+      if (Array.isArray(result) && result.length > 0) {
+        return result[0];
+      }
+
+      return result;
+    },
+    {
+      revalidateOnFocus: true, // Revalidate when window regains focus
+      revalidateOnMount: true, // Always fetch fresh data on mount
+      revalidateOnReconnect: true,
+      dedupingInterval: 2000, // Reduced to 2 seconds to allow more frequent updates
+      refreshInterval: 0, // Disable automatic polling
+      shouldRetryOnError: true, // Retry on error
+      errorRetryCount: 3, // Retry up to 3 times
+      errorRetryInterval: 1000, // Wait 1 second between retries
+    }
+  );
+
+  return {
+    customerProfile: data,
+    isLoading,
+    isError: !!error,
+    mutate,
+  };
 }
