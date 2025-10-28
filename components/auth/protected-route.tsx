@@ -1,7 +1,7 @@
 'use client';
 
 import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { isClientAuthenticated } from '@/lib/auth/session';
 
@@ -10,7 +10,7 @@ interface ProtectedRouteProps {
   requiredRole?: string; // Optional role requirement
 }
 
-export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+function ProtectedRouteContent({ children, requiredRole }: ProtectedRouteProps) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -73,4 +73,18 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   }
 
   return <>{children}</>;
+}
+
+export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) {
+  return (
+    <Suspense fallback={
+      <div className="flex items-center justify-center min-h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    }>
+      <ProtectedRouteContent requiredRole={requiredRole}>
+        {children}
+      </ProtectedRouteContent>
+    </Suspense>
+  );
 }
