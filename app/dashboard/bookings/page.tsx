@@ -24,6 +24,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useCustomerProfile, CustomerProfileBooking } from "@/lib/swr-hooks"
 import { useRouter } from "next/navigation"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function BookingsPage() {
   const [activeTab, setActiveTab] = useState("upcoming")
   const [searchQuery, setSearchQuery] = useState("")

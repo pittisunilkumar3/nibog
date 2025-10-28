@@ -18,6 +18,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useCustomerProfile } from "@/lib/swr-hooks"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 const cities = [
   { id: "1", name: "Mumbai" },
   { id: "2", name: "Delhi" },

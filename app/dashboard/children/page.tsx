@@ -8,6 +8,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useCustomerProfile } from "@/lib/swr-hooks"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function ChildrenPage() {
   const { user, isLoading: authLoading } = useAuth()
   const router = useRouter()

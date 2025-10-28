@@ -12,6 +12,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useCustomerProfile, CustomerProfilePayment } from "@/lib/swr-hooks"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 // Payment with booking reference
 interface PaymentWithBooking extends CustomerProfilePayment {
   booking_ref: string

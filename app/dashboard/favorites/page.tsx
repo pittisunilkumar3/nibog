@@ -10,6 +10,9 @@ import { Badge } from "@/components/ui/badge"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 // Mock data - in a real app, this would come from an API
 const mockFavorites = [
   {

@@ -11,6 +11,9 @@ import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
 
+// Force dynamic rendering for this page
+export const dynamic = 'force-dynamic'
+
 export default function SettingsPage() {
   const { user, isLoading, logout } = useAuth()
   const router = useRouter()
