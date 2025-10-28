@@ -889,33 +889,36 @@ export default function NewEventPage() {
                           <Label htmlFor="customPrice">Custom Price (₹)</Label>
                           <Input
                             id="customPrice"
-                            type="number"
-                            min="0"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
                             value={game.customPrice ?? template.suggestedPrice ?? 0}
                             onChange={(e) => {
                               const inputValue = e.target.value
-                              // Handle empty string or invalid input
-                              const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
-                              updateGame(activeGameIndex, "customPrice", price)
+                              // Only allow numbers
+                              if (inputValue === '' || /^\d+$/.test(inputValue)) {
+                                const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
+                                updateGame(activeGameIndex, "customPrice", price)
 
-                              // Update all slot prices if they match the previous custom price
-                              const prevPrice = game.customPrice ?? template.suggestedPrice ?? 0
-                              const slotsToUpdate = game.slots.filter(slot => slot.price === prevPrice)
+                                // Update all slot prices if they match the previous custom price
+                                const prevPrice = game.customPrice ?? template.suggestedPrice ?? 0
+                                const slotsToUpdate = game.slots.filter(slot => slot.price === prevPrice)
 
-                              if (slotsToUpdate.length > 0) {
-                                const updatedSlots = game.slots.map(slot => {
-                                  if (slot.price === prevPrice) {
-                                    return { ...slot, price }
-                                  }
-                                  return slot
-                                })
+                                if (slotsToUpdate.length > 0) {
+                                  const updatedSlots = game.slots.map(slot => {
+                                    if (slot.price === prevPrice) {
+                                      return { ...slot, price }
+                                    }
+                                    return slot
+                                  })
 
-                                setSelectedGames(selectedGames.map((g, i) => {
-                                  if (i === activeGameIndex) {
-                                    return { ...g, slots: updatedSlots }
-                                  }
-                                  return g
-                                }))
+                                  setSelectedGames(selectedGames.map((g, i) => {
+                                    if (i === activeGameIndex) {
+                                      return { ...g, slots: updatedSlots }
+                                    }
+                                    return g
+                                  }))
+                                }
                               }
                             }}
                           />
@@ -1007,13 +1010,17 @@ export default function NewEventPage() {
                                 <Label htmlFor={`price-${slot.id}`}>Price (₹)</Label>
                                 <Input
                                   id={`price-${slot.id}`}
-                                  type="number"
-                                  min="0"
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
                                   value={slot.price ?? 0}
                                   onChange={(e) => {
                                     const inputValue = e.target.value
-                                    const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
-                                    updateSlot(activeGameIndex, slot.id, "price", price)
+                                    // Only allow numbers
+                                    if (inputValue === '' || /^\d+$/.test(inputValue)) {
+                                      const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
+                                      updateSlot(activeGameIndex, slot.id, "price", price)
+                                    }
                                   }}
                                 />
                               </div>
@@ -1021,13 +1028,17 @@ export default function NewEventPage() {
                                 <Label htmlFor={`capacity-${slot.id}`}>Max Participants</Label>
                                 <Input
                                   id={`capacity-${slot.id}`}
-                                  type="number"
-                                  min="1"
+                                  type="text"
+                                  inputMode="numeric"
+                                  pattern="[0-9]*"
                                   value={slot.maxParticipants}
                                   onChange={(e) => {
                                     const inputValue = e.target.value
-                                    const participants = inputValue === '' ? 1 : parseInt(inputValue) || 1
-                                    updateSlot(activeGameIndex, slot.id, "maxParticipants", participants)
+                                    // Only allow numbers
+                                    if (inputValue === '' || /^\d+$/.test(inputValue)) {
+                                      const participants = inputValue === '' ? 1 : parseInt(inputValue) || 1
+                                      updateSlot(activeGameIndex, slot.id, "maxParticipants", participants)
+                                    }
                                   }}
                                 />
                               </div>
