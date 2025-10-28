@@ -22,6 +22,7 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog"
+import { useAuth } from "@/contexts/auth-context"
 
 // Mock data - in a real app, this would come from an API
 const events = [
@@ -78,11 +79,12 @@ const user = {
 function CheckoutContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  
+  const { user: authUser, isLoading: authLoading, isAuthenticated } = useAuth()
+
   const eventId = searchParams.get("event")
   const slotId = searchParams.get("slot")
   const childId = searchParams.get("child")
-  
+
   const [event, setEvent] = useState<any>(null)
   const [slot, setSlot] = useState<any>(null)
   const [child, setChild] = useState<any>(null)
@@ -94,24 +96,50 @@ function CheckoutContent() {
   const [isProcessing, setIsProcessing] = useState(false)
   const [isSuccess, setIsSuccess] = useState(false)
   const [bookingId, setBookingId] = useState("")
-  
+
+  // Check authentication on mount
+  useEffect(() => {
+    if (!authLoading && !isAuthenticated) {
+      // Store the current URL for redirecting back after login
+      const currentUrl = `/checkout?${searchParams.toString()}`
+      router.push(`/login?callbackUrl=${encodeURIComponent(currentUrl)}`)
+    }
+  }, [authLoading, isAuthenticated, router, searchParams])
+
   // Load data based on URL params
   useEffect(() => {
     if (eventId) {
       const foundEvent = events.find((e) => e.id === eventId)
       setEvent(foundEvent)
-      
+
       if (foundEvent && slotId) {
         const foundSlot = foundEvent.slots.find((s) => s.id === slotId)
         setSlot(foundSlot)
       }
     }
-    
+
     if (childId) {
       const foundChild = user.children.find((c) => c.id === childId)
       setChild(foundChild)
     }
   }, [eventId, slotId, childId])
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="container flex h-[400px] items-center justify-center py-8">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary mx-auto mb-4"></div>
+          <p className="text-muted-foreground">Loading...</p>
+        </div>
+      </div>
+    )
+  }
+
+  // If not authenticated, don't render anything (redirect will happen)
+  if (!isAuthenticated) {
+    return null
+  }
   
   // Handle payment submission
   const handleSubmit = (e: React.FormEvent) => {

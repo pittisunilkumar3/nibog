@@ -139,7 +139,16 @@ export async function POST(request: Request) {
     // Set authorization header
     res.headers.set('authorization', `Bearer ${token}`);
 
-    // Set the session cookie
+    // Set the session cookie with the correct name that middleware expects
+    res.cookies.set('nibog-session', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      path: '/',
+      maxAge: 60 * 60 * 24 * 7  // 7 days
+    });
+
+    // Also set user-token for backward compatibility
     res.cookies.set('user-token', JSON.stringify({
       user_id: userData.user_id,
       email: userData.email,

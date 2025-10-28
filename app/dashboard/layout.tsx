@@ -1,12 +1,9 @@
+"use client"
+
 import type React from "react"
-import type { Metadata } from "next"
 import Header from "@/components/header"
 import Footer from "@/components/footer"
-
-export const metadata: Metadata = {
-  title: "My Dashboard | NIBOG",
-  description: "Manage your profile, bookings, and preferences on NIBOG",
-}
+import { ProtectedRoute } from "@/components/auth/protected-route"
 
 export default function DashboardLayout({
   children,
@@ -14,11 +11,13 @@ export default function DashboardLayout({
   children: React.ReactNode
 }>) {
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
-      <main className="flex-1 bg-gray-50 dark:bg-gray-900">{children}</main>
-      <Footer />
-    </div>
+    <ProtectedRoute>
+      <div className="flex min-h-screen flex-col">
+        <Header />
+        <main className="flex-1 bg-gray-50 dark:bg-gray-900">{children}</main>
+        <Footer />
+      </div>
+    </ProtectedRoute>
   )
 }
 

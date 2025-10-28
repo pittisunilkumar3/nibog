@@ -83,7 +83,7 @@ function LoginContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
-  const { login } = useAuth()
+  const { login, isAuthenticated, isLoading: authLoading } = useAuth()
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [rememberMe, setRememberMe] = useState(false)
@@ -93,6 +93,14 @@ function LoginContent() {
   // Get the callback URL from the query parameters
   const callbackUrl = searchParams.get("callbackUrl") || "/"
   const returnUrl = searchParams.get("returnUrl") || "/"
+
+  // Redirect if already authenticated
+  useEffect(() => {
+    if (!authLoading && isAuthenticated) {
+      // User is already logged in, redirect to callback URL or home
+      router.push(callbackUrl)
+    }
+  }, [authLoading, isAuthenticated, callbackUrl, router])
 
   // Handle login form submission
   const handleLogin = async (e: React.FormEvent) => {
@@ -211,6 +219,18 @@ function LoginContent() {
     } finally {
       setIsLoading(false)
     }
+  }
+
+  // Show loading state while checking authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-[calc(100vh-4rem)] w-full flex items-center justify-center bg-gradient-to-br from-blue-400 via-purple-400 to-pink-400 dark:from-blue-800/70 dark:via-purple-800/70 dark:to-pink-800/70">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white mx-auto mb-4"></div>
+          <p className="text-white font-medium">Loading...</p>
+        </div>
+      </div>
+    )
   }
 
   return (
