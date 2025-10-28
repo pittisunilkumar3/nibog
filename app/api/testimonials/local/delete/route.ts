@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     console.log(`Local Delete API: Found ${testimonials.length} testimonials before deletion`);
     
     // Find the testimonial to delete
-    const testimonialIndex = testimonials.findIndex(t => t.id === testimonialId);
+    const testimonialIndex = testimonials.findIndex((t: any) => t.id === testimonialId);
     
     if (testimonialIndex === -1) {
       console.log(`Local Delete API: Testimonial with ID ${testimonialId} not found`);

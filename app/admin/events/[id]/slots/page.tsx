@@ -25,7 +25,7 @@ import { useToast } from "@/hooks/use-toast"
 import { TruncatedText } from "@/components/ui/truncated-text"
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function EventSlotsPage({ params }: Props) {

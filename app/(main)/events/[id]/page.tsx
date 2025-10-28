@@ -240,9 +240,9 @@ export default function EventPage({ params }: Props) {
                 className="w-full object-cover"
               />
               <div className="absolute right-3 top-3 flex gap-2">
-                {event.isOlympics && <Badge className="bg-yellow-500 hover:bg-yellow-600">Baby Olympics</Badge>}
-                {event.isAdventure && <Badge className="bg-green-500 hover:bg-green-600">Adventure Kids</Badge>}
-                {event.isToddlerTuesday && <Badge className="bg-blue-500 hover:bg-blue-600">Toddler Tuesday</Badge>}
+                {(event as any).isOlympics && <Badge className="bg-yellow-500 hover:bg-yellow-600">Baby Olympics</Badge>}
+                {(event as any).isAdventure && <Badge className="bg-green-500 hover:bg-green-600">Adventure Kids</Badge>}
+                {(event as any).isToddlerTuesday && <Badge className="bg-blue-500 hover:bg-blue-600">Toddler Tuesday</Badge>}
               </div>
               <div className="absolute right-3 bottom-3 flex gap-2">
                 <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full bg-background/80">

@@ -52,7 +52,7 @@ const fetchVenueEvents = async (venueId: number) => {
 }
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function VenueDetailPage({ params }: Props) {

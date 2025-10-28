@@ -13,7 +13,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Slider } from "@/components/ui/slider"
 import { Switch } from "@/components/ui/switch"
 import { Badge } from "@/components/ui/badge"
-import { X, Wand2, ArrowLeft, Loader2 } from "lucide-react"
+import { X, Star, ArrowLeft, Loader2 } from "lucide-react"
 import { getBabyGameById, updateBabyGame, uploadBabyGameImage, fetchGameImages, uploadGameImage, sendGameImageToWebhook, updateGameImage } from "@/services/babyGameService"
 import { useToast } from "@/components/ui/use-toast"
 
@@ -462,7 +462,7 @@ export default function EditGameTemplate({ params }: Props) {
                   onClick={handleGenerateDescription}
                   disabled={isGeneratingDescription || !name}
                 >
-                  <Wand2 className="mr-2 h-4 w-4" />
+                  <Star className="mr-2 h-4 w-4" />
                   {isGeneratingDescription ? "Generating..." : "Generate with AI"}
                 </Button>
               </div>

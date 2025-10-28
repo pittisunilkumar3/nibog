@@ -1360,6 +1360,7 @@ export default function NewCertificateTemplatePage() {
                                 ...prev,
                                 text_shadow: {
                                   ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
                                   color
                                 }
                               }))}
@@ -1376,6 +1377,7 @@ export default function NewCertificateTemplatePage() {
                                 ...prev,
                                 text_shadow: {
                                   ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
                                   offset_x: parseInt(e.target.value) || 0
                                 }
                               }))}
@@ -1393,6 +1395,7 @@ export default function NewCertificateTemplatePage() {
                                 ...prev,
                                 text_shadow: {
                                   ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
                                   offset_y: parseInt(e.target.value) || 0
                                 }
                               }))}
@@ -1410,6 +1413,7 @@ export default function NewCertificateTemplatePage() {
                                 ...prev,
                                 text_shadow: {
                                   ...prev.text_shadow,
+                                  enabled: prev.text_shadow?.enabled || false,
                                   blur_radius: parseInt(e.target.value) || 0
                                 }
                               }))}

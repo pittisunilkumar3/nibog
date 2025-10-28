@@ -37,11 +37,11 @@ import {
 } from "@/components/ui/dialog"
 import { Badge } from "@/components/ui/badge"
 import { useToast } from "@/hooks/use-toast"
-import { 
-  Plus, 
-  Pencil, 
-  Trash2, 
-  Upload, 
+import {
+  Plus,
+  Edit as Pencil,
+  Trash2,
+  Upload,
   X,
   Loader2,
   Eye,

@@ -64,7 +64,7 @@ export async function POST(request: Request) {
     const testimonials = readTestimonials();
     
     // Generate new ID
-    const newId = testimonials.length > 0 ? Math.max(...testimonials.map(t => t.id)) + 1 : 1;
+    const newId = testimonials.length > 0 ? Math.max(...testimonials.map((t: any) => t.id)) + 1 : 1;
     
     // Create new testimonial with city NAME (not ID)
     const newTestimonial = {

@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, Legend } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { Users, UserCheck, UserX, Clock } from "lucide-react"
+import { Users, UserCheck, X as UserX, Clock } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Mock data - in a real app, this would come from an API

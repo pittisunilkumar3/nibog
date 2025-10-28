@@ -50,11 +50,11 @@ export async function POST(request: Request) {
     console.log("Server API route: Request payload:", JSON.stringify(eventData, null, 2));
 
     // Validate that games array is properly formatted
-    if (!eventData.games.every(game => 
-      typeof game.game_id === 'number' && 
-      typeof game.start_time === 'string' && 
-      typeof game.end_time === 'string' && 
-      typeof game.slot_price === 'number' && 
+    if (!eventData.games.every((game: any) =>
+      typeof game.game_id === 'number' &&
+      typeof game.start_time === 'string' &&
+      typeof game.end_time === 'string' &&
+      typeof game.slot_price === 'number' &&
       typeof game.max_participants === 'number'
     )) {
       console.error("Server API route: Invalid game data format in request");

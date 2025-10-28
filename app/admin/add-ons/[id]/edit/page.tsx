@@ -90,7 +90,12 @@ export default function EditAddOnPage({ params }: Props) {
         setImages([...data.images])
 
         if (data.has_variants && data.variants) {
-          setVariants([...data.variants])
+          // Convert variants to match local interface (id as string)
+          const convertedVariants = data.variants.map(v => ({
+            ...v,
+            id: String(v.id || '')
+          }));
+          setVariants(convertedVariants)
         } else {
           setSku(data.sku || "")
           setStockQuantity(data.stock_quantity || 0)
@@ -283,7 +288,7 @@ export default function EditAddOnPage({ params }: Props) {
         images,
         isActive,
         hasVariants,
-        stockQuantity: hasVariants ? 0 : stockQuantity,
+        stock_quantity: hasVariants ? 0 : stockQuantity,
         sku: hasVariants ? "" : sku,
         bundleDiscount: hasBundleDiscount ? {
           minQuantity,

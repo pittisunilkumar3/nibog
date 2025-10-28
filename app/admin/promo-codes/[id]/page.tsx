@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Separator } from "@/components/ui/separator"
-import { ArrowLeft, Edit, Trash, Copy, AlertTriangle, Calendar, Tag, Percent, DollarSign, Loader2 } from "lucide-react"
+import { ArrowLeft, Edit, Trash, Copy, AlertTriangle, Calendar, Tag, BadgePercent as Percent, DollarSign, Loader2 } from "lucide-react"
 import {
   AlertDialog,
   AlertDialogAction,
@@ -188,8 +188,8 @@ const fetchPromoCodeDetails = async (id: string): Promise<PromoCode> => {
       const eventDetails = firstEvent && firstEvent.event_details ? firstEvent.event_details : null
 
       // Extract applicable events with id and title
-      const applicableEvents = events && events.length > 0 ? 
-        events.map(event => event && event.event_details ? {
+      const applicableEvents = events && events.length > 0 ?
+        events.map((event: any) => event && event.event_details ? {
           id: event.event_details.id || 0,
           title: event.event_details.title || 'Unknown Event'
         } : {

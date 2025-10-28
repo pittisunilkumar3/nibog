@@ -406,26 +406,7 @@ function CheckoutContent() {
                   </div>
                 )}
               </CardContent>
-              <CardFooter className="flex justify-between">
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button variant="outline">Cancel</Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent>
-                    <AlertDialogHeader>
-                      <AlertDialogTitle>Cancel Booking</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        Are you sure you want to cancel this booking? Your spot will not be reserved.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter>
-                      <AlertDialogCancel>No, Continue Booking</AlertDialogCancel>
-                      <AlertDialogAction asChild>
-                        <Link href={`/events/${eventId}`}>Yes, Cancel Booking</Link>
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
+              <CardFooter className="flex justify-end">
                 <Button type="submit" disabled={isProcessing}>
                   {isProcessing ? "Processing..." : `Pay ₹${slot.price}`}
                 </Button>

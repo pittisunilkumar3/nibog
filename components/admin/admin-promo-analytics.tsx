@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line, PieChart, Pie, Cell } from "recharts"
 import { Badge } from "@/components/ui/badge"
-import { Tag, Percent, TrendingUp, ArrowUpRight, ArrowDownRight } from "lucide-react"
+import { Tag, TrendingUp, TrendingUp as ArrowUpRight, TrendingDown as ArrowDownRight } from "lucide-react"
 import { cn } from "@/lib/utils"
 
 // Mock data - in a real app, this would come from an API
@@ -84,7 +84,7 @@ export default function AdminPromoAnalytics() {
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-sm font-medium">Customer Savings</CardTitle>
-              <Percent className="h-4 w-4 text-muted-foreground" />
+              <Tag className="h-4 w-4 text-muted-foreground" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">₹3,35,000</div>

@@ -224,12 +224,12 @@ export default function AddOnsPage() {
   const bulkActions: BulkAction<any>[] = []
 
   // Define export columns
-  const exportColumns: ExportColumn[] = [
+  const exportColumns: ExportColumn<any>[] = [
     { key: 'name', label: 'Name' },
     { key: 'category', label: 'Category' },
     { key: 'price', label: 'Price' },
     { key: 'stock_quantity', label: 'Stock Quantity' },
-    { key: 'is_active', label: 'Status', format: (value) => value ? 'Active' : 'Inactive' }
+    { key: 'is_active', label: 'Status', format: (value: any) => value ? 'Active' : 'Inactive' }
   ]
 
   return (

@@ -1,29 +1,15 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
-import { Switch } from "@/components/ui/switch"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Separator } from "@/components/ui/separator"
-import { User, Bell, Lock, Shield, Loader2, Save, AlertTriangle } from "lucide-react"
+import { User, Loader2, Save } from "lucide-react"
 import { useAuth } from "@/contexts/auth-context"
 import { useRouter } from "next/navigation"
 import { useToast } from "@/components/ui/use-toast"
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-  AlertDialogTrigger,
-} from "@/components/ui/alert-dialog"
 
 export default function SettingsPage() {
   const { user, isLoading, logout } = useAuth()
@@ -31,128 +17,90 @@ export default function SettingsPage() {
   const { toast } = useToast()
 
   // Profile settings
-  const [fullName, setFullName] = useState(user?.full_name || "")
-  const [email, setEmail] = useState(user?.email || "")
-  const [phone, setPhone] = useState(user?.phone || "")
+  const [fullName, setFullName] = useState("")
+  const [email, setEmail] = useState("")
+  const [phone, setPhone] = useState("")
+  const [isUpdating, setIsUpdating] = useState(false)
 
-  // Notification settings
-  const [emailNotifications, setEmailNotifications] = useState(true)
-  const [smsNotifications, setSmsNotifications] = useState(true)
-  const [pushNotifications, setPushNotifications] = useState(true)
-  const [eventReminders, setEventReminders] = useState(true)
-  const [promotionalEmails, setPromotionalEmails] = useState(false)
-
-  // Privacy settings
-  const [profileVisibility, setProfileVisibility] = useState("private")
-  const [showBookingHistory, setShowBookingHistory] = useState(false)
-
-  // Password change
-  const [currentPassword, setCurrentPassword] = useState("")
-  const [newPassword, setNewPassword] = useState("")
-  const [confirmPassword, setConfirmPassword] = useState("")
+  // Update form fields when user data is loaded
+  useEffect(() => {
+    if (user) {
+      setFullName(user.full_name || "")
+      setEmail(user.email || "")
+      setPhone(user.phone || "")
+    }
+  }, [user])
 
   // Handle profile update
-  const handleUpdateProfile = (e: React.FormEvent) => {
-    e.preventDefault()
-    
-    // In a real app, this would be an API call
-    console.log("Update profile:", {
-      user_id: user?.user_id,
-      fullName,
-      email,
-      phone,
-    })
-
-    toast({
-      title: "Profile Updated",
-      description: "Your profile has been updated successfully.",
-    })
-  }
-
-  // Handle notification settings update
-  const handleUpdateNotifications = () => {
-    // In a real app, this would be an API call
-    console.log("Update notifications:", {
-      user_id: user?.user_id,
-      emailNotifications,
-      smsNotifications,
-      pushNotifications,
-      eventReminders,
-      promotionalEmails,
-    })
-
-    toast({
-      title: "Notification Settings Updated",
-      description: "Your notification preferences have been saved.",
-    })
-  }
-
-  // Handle privacy settings update
-  const handleUpdatePrivacy = () => {
-    // In a real app, this would be an API call
-    console.log("Update privacy:", {
-      user_id: user?.user_id,
-      profileVisibility,
-      showBookingHistory,
-    })
-
-    toast({
-      title: "Privacy Settings Updated",
-      description: "Your privacy preferences have been saved.",
-    })
-  }
-
-  // Handle password change
-  const handleChangePassword = (e: React.FormEvent) => {
+  const handleUpdateProfile = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    if (newPassword !== confirmPassword) {
+    if (!user?.user_id) {
       toast({
-        title: "Password Mismatch",
-        description: "New password and confirm password do not match.",
+        title: "Error",
+        description: "User ID not found. Please log in again.",
         variant: "destructive",
       })
       return
     }
 
-    if (newPassword.length < 8) {
+    setIsUpdating(true)
+
+    try {
+      const response = await fetch('/api/users/edit', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          user_id: user.user_id,
+          full_name: fullName,
+          email: email,
+          phone: phone,
+          accept_terms: true,
+        }),
+      })
+
+      const data = await response.json()
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to update profile')
+      }
+
+      // Update localStorage with new user data
+      if (typeof window !== 'undefined' && data && data.length > 0) {
+        const updatedUser = {
+          ...user,
+          full_name: data[0].full_name,
+          email: data[0].email,
+          phone: data[0].phone,
+          updated_at: data[0].updated_at,
+        }
+        localStorage.setItem('user', JSON.stringify(updatedUser))
+      }
+
       toast({
-        title: "Weak Password",
-        description: "Password must be at least 8 characters long.",
+        title: "Profile Updated",
+        description: "Your profile has been updated successfully.",
+      })
+
+      // Reload the page to reflect changes
+      setTimeout(() => {
+        window.location.reload()
+      }, 1000)
+    } catch (error) {
+      console.error('Error updating profile:', error)
+      toast({
+        title: "Update Failed",
+        description: error instanceof Error ? error.message : "Failed to update profile. Please try again.",
         variant: "destructive",
       })
-      return
+    } finally {
+      setIsUpdating(false)
     }
-
-    // In a real app, this would be an API call
-    console.log("Change password for user:", user?.user_id)
-
-    toast({
-      title: "Password Changed",
-      description: "Your password has been changed successfully.",
-    })
-
-    // Clear password fields
-    setCurrentPassword("")
-    setNewPassword("")
-    setConfirmPassword("")
   }
 
-  // Handle account deactivation
-  const handleDeactivateAccount = () => {
-    // In a real app, this would be an API call
-    console.log("Deactivate account:", user?.user_id)
-    
-    toast({
-      title: "Account Deactivated",
-      description: "Your account has been deactivated. You will be logged out.",
-    })
 
-    // Logout after a delay
-    setTimeout(() => {
-      logout()
-    }, 2000)
-  }
 
   // Show loading state
   if (isLoading) {
@@ -188,22 +136,10 @@ export default function SettingsPage() {
       </div>
 
       <Tabs defaultValue="profile" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-1">
           <TabsTrigger value="profile">
             <User className="mr-2 h-4 w-4" />
             Profile
-          </TabsTrigger>
-          <TabsTrigger value="notifications">
-            <Bell className="mr-2 h-4 w-4" />
-            Notifications
-          </TabsTrigger>
-          <TabsTrigger value="security">
-            <Lock className="mr-2 h-4 w-4" />
-            Security
-          </TabsTrigger>
-          <TabsTrigger value="privacy">
-            <Shield className="mr-2 h-4 w-4" />
-            Privacy
           </TabsTrigger>
         </TabsList>
 
@@ -255,188 +191,20 @@ export default function SettingsPage() {
                   <Input value={user.user_id} disabled />
                   <p className="text-xs text-muted-foreground">Your unique user identifier</p>
                 </div>
-                <Button type="submit">
-                  <Save className="mr-2 h-4 w-4" />
-                  Save Changes
+                <Button type="submit" disabled={isUpdating}>
+                  {isUpdating ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Saving...
+                    </>
+                  ) : (
+                    <>
+                      <Save className="mr-2 h-4 w-4" />
+                      Save Changes
+                    </>
+                  )}
                 </Button>
               </form>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Notification Settings */}
-        <TabsContent value="notifications">
-          <Card>
-            <CardHeader>
-              <CardTitle>Notification Preferences</CardTitle>
-              <CardDescription>Manage how you receive notifications</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Email Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via email</p>
-                </div>
-                <Switch checked={emailNotifications} onCheckedChange={setEmailNotifications} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive notifications via SMS</p>
-                </div>
-                <Switch checked={smsNotifications} onCheckedChange={setSmsNotifications} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Push Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive push notifications</p>
-                </div>
-                <Switch checked={pushNotifications} onCheckedChange={setPushNotifications} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Event Reminders</Label>
-                  <p className="text-sm text-muted-foreground">Get reminders before your events</p>
-                </div>
-                <Switch checked={eventReminders} onCheckedChange={setEventReminders} />
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Promotional Emails</Label>
-                  <p className="text-sm text-muted-foreground">Receive offers and promotions</p>
-                </div>
-                <Switch checked={promotionalEmails} onCheckedChange={setPromotionalEmails} />
-              </div>
-              <Button onClick={handleUpdateNotifications}>
-                <Save className="mr-2 h-4 w-4" />
-                Save Preferences
-              </Button>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Security Settings */}
-        <TabsContent value="security" className="space-y-6">
-          <Card>
-            <CardHeader>
-              <CardTitle>Change Password</CardTitle>
-              <CardDescription>Update your password to keep your account secure</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={handleChangePassword} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="currentPassword">Current Password</Label>
-                  <Input
-                    id="currentPassword"
-                    type="password"
-                    value={currentPassword}
-                    onChange={(e) => setCurrentPassword(e.target.value)}
-                    placeholder="Enter current password"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="newPassword">New Password</Label>
-                  <Input
-                    id="newPassword"
-                    type="password"
-                    value={newPassword}
-                    onChange={(e) => setNewPassword(e.target.value)}
-                    placeholder="Enter new password"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm New Password</Label>
-                  <Input
-                    id="confirmPassword"
-                    type="password"
-                    value={confirmPassword}
-                    onChange={(e) => setConfirmPassword(e.target.value)}
-                    placeholder="Confirm new password"
-                  />
-                </div>
-                <Button type="submit">Change Password</Button>
-              </form>
-            </CardContent>
-          </Card>
-
-          <Card className="border-red-200 dark:border-red-900">
-            <CardHeader>
-              <CardTitle className="text-red-600">Danger Zone</CardTitle>
-              <CardDescription>Irreversible actions for your account</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button variant="destructive">
-                    <AlertTriangle className="mr-2 h-4 w-4" />
-                    Deactivate Account
-                  </Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      This action will deactivate your account. You can reactivate it by logging in again,
-                      but all your active bookings will be cancelled.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancel</AlertDialogCancel>
-                    <AlertDialogAction
-                      className="bg-red-500 hover:bg-red-600"
-                      onClick={handleDeactivateAccount}
-                    >
-                      Yes, Deactivate Account
-                    </AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </CardContent>
-          </Card>
-        </TabsContent>
-
-        {/* Privacy Settings */}
-        <TabsContent value="privacy">
-          <Card>
-            <CardHeader>
-              <CardTitle>Privacy Settings</CardTitle>
-              <CardDescription>Control your privacy and data sharing preferences</CardDescription>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <div className="space-y-2">
-                <Label htmlFor="profileVisibility">Profile Visibility</Label>
-                <Select value={profileVisibility} onValueChange={setProfileVisibility}>
-                  <SelectTrigger id="profileVisibility">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="public">Public</SelectItem>
-                    <SelectItem value="private">Private</SelectItem>
-                    <SelectItem value="friends">Friends Only</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-xs text-muted-foreground">
-                  Control who can see your profile information
-                </p>
-              </div>
-              <Separator />
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label>Show Booking History</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Allow others to see your past event bookings
-                  </p>
-                </div>
-                <Switch checked={showBookingHistory} onCheckedChange={setShowBookingHistory} />
-              </div>
-              <Button onClick={handleUpdatePrivacy}>
-                <Save className="mr-2 h-4 w-4" />
-                Save Privacy Settings
-              </Button>
             </CardContent>
           </Card>
         </TabsContent>

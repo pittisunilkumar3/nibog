@@ -225,7 +225,7 @@ export default function CitiesPage() {
   }
 
   // Define export columns
-  const exportColumns: ExportColumn[] = [
+  const exportColumns: ExportColumn<any>[] = [
     { key: 'id', label: 'City ID', width: 80 },
     { key: 'city_name', label: 'City Name', width: 150 },
     { key: 'state', label: 'State', width: 100 },

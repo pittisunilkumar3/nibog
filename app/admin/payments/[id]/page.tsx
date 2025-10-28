@@ -28,7 +28,7 @@ const getStatusBadge = (status: string) => {
 }
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function PaymentDetailPage({ params }: Props) {

@@ -1138,11 +1138,17 @@ export default function NewBookingPage() {
         console.log("📱 Sending WhatsApp booking confirmation message...");
 
         // Validate phone number is provided
-        if (!phone || phone.trim() === '') {
+        if (!phoneDigits || phoneDigits.trim() === '') {
           console.log("⚠️ No phone number provided, skipping WhatsApp notification");
         } else {
-          // Format phone number for WhatsApp (matching frontend format)
-          const formattedPhone = phone.startsWith('+') ? phone : `+91${phone}`;
+          // Format phone number for WhatsApp (use phoneDigits which is already validated)
+          const formattedPhone = `+91${phoneDigits}`;
+
+          console.log("📱 Formatting phone for WhatsApp:", {
+            original: phone,
+            phoneDigits: phoneDigits,
+            formatted: formattedPhone
+          });
 
           // Prepare WhatsApp message data (matching frontend structure exactly)
           const whatsappData = {
@@ -1738,13 +1744,21 @@ export default function NewBookingPage() {
                   type="tel"
                   value={phone}
                   onChange={(e) => {
-                    // Only allow digits and limit to 10 characters
-                    const value = e.target.value.replace(/\D/g, '').slice(0, 10)
+                    // Remove all non-digits
+                    let value = e.target.value.replace(/\D/g, '')
+
+                    // If it starts with 91 and is longer than 10 digits, remove the 91 prefix
+                    if (value.startsWith('91') && value.length > 10) {
+                      value = value.substring(2)
+                    }
+
+                    // Limit to 10 digits
+                    value = value.slice(0, 10)
                     setPhone(value)
                   }}
-                  placeholder="Enter 10-digit mobile number"
+                  placeholder="Enter 10-digit mobile number (or +91XXXXXXXXXX)"
                   required
-                  maxLength={10}
+                  maxLength={13}
                   pattern="[0-9]{10}"
                   className="font-mono"
                 />

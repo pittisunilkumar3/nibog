@@ -48,8 +48,8 @@ export async function GET() {
     const allTestimonials = [...localTestimonials, ...externalTestimonials];
     
     // Remove duplicates (prefer local over external)
-    const uniqueTestimonials = allTestimonials.reduce((acc, current) => {
-      const existing = acc.find(t => t.name === current.name && t.testimonial === current.testimonial);
+    const uniqueTestimonials = allTestimonials.reduce((acc: any[], current: any) => {
+      const existing = acc.find((t: any) => t.name === current.name && t.testimonial === current.testimonial);
       if (!existing) {
         acc.push(current);
       } else if (current.source === 'local' && existing.source === 'external') {

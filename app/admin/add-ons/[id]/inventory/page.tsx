@@ -76,16 +76,16 @@ export default function AddOnInventoryPage({ params }: Props) {
         setAddOnData(data);
         
         // Access properties with type safety
-        const hasVariants = Boolean(data.hasVariants || data.has_variants);
+        const hasVariants = Boolean(data.has_variants);
         const variants = data.variants || [];
-        
+
         // Initialize stock quantities
         if (hasVariants && variants.length > 0) {
           const initialVariantStocks: Record<string, number> = {};
           data.variants.forEach((variant: any) => {
-            // Handle both stockQuantity and stock_quantity property names
+            // Use stock_quantity property
             const variantId = String(variant.id || ''); // Ensure ID is a string
-            initialVariantStocks[variantId] = variant.stockQuantity || variant.stock_quantity || 0;
+            initialVariantStocks[variantId] = variant.stock_quantity || 0;
           });
           setVariantStocks(initialVariantStocks);
           if (data.variants.length > 0) {
@@ -93,9 +93,8 @@ export default function AddOnInventoryPage({ params }: Props) {
             setSelectedVariantId(firstVariantId);
           }
         } else {
-          // Handle both stockQuantity and stock_quantity property names
-          const stockQty = typeof data.stockQuantity !== 'undefined' ? data.stockQuantity : 
-                          typeof data.stock_quantity !== 'undefined' ? data.stock_quantity : 0;
+          // Use stock_quantity property
+          const stockQty = typeof data.stock_quantity !== 'undefined' ? data.stock_quantity : 0;
           setStockQuantity(stockQty);
         }
       } catch (err: any) {

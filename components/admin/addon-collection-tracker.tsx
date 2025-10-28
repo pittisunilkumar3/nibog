@@ -1,11 +1,12 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
-import { Search, CheckCircle2, Package, BarChart4 } from "lucide-react"
+import { Search, CheckCircle2, Package, BarChart } from "lucide-react"
 import {
   Table,
   TableBody,
@@ -172,7 +173,7 @@ export default function AddonCollectionTracker({ eventId, eventTitle }: AddonCol
           Collections
         </TabsTrigger>
         <TabsTrigger value="summary">
-          <BarChart4 className="mr-2 h-4 w-4" />
+          <BarChart className="mr-2 h-4 w-4" />
           Summary
         </TabsTrigger>
       </TabsList>

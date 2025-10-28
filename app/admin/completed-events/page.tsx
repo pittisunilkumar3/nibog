@@ -171,7 +171,7 @@ const venues = Array.from(new Set(completedEvents.map(event => event.venue)))
   }).filter(cityData => cityData.events.length > 0)
 
   // Define table columns for EnhancedDataTable
-  const columns: Column<CompletedEvent>[] = [
+  const columns: Column<NormalizedEvent>[] = [
     {
       key: 'title',
       label: 'Event',

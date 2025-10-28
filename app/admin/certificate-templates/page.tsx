@@ -364,11 +364,11 @@ export default function CertificateTemplatesPage() {
   ]
 
   // Define export columns
-  const exportColumns: ExportColumn[] = [
+  const exportColumns: ExportColumn<any>[] = [
     { key: 'name', label: 'Template Name' },
     { key: 'description', label: 'Description' },
     { key: 'category', label: 'Category' },
-    { key: 'is_active', label: 'Status', format: (value) => value ? 'Active' : 'Inactive' },
+    { key: 'is_active', label: 'Status', format: (value: any) => value ? 'Active' : 'Inactive' },
     { key: 'created_at', label: 'Created Date' },
     { key: 'updated_at', label: 'Updated Date' }
   ]

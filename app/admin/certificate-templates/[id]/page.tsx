@@ -829,7 +829,7 @@ export default function ViewCertificateTemplatePage() {
                 </div>
                 <div>
                   <label className="text-sm font-medium text-gray-500">Opacity</label>
-                  <p className="text-sm">{(template.signature_style.image_opacity * 100).toFixed(0)}%</p>
+                  <p className="text-sm">{((template.signature_style.image_opacity || 1) * 100).toFixed(0)}%</p>
                 </div>
                 {template.signature_style.image_filter && template.signature_style.image_filter !== 'none' && (
                   <div>

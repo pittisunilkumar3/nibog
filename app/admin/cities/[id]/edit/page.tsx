@@ -29,10 +29,10 @@ export default function EditCityPage({ params }: { params: { id: string } }) {
   // Set error if ID is invalid
   useEffect(() => {
     if (isNaN(cityId) || cityId <= 0) {
-      setError(`Invalid city ID: ${cityIdRaw}. ID must be a positive number.`)
+      setError(`Invalid city ID: ${params.id}. ID must be a positive number.`)
       setIsFetching(false)
     }
-  }, [cityIdRaw, cityId])
+  }, [params.id, cityId])
 
   useEffect(() => {
     const fetchCityData = async () => {

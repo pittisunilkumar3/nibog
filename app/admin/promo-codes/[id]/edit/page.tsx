@@ -39,7 +39,7 @@ const statuses = [
 ]
 
 type Props = {
-  params: Promise<{ id: string }>
+  params: { id: string }
 }
 
 export default function EditPromoCodePage({ params }: Props) {

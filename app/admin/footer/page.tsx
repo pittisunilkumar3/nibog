@@ -13,7 +13,7 @@ import { Separator } from "@/components/ui/separator"
 import { Badge } from "@/components/ui/badge"
 import {
   Check as Save,
-  RotateCcw as RefreshCw,
+  RefreshCw,
   Plus,
   Trash,
   ExternalLink,

@@ -149,6 +149,20 @@ export default function AddOnDetailPage({ params }: Props) {
     )
   }
 
+  // Add null check for addOn
+  if (!addOn) {
+    return (
+      <div className="flex items-center justify-center min-h-[400px]">
+        <div className="text-center">
+          <p className="text-muted-foreground">Add-on data not available</p>
+          <Button onClick={() => router.push("/admin/add-ons")} className="mt-4">
+            Back to Add-ons
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
   return (
     <div className="space-y-4 sm:space-y-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">

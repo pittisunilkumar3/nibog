@@ -284,13 +284,13 @@ export default function NewEventPage() {
       templateId,
       customTitle: template.name,
       customDescription: template.description,
-      customPrice: template.suggestedPrice,
+      customPrice: template.suggestedPrice ?? 0,
       note: "",
       slots: [{
         id: `game-${templateId}-slot-1`,
         startTime: "10:00",
         endTime: "11:30",
-        price: template.suggestedPrice,
+        price: template.suggestedPrice ?? 0,
         maxParticipants: 12
       }]
     }
@@ -329,7 +329,7 @@ export default function NewEventPage() {
       id: `game-${game.templateId}-slot-${game.slots.length + 1}`,
       startTime: "10:00",
       endTime: "11:30",
-      price: game.customPrice || gameTemplates.find(t => t.id === game.templateId)?.suggestedPrice || 1799,
+      price: game.customPrice ?? gameTemplates.find(t => t.id === game.templateId)?.suggestedPrice ?? 0,
       maxParticipants: 12
     }
 
@@ -784,7 +784,7 @@ export default function NewEventPage() {
                             <div>
                               <h4 className="font-medium">{game.customTitle || template?.name}</h4>
                               <p className="text-xs text-muted-foreground">
-                                {game.slots.length} slot(s) • Custom Price: ₹{game.customPrice || template?.suggestedPrice}
+                                {game.slots.length} slot(s) • Custom Price: ₹{game.customPrice ?? template?.suggestedPrice ?? 0}
                               </p>
                             </div>
                             <Button
@@ -891,13 +891,15 @@ export default function NewEventPage() {
                             id="customPrice"
                             type="number"
                             min="0"
-                            value={game.customPrice || template.suggestedPrice}
+                            value={game.customPrice ?? template.suggestedPrice ?? 0}
                             onChange={(e) => {
-                              const price = parseInt(e.target.value)
+                              const inputValue = e.target.value
+                              // Handle empty string or invalid input
+                              const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
                               updateGame(activeGameIndex, "customPrice", price)
 
                               // Update all slot prices if they match the previous custom price
-                              const prevPrice = game.customPrice || template.suggestedPrice
+                              const prevPrice = game.customPrice ?? template.suggestedPrice ?? 0
                               const slotsToUpdate = game.slots.filter(slot => slot.price === prevPrice)
 
                               if (slotsToUpdate.length > 0) {
@@ -1007,8 +1009,12 @@ export default function NewEventPage() {
                                   id={`price-${slot.id}`}
                                   type="number"
                                   min="0"
-                                  value={slot.price}
-                                  onChange={(e) => updateSlot(activeGameIndex, slot.id, "price", parseInt(e.target.value))}
+                                  value={slot.price ?? 0}
+                                  onChange={(e) => {
+                                    const inputValue = e.target.value
+                                    const price = inputValue === '' ? 0 : parseInt(inputValue) || 0
+                                    updateSlot(activeGameIndex, slot.id, "price", price)
+                                  }}
                                 />
                               </div>
                               <div className="space-y-2">
@@ -1018,7 +1024,11 @@ export default function NewEventPage() {
                                   type="number"
                                   min="1"
                                   value={slot.maxParticipants}
-                                  onChange={(e) => updateSlot(activeGameIndex, slot.id, "maxParticipants", parseInt(e.target.value))}
+                                  onChange={(e) => {
+                                    const inputValue = e.target.value
+                                    const participants = inputValue === '' ? 1 : parseInt(inputValue) || 1
+                                    updateSlot(activeGameIndex, slot.id, "maxParticipants", participants)
+                                  }}
                                 />
                               </div>
                             </div>

@@ -197,7 +197,7 @@ export default function EditCertificateTemplatePage() {
       setTemplateName(templateData.name)
       setTemplateDescription(templateData.description)
       setTemplateType(templateData.type)
-      setBackgroundImageUrl(templateData.background_image)
+      setBackgroundImageUrl(templateData.background_image || '')
       setPaperSize(templateData.paper_size)
       setOrientation(templateData.orientation)
       setFields(templateData.fields)

@@ -249,18 +249,16 @@ export default function UsersPage() {
       }
     },
     {
-      label: user => user.is_locked ? "Unlock" : "Lock",
-      icon: user => user.is_locked ? <Check className="h-4 w-4" /> : <X className="h-4 w-4" />,
+      label: "Toggle Lock",
+      icon: <Check className="h-4 w-4" />,
       onClick: handleToggleLockedStatus,
-      disabled: (user) => isProcessing === user.user_id,
-      variant: user => user.is_locked ? 'default' : 'destructive'
+      disabled: (user: any) => isProcessing === user.user_id
     },
     {
-      label: user => user.is_active ? "Deactivate" : "Activate",
-      icon: user => user.is_active ? <X className="h-4 w-4" /> : <Check className="h-4 w-4" />,
+      label: "Toggle Active",
+      icon: <Check className="h-4 w-4" />,
       onClick: handleToggleActiveStatus,
-      disabled: (user) => isProcessing === user.user_id,
-      variant: user => user.is_active ? 'destructive' : 'default'
+      disabled: (user: any) => isProcessing === user.user_id
     }
   ]
 

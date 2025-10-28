@@ -431,10 +431,10 @@ export default function EventsPage() {
     },
 
     {
-      label: event => event.status === "published" ? "Pause" : "Resume",
-      icon: event => event.status === "published" ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />,
-      onClick: (event) => handleToggleEventStatus(event.id, event.status),
-      disabled: (event) => isUpdatingStatus && eventToUpdate === event.id
+      label: "Toggle Status",
+      icon: <Pause className="h-4 w-4" />,
+      onClick: (event: any) => handleToggleEventStatus(event.id, event.status),
+      disabled: (event: any) => isUpdatingStatus && eventToUpdate === event.id
     },
     {
       label: "Cancel",

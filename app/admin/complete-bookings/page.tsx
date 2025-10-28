@@ -87,9 +87,9 @@ export default function CompleteBookingsPage() {
 
       const data = await response.json()
       // Filter out empty booking objects
-      const validBookings = (data.data || []).filter(booking => {
+      const validBookings = (data.data || []).filter((booking: any) => {
         return booking && Object.keys(booking).length > 0 &&
-          Object.values(booking).some(value => value !== null && value !== undefined && value !== '')
+          Object.values(booking).some((value: any) => value !== null && value !== undefined && value !== '')
       })
       setBookings(validBookings)
     } catch (error: any) {
