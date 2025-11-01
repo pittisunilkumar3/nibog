@@ -12,7 +12,7 @@ export async function POST(request: Request) {
       );
     }
 
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/addons/delete";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/addons/delete";
 
     // Create an AbortController for timeout
     const controller = new AbortController();

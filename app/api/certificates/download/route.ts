@@ -13,7 +13,7 @@ export async function GET(request: NextRequest) {
     }
 
     const response = await fetch(
-      `https://ai.alviongs.com/webhook/v1/nibog/certificates/download?certificate_id=${certificateId}`,
+      `https://ai.nibog.in/webhook/v1/nibog/certificates/download?certificate_id=${certificateId}`,
       {
         method: 'GET',
         headers: {

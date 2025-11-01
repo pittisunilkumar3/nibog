@@ -92,7 +92,7 @@ export default function EmailSendingPage() {
   const fetchTemplates = async () => {
     setIsLoadingTemplates(true)
     try {
-      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get-all")
+      const res = await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/get-all")
       const data = await res.json()
       setTemplates(Array.isArray(data) ? data : [])
     } catch (e) {
@@ -108,7 +108,7 @@ export default function EmailSendingPage() {
     setIsLoadingTemplates(true)
     try {
       // Try with number id first
-      let res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get", {
+      let res = await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/get", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ id }),
@@ -125,7 +125,7 @@ export default function EmailSendingPage() {
 
       // If not found, try with string id
       if (!tpl) {
-        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get", {
+        res = await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/get", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ id: id.toString() }),
@@ -196,7 +196,7 @@ export default function EmailSendingPage() {
       payload.event_id = emailData.eventId;
     }
     await new Promise(resolve => setTimeout(resolve, 2000));
-    await fetch("https://ai.alviongs.com/webhook/v1/nibog/bulk/email/sending", {
+    await fetch("https://ai.nibog.in/webhook/v1/nibog/bulk/email/sending", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(payload),
@@ -215,7 +215,7 @@ export default function EmailSendingPage() {
       let res, data;
       if (isEditing && templateData.id) {
         // Update template
-        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/update", {
+        res = await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/update", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -229,7 +229,7 @@ export default function EmailSendingPage() {
         toast({ title: "Success!", description: "Template updated." });
       } else {
         // Create template
-        res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/create", {
+        res = await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/create", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({
@@ -617,7 +617,7 @@ export default function EmailSendingPage() {
                                           if (!window.confirm("Delete this template?")) return;
                                           setIsLoadingTemplates(true);
                                           try {
-                                            await fetch("https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/delete", {
+                                            await fetch("https://ai.nibog.in/webhook/v1/nibog/emailtemplate/delete", {
                                               method: "POST",
                                               headers: { "Content-Type": "application/json" },
                                               body: JSON.stringify({ id: tpl.id }),

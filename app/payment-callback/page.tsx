@@ -354,7 +354,7 @@ function PaymentCallbackContent() {
                 
                 // Make one final API check to verify the booking exists
                 try {
-                  fetch('https://ai.alviongs.com/webhook/v1/nibog/tickect/booking_ref/details', {
+                  fetch('https://ai.nibog.in/webhook/v1/nibog/tickect/booking_ref/details', {
                     method: 'POST',
                     headers: {
                       'Content-Type': 'application/json'

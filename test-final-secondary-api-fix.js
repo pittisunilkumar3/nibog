@@ -138,9 +138,9 @@ async function testExactUserPayload() {
   
   try {
     console.log('📡 Testing with exact user payload format:', userPayload);
-    console.log('🔗 Calling: https://ai.alviongs.com/webhook/nibog/eventimage/updated');
+    console.log('🔗 Calling: https://ai.nibog.in/webhook/nibog/eventimage/updated');
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userPayload),
@@ -213,7 +213,7 @@ async function runFinalSecondaryApiTest() {
     console.log('- Modified handleSubmit in event edit page');
     console.log('- Added logic to call updateEventImage even without new file');
     console.log('- Uses existing image URL with new priority');
-    console.log('- Calls https://ai.alviongs.com/webhook/nibog/eventimage/updated');
+    console.log('- Calls https://ai.nibog.in/webhook/nibog/eventimage/updated');
     console.log('- Sends exact payload format user specified');
     
   } else {

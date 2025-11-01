@@ -3,7 +3,7 @@
  * Fixed endpoint paths based on n8n webhook configuration
  */
 
-const BASE_URL = 'https://ai.alviongs.com/webhook/v1/nibog';
+const BASE_URL = 'https://ai.nibog.in/webhook/v1/nibog';
 
 // Color codes for console output
 const colors = {

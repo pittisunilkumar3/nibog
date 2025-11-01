@@ -2,7 +2,7 @@
 
 ### Create Certificate Template
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/create
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/create
 
 Payload
 
@@ -123,7 +123,7 @@ Response (201 Created)
 
 ### Get All Certificate Templates
 
-**GET** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/get-all
+**GET** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/get-all
 
 Response (200 OK)
 
@@ -159,7 +159,7 @@ Response (200 OK)
 
 ### Get Certificate Template by ID
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/get
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/get
 
 Payload
 
@@ -203,7 +203,7 @@ Response (200 OK)
 
 ### Update Certificate Template
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/update
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/update
 
 Payload
 
@@ -256,7 +256,7 @@ Response (200 OK)
 
 ### Delete Certificate Template
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/delete
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/delete
 
 Payload
 
@@ -276,7 +276,7 @@ Response (200 OK)
 
 ### Get Certificate Templates by Type
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/by-type
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate-templates/by-type
 
 Payload
 
@@ -324,7 +324,7 @@ Response (200 OK)
 
 ### Generate Single Certificate
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificate/generate-single
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificate/generate-single
 
 Payload
 
@@ -375,9 +375,9 @@ Response (201 Created)
 
 ### Download Certificate PDF
 
-**GET** https://ai.alviongs.com/webhook/v1/nibog/certificates/download/{certificate_id}
+**GET** https://ai.nibog.in/webhook/v1/nibog/certificates/download/{certificate_id}
 
-**Example**: GET https://ai.alviongs.com/webhook/v1/nibog/certificates/download/0
+**Example**: GET https://ai.nibog.in/webhook/v1/nibog/certificates/download/0
 
 Response: 
 [
@@ -392,9 +392,9 @@ Response:
 
 ### Get Certificate Generation Status
 
-**GET** https://ai.alviongs.com/webhook/v1/nibog/certificates/status/{event_id}
+**GET** https://ai.nibog.in/webhook/v1/nibog/certificates/status/{event_id}
 
-**Example**: GET https://ai.alviongs.com/webhook/v1/nibog/certificates/status/5
+**Example**: GET https://ai.nibog.in/webhook/v1/nibog/certificates/status/5
 
 Response (200 OK)
 
@@ -412,7 +412,7 @@ Response (200 OK)
 
 ### Get Event Participants for Certificate Generation
 
-**GET** https://ai.alviongs.com/webhook/v1/nibog/events/participants?event_id=11
+**GET** https://ai.nibog.in/webhook/v1/nibog/events/participants?event_id=11
 
 Response (200 OK)
 
@@ -717,7 +717,7 @@ Response (200 OK)
 
 ## Get all generated certificates
 
-**GET** https://ai.alviongs.com/webhook/v1/nibog/certificates/get-all
+**GET** https://ai.nibog.in/webhook/v1/nibog/certificates/get-all
 
 Response (200 OK)
 
@@ -1141,7 +1141,7 @@ Response (200 OK)
 
 ## Get all generated certificates
 
-**POST** https://ai.alviongs.com/webhook/v1/nibog/certificates/get
+**POST** https://ai.nibog.in/webhook/v1/nibog/certificates/get
 
 Request Body
 

@@ -3,7 +3,7 @@
 ## Current Status
 
 ❌ **FAQ API endpoint does not exist yet**
-- URL: `https://ai.alviongs.com/webhook/v1/nibog/faq/get-all`
+- URL: `https://ai.nibog.in/webhook/v1/nibog/faq/get-all`
 - Status: 404 - Not registered
 
 ✅ **FAQ page is working** with fallback data (25 FAQs)
@@ -102,7 +102,7 @@ INSERT INTO faqs (question, answer, category, display_order, is_active) VALUES
 
 ```powershell
 # Test with PowerShell
-Invoke-WebRequest -Uri "https://ai.alviongs.com/webhook/v1/nibog/faq/get-all" -Method GET
+Invoke-WebRequest -Uri "https://ai.nibog.in/webhook/v1/nibog/faq/get-all" -Method GET
 ```
 
 Expected Response:
@@ -187,7 +187,7 @@ Once the FAQ API is created and active:
 **Right Now:**
 ```
 1. Page loads
-2. Tries API: https://ai.alviongs.com/webhook/v1/nibog/faq/get-all
+2. Tries API: https://ai.nibog.in/webhook/v1/nibog/faq/get-all
 3. Gets 404 (not found)
 4. Uses fallback data (25 FAQs)
 5. Displays perfectly ✅
@@ -197,7 +197,7 @@ Once the FAQ API is created and active:
 **After Creating API:**
 ```
 1. Page loads
-2. Tries API: https://ai.alviongs.com/webhook/v1/nibog/faq/get-all
+2. Tries API: https://ai.nibog.in/webhook/v1/nibog/faq/get-all
 3. Gets 200 (success) ✅
 4. Uses API data
 5. Displays dynamically ✅

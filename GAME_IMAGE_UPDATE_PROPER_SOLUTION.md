@@ -58,7 +58,7 @@ handleSubmit()
   → uploadGameImage() [uploads new file]
   → updateGameImage() [creates new image record]
     → /api/gamesimage/update [internal API]
-      → https://ai.alviongs.com/webhook/nibog/gamesimage/create [external API]
+      → https://ai.nibog.in/webhook/nibog/gamesimage/create [external API]
         → New image record created ✅
   → Delete old image files [cleanup filesystem]
   → Show success message [user feedback]
@@ -138,7 +138,7 @@ const latestImage = sortedImages[0]; // Use latest, not first
 **2. API Route (`route.ts`)**
 ```typescript
 // Use create endpoint since update endpoint is not working
-const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(webhookPayload),

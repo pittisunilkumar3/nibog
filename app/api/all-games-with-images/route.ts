@@ -6,7 +6,7 @@ export async function GET(request: NextRequest) {
 
     // Call the external API to get games with images with cache-busting
     const cacheBuster = Date.now();
-    const apiUrl = `https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage?_t=${cacheBuster}`;
+    const apiUrl = `https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage?_t=${cacheBuster}`;
 
     const response = await fetch(apiUrl, {
       method: 'GET',

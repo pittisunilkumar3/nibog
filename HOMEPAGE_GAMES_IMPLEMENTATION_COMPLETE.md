@@ -10,7 +10,7 @@
 3. ✅ **Sorting Logic**: Sort games by priority (highest priority first)
 4. ✅ **Section Location**: Update the existing "NIBOG Games by Age Group" section on the homepage
 
-**API Endpoint**: `https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage`
+**API Endpoint**: `https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage`
 
 ## 🔧 Implementation Details
 
@@ -19,7 +19,7 @@
 **File**: `app/api/games-with-images/route.ts`
 
 **Features**:
-- ✅ Fetches data from external API: `https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage`
+- ✅ Fetches data from external API: `https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage`
 - ✅ Filters only active games with images (`game_is_active: true` and `image_is_active: true`)
 - ✅ Sorts by `image_priority` in descending order (highest priority first)
 - ✅ Limits results to top 4 games
@@ -116,7 +116,7 @@ const getGradientColors = (priority: number) => { ... }
 ```
 
 ### **Data Flow Verification**:
-1. ✅ **External API**: `https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage` returns 8 games
+1. ✅ **External API**: `https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage` returns 8 games
 2. ✅ **Filtering**: All 8 games are active with images
 3. ✅ **Sorting**: Games sorted by priority (3, 3, 2, 2, 1, 1, 1, 1)
 4. ✅ **Limiting**: Top 4 games selected (priorities 3, 3, 2, 2)

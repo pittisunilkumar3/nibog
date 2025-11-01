@@ -12,7 +12,7 @@
 1. ✅ **GET `/partners`** - Endpoint is accessible and returns empty array `[]`
 2. ✅ **POST `/partners/create`** - Endpoint accepts requests (returns 200 OK)
 3. ✅ Workflows are **ACTIVATED** in n8n
-4. ✅ Correct webhook paths: `https://ai.alviongs.com/webhook/partners/*`
+4. ✅ Correct webhook paths: `https://ai.nibog.in/webhook/partners/*`
 
 ---
 
@@ -135,7 +135,7 @@ CREATE INDEX IF NOT EXISTS idx_partners_priority ON partners(display_priority);
 3. **Click "Execute Workflow" button** (test mode)
 4. **Use Postman or curl to send a test request:**
    ```bash
-   curl -X POST https://ai.alviongs.com/webhook/partners/create \
+   curl -X POST https://ai.nibog.in/webhook/partners/create \
      -H "Content-Type: application/json" \
      -d '{
        "partner_name": "Debug Test",
@@ -177,7 +177,7 @@ CREATE INDEX IF NOT EXISTS idx_partners_priority ON partners(display_priority);
 After fixing, you should get this response when creating a partner:
 
 ```bash
-POST https://ai.alviongs.com/webhook/partners/create
+POST https://ai.nibog.in/webhook/partners/create
 ```
 
 **Response:**
@@ -195,7 +195,7 @@ POST https://ai.alviongs.com/webhook/partners/create
 
 And then GET should return:
 ```bash
-GET https://ai.alviongs.com/webhook/partners
+GET https://ai.nibog.in/webhook/partners
 ```
 
 **Response:**

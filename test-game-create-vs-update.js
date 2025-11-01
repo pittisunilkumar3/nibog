@@ -16,7 +16,7 @@ async function testCreateEndpoint() {
   try {
     console.log('📡 Testing create endpoint with payload:', createPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -55,7 +55,7 @@ async function testUpdateEndpoint() {
   try {
     console.log('📡 Testing update endpoint with payload:', updatePayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -126,12 +126,12 @@ async function analyzeEndpointDifferences() {
   console.log('🔍 ENDPOINT COMPARISON:');
   console.log('');
   console.log('CREATE ENDPOINT:');
-  console.log('- URL: https://ai.alviongs.com/webhook/nibog/gamesimage/create');
+  console.log('- URL: https://ai.nibog.in/webhook/nibog/gamesimage/create');
   console.log('- Purpose: Create new game image records');
   console.log('- Used when: No existing images for the game');
   console.log('');
   console.log('UPDATE ENDPOINT:');
-  console.log('- URL: https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+  console.log('- URL: https://ai.nibog.in/webhook/nibog/gamesimage/update');
   console.log('- Purpose: Update existing game image records');
   console.log('- Used when: Game already has images');
   console.log('');

@@ -18,7 +18,7 @@
 Through comprehensive testing, I discovered the issue was **NOT with the update payload** (which was working correctly), but with the **image fetching system**:
 
 ### ✅ What Was Working:
-- ✅ **Update API**: `POST https://ai.alviongs.com/webhook/nibog/eventimage/updated` worked perfectly
+- ✅ **Update API**: `POST https://ai.nibog.in/webhook/nibog/eventimage/updated` worked perfectly
 - ✅ **Update payload**: Correct format was being sent
 - ✅ **External webhook**: Successfully processed updates
 
@@ -134,7 +134,7 @@ User sees → Success message
 const response = await fetch('/api/eventimages/get', {...});
 
 // After: Calls external API directly (works correctly)
-const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {...});
+const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {...});
 ```
 
 ## 🎉 Success Metrics

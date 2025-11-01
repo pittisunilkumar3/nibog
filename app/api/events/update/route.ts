@@ -77,7 +77,7 @@ export async function POST(request: Request) {
       console.log("Server API route: First attempt failed, trying with alternative URL format");
 
       // Try with webhook instead of webhook-test as a fallback
-      const alternativeUrl = "https://ai.alviongs.com/webhook/v1/nibog/event-game-slots/update";
+      const alternativeUrl = "https://ai.nibog.in/webhook/v1/nibog/event-game-slots/update";
       console.log("Server API route: Trying alternative URL:", alternativeUrl);
 
       const alternativeResponse = await fetch(alternativeUrl, {

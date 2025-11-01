@@ -11,7 +11,7 @@ Successfully implemented image fetching functionality for both event and game ed
 - **Path**: `/api/eventimages/get`
 - **Method**: POST
 - **Purpose**: Fetches existing event images from external API
-- **External API**: `https://ai.alviongs.com/webhook/nibog/geteventwithimages/get`
+- **External API**: `https://ai.nibog.in/webhook/nibog/geteventwithimages/get`
 - **Payload**: `{"event_id": 99}`
 - **Response**: Array of event images with id, event_id, image_url, priority, is_active, timestamps
 
@@ -19,7 +19,7 @@ Successfully implemented image fetching functionality for both event and game ed
 - **Path**: `/api/gamesimage/get`
 - **Method**: POST
 - **Purpose**: Fetches existing game images from external API
-- **External API**: `https://ai.alviongs.com/webhook/nibog/gamesimage/get`
+- **External API**: `https://ai.nibog.in/webhook/nibog/gamesimage/get`
 - **Payload**: `{"game_id": 25}`
 - **Response**: Array of game images with id, game_id, image_url, priority, is_active, timestamps
 

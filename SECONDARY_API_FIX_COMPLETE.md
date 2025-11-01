@@ -8,7 +8,7 @@
 - ❌ **Image priority changes** were not being sent to external webhook
 
 **User Request**: 
-> "please use the event id from the url :- https://ai.alviongs.com/webhook/nibog/eventimage/updated this is my api and this is my payload"
+> "please use the event id from the url :- https://ai.nibog.in/webhook/nibog/eventimage/updated this is my api and this is my payload"
 
 ```json
 {
@@ -122,7 +122,7 @@ Step 3: Show appropriate success message ✅
 
 ### 4. **Secondary API Call** (Now Working):
 ```
-POST https://ai.alviongs.com/webhook/nibog/eventimage/updated
+POST https://ai.nibog.in/webhook/nibog/eventimage/updated
 Content-Type: application/json
 
 {
@@ -161,7 +161,7 @@ Content-Type: application/json
 
 ### ✅ **Technical Implementation**:
 - **Payload Format**: Exactly as user specified
-- **API Endpoint**: Correct URL `https://ai.alviongs.com/webhook/nibog/eventimage/updated`
+- **API Endpoint**: Correct URL `https://ai.nibog.in/webhook/nibog/eventimage/updated`
 - **Event ID**: Correctly extracted from URL (99)
 - **Priority Updates**: Work with or without new image uploads
 - **Error Handling**: Graceful degradation with clear error messages

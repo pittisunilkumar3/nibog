@@ -272,7 +272,7 @@ async function updateExistingBooking(
 
     console.log(`💳 Creating payment record with payload:`, JSON.stringify(paymentPayload, null, 2));
 
-    const paymentResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/create', {
+    const paymentResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/create', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -516,7 +516,7 @@ async function createBookingAndPaymentDirect(
 
     console.log(`💳 Creating direct payment record with payload:`, JSON.stringify(paymentPayload, null, 2));
 
-    const paymentResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/create', {
+    const paymentResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -650,7 +650,7 @@ async function createBookingAndPayment(
 
     const paymentStatus = paymentStatusMap[paymentState as keyof typeof paymentStatusMap] || 'failed';
 
-    const paymentResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/create', {
+    const paymentResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

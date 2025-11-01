@@ -1,6 +1,6 @@
 // Test Partners Homepage Integration
 
-const API_BASE_URL = 'https://ai.alviongs.com/webhook';
+const API_BASE_URL = 'https://ai.nibog.in/webhook';
 
 console.log('🧪 Testing Partners Homepage Integration\n');
 console.log('═══════════════════════════════════════════════════════\n');
@@ -131,7 +131,7 @@ async function runTests() {
     console.log('❌ API connection failed');
     console.log('\n   Troubleshooting:');
     console.log('   1. Check n8n workflows are activated');
-    console.log('   2. Verify endpoint: https://ai.alviongs.com/webhook/partners');
+    console.log('   2. Verify endpoint: https://ai.nibog.in/webhook/partners');
     console.log('   3. Test in browser console');
     console.log('   4. Check network tab for errors\n');
   }

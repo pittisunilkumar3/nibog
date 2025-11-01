@@ -5,7 +5,7 @@
 **Request**: Update the Baby Olympics page at `http://localhost:3111/baby-olympics` to display all available NIBOG games instead of the current limited selection.
 
 **✅ All Requirements Met**:
-1. **Data Source**: ✅ Now uses the same games API endpoint (`https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage`) as the homepage
+1. **Data Source**: ✅ Now uses the same games API endpoint (`https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage`) as the homepage
 2. **Display All Games**: ✅ Shows all active games with images (not just 4 like homepage)
 3. **Maintain Existing Design**: ✅ Kept current page layout, styling, and responsive design
 4. **Game Information**: ✅ Displays all required information for each game
@@ -119,7 +119,7 @@ BEFORE:
 
 AFTER:
 ✅ API: /api/games-with-images (same as homepage)
-✅ External: https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage
+✅ External: https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage
 ✅ Data: Complete game information with images
 ```
 

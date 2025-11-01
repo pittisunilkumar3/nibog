@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     console.log('Home slider API: Force refresh:', forceRefresh);
     console.log('Home slider API: Timestamp:', timestamp);
     
-    const response = await fetch(`https://ai.alviongs.com/webhook/v1/nibog/homesection/get?t=${timestamp}`, {
+    const response = await fetch(`https://ai.nibog.in/webhook/v1/nibog/homesection/get?t=${timestamp}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

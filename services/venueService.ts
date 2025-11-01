@@ -344,7 +344,7 @@ export const getAllVenuesWithCity = async (): Promise<any[]> => {
   try {
     console.log("Fetching all venues with city details from new API...");
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/venues/getall-with-city-event-count', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/venues/getall-with-city-event-count', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

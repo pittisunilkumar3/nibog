@@ -5,7 +5,7 @@ export async function GET() {
     console.log("Server API route: Fetching all cities...");
 
     // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/city/get-all";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/city/get-all";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     let response;

@@ -1,5 +1,5 @@
 
-GET :- https://ai.alviongs.com/webhook/v1/nibog/complete/event
+GET :- https://ai.nibog.in/webhook/v1/nibog/complete/event
 
 responsive:--
 ------------

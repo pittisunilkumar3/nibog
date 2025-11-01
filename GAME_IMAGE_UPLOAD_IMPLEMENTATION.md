@@ -25,7 +25,7 @@ Successfully implemented image upload functionality for game creation that uploa
 - **Path**: `/api/gamesimage/webhook`
 - **Method**: POST
 - **Purpose**: Sends image data to external webhook
-- **External API**: `https://ai.alviongs.com/webhook/nibog/gamesimage/create`
+- **External API**: `https://ai.nibog.in/webhook/nibog/gamesimage/create`
 - **Payload Format**:
   ```json
   {

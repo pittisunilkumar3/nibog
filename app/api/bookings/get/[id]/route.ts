@@ -17,7 +17,7 @@ export async function GET(
 
     // For now, we'll get the booking from the get-all-active-event endpoint and filter by ID
     // since there's no specific get-by-id endpoint in the API documentation
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all-active-event";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get-all-active-event";
 
     // Create an AbortController for timeout
     const controller = new AbortController();

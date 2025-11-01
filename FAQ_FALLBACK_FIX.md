@@ -6,7 +6,7 @@ The FAQ page was showing "Failed to Load FAQs" error because:
 
 **API Endpoint Not Found**: 
 ```
-GET https://ai.alviongs.com/webhook/v1/nibog/faq/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/faq/get-all
 Response: 404 - "The requested webhook is not registered"
 ```
 

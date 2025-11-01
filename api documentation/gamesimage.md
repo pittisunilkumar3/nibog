@@ -1,6 +1,6 @@
 # Game Image create
 
-POST https://ai.alviongs.com/webhook/nibog/gamesimage/create
+POST https://ai.nibog.in/webhook/nibog/gamesimage/create
 
 Payload:-
 
@@ -29,7 +29,7 @@ Responsive:-
 
 # Getting the image
 
-POST https://ai.alviongs.com/webhook/nibog/gamesimage/get
+POST https://ai.nibog.in/webhook/nibog/gamesimage/get
 
 payload :-
 
@@ -55,7 +55,7 @@ responsive :-
 
 # update game image 
 
-POST https://ai.alviongs.com/webhook/nibog/gamesimage/update
+POST https://ai.nibog.in/webhook/nibog/gamesimage/update
 
 payload :-
 
@@ -83,7 +83,7 @@ response :-
 
 # games details with image
 
-GET https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage
+GET https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage
 
 
 responsive :-

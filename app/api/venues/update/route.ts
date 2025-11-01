@@ -57,7 +57,7 @@ export async function POST(request: Request) {
     console.log("Server API route: Data being sent to external API:", JSON.stringify(normalizedData, null, 2));
 
     // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/venues/update";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/venues/update";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     // Try POST method first (as per documentation)

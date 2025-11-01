@@ -17,7 +17,7 @@ export async function GET() {
     if (!response.ok) {
       // If the first attempt fails, try with a different URL format
       // Try with webhook-test instead of webhook
-      const alternativeUrl = "https://ai.alviongs.com/webhook-test/v1/nibog/event-game-slot/get-all";
+      const alternativeUrl = "https://ai.nibog.in/webhook-test/v1/nibog/event-game-slot/get-all";
 
       const alternativeResponse = await fetch(alternativeUrl, {
         method: "GET",

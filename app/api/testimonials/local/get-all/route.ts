@@ -30,7 +30,7 @@ export async function GET() {
     // Also get external testimonials for comparison/backup
     let externalTestimonials = [];
     try {
-      const externalResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/get-all');
+      const externalResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/testimonials/get-all');
       if (externalResponse.ok) {
         externalTestimonials = await externalResponse.json();
         // Mark external testimonials

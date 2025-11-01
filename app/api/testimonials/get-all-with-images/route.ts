@@ -5,7 +5,7 @@ export async function GET() {
     console.log("Server API route: Getting testimonials with images from external API");
 
     // Call the testimonial images API endpoint that returns complete data
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/testmonialimages/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/testmonialimages/get', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

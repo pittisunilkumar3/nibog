@@ -21,7 +21,7 @@ export default function RefundPolicyPage() {
       setError(null)
 
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/refundpolicyget', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

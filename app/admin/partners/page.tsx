@@ -59,7 +59,7 @@ interface Partner {
   updated_at?: string
 }
 
-const API_BASE_URL = "https://ai.alviongs.com/webhook"
+const API_BASE_URL = "https://ai.nibog.in/webhook"
 
 export default function PartnersPage() {
   const router = useRouter()

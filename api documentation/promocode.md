@@ -1,6 +1,6 @@
 ## create promocode
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/create
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/create
 
 payload
 
@@ -54,7 +54,7 @@ response
 
 ## get promocode by id and status
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-status
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-status
 {
     "id": 1,
     "is_active": true
@@ -83,7 +83,7 @@ response
 
 ## get promocode by id
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get
 {
     "id": 1
 }
@@ -130,7 +130,7 @@ response
 
 ## get all promocode
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get-all
 
 response
 
@@ -155,7 +155,7 @@ response
 
 ## update promocode
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/update
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/update
 
 payload
 
@@ -210,7 +210,7 @@ response
 
 ## delete promocode
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/delete
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/delete
 {
     "id": 1
 }
@@ -226,7 +226,7 @@ response
 
 ## get promocode by code
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-code
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-code
 
 payload
 
@@ -257,7 +257,7 @@ response
 
 ## get promocode by event id
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-event
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-event
 {
     "event_id": 11
 }
@@ -333,7 +333,7 @@ response
 
 ## get promocode by status
 
-GET https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-status
+GET https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-status
 {
     "is_active": true
 }
@@ -359,7 +359,7 @@ response
 
 ## Get Promocodes by Event + Games
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-event-games
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-event-games
 
 payload
 
@@ -463,7 +463,7 @@ response
 
 ## Enhanced Promocode Validation
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/validate
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/validate
 
 payload
 
@@ -494,7 +494,7 @@ response
 
 ## Preview Validation
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/preview-validation
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/preview-validation
 
 payload
 
@@ -525,7 +525,7 @@ response
 
 ## Rollback Usage
 
-POST https://ai.alviongs.com/webhook/v1/nibog/promocode/rollback-usage
+POST https://ai.nibog.in/webhook/v1/nibog/promocode/rollback-usage
 
 payload
 

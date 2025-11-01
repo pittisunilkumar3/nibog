@@ -19,7 +19,7 @@ export async function saveSocialMedia(socialMediaData: SocialMedia): Promise<Soc
 
   try {
     // Use the external API directly
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/socialmedia/create', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/socialmedia/create', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -55,7 +55,7 @@ export async function getSocialMedia(): Promise<SocialMedia | null> {
 
   try {
     // Use the external API directly
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/socialmedia/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/socialmedia/get', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

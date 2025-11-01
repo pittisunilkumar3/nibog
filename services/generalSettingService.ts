@@ -22,7 +22,7 @@ export async function saveGeneralSetting(generalSettingData: GeneralSetting): Pr
 
   try {
     // Use the external API directly
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/generalsetting/create', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/generalsetting/create', {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -58,7 +58,7 @@ export async function getGeneralSetting(): Promise<GeneralSetting | null> {
 
   try {
     // Use the external API directly
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/generalsetting/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/generalsetting/get', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

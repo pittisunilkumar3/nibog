@@ -11,11 +11,11 @@ Successfully implemented the FAQ delete API functionality in the admin FAQ page.
 Updated FAQ DELETE endpoint to use the correct URL:
 ```typescript
 export const FAQ_API = {
-  CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create",
+  CREATE: "https://ai.nibog.in/webhook/nibog/v1/faq/create",
   GET: `${API_BASE_URL}/faq/get`,
-  GET_ALL: "https://ai.alviongs.com/webhook/nibog/v1/faq/getall",
+  GET_ALL: "https://ai.nibog.in/webhook/nibog/v1/faq/getall",
   UPDATE: `${API_BASE_URL}/faq/update`,
-  DELETE: "https://ai.alviongs.com/webhook/nibog/v1/faq/delete", // ✅ Updated
+  DELETE: "https://ai.nibog.in/webhook/nibog/v1/faq/delete", // ✅ Updated
 };
 ```
 
@@ -123,7 +123,7 @@ const handleDelete = async (id: number) => {
 ## API Contract
 
 ### Request
-**Endpoint:** `POST https://ai.alviongs.com/webhook/nibog/v1/faq/delete`
+**Endpoint:** `POST https://ai.nibog.in/webhook/nibog/v1/faq/delete`
 
 **Headers:**
 ```json
@@ -319,7 +319,7 @@ toast({
 ## Files Modified
 
 1. ✅ `config/api.ts`
-   - Updated DELETE endpoint URL to `https://ai.alviongs.com/webhook/nibog/v1/faq/delete`
+   - Updated DELETE endpoint URL to `https://ai.nibog.in/webhook/nibog/v1/faq/delete`
 
 2. ✅ `services/faqService.ts`
    - Enhanced `deleteFAQ()` function
@@ -432,6 +432,6 @@ toast({
 
 **Implementation Date:** October 14, 2025  
 **Status:** ✅ Complete and Ready for Testing  
-**API Endpoint:** POST https://ai.alviongs.com/webhook/nibog/v1/faq/delete  
+**API Endpoint:** POST https://ai.nibog.in/webhook/nibog/v1/faq/delete  
 **Payload:** `{ "id": number }`  
 **Response:** `{ "success": true }`

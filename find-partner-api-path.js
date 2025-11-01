@@ -4,9 +4,9 @@
  */
 
 const BASE_URLS = [
-  'https://ai.alviongs.com/webhook/v1/nibog',
-  'https://ai.alviongs.com/webhook',
-  'https://ai.alviongs.com/webhook/nibog'
+  'https://ai.nibog.in/webhook/v1/nibog',
+  'https://ai.nibog.in/webhook',
+  'https://ai.nibog.in/webhook/nibog'
 ];
 
 const colors = {

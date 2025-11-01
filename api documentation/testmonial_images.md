@@ -1,6 +1,6 @@
 # create or update image for testimonial 
 
-POST https://ai.alviongs.com/webhook/nibog/testmonialimages/update
+POST https://ai.nibog.in/webhook/nibog/testmonialimages/update
 
 payload :-
 
@@ -29,7 +29,7 @@ response :-
 
 # get single testimonial image 
 
-POST https://ai.alviongs.com/webhook/nibog/testmonialimages/getsingle
+POST https://ai.nibog.in/webhook/nibog/testmonialimages/getsingle
 
 payload :-
 
@@ -56,7 +56,7 @@ Response :-
 
 
 
-GET https://ai.alviongs.com/webhook/nibog/testmonialimages/get
+GET https://ai.nibog.in/webhook/nibog/testmonialimages/get
 
 
 response :-

@@ -1,6 +1,6 @@
 ## creating the footer setting
 
-POST :- https://ai.alviongs.com/webhook/v1/nibog/footer_setting/post
+POST :- https://ai.nibog.in/webhook/v1/nibog/footer_setting/post
 
 payload :-
 
@@ -33,7 +33,7 @@ responsive :-
 
 ## get the footer setting
 
-GET :- https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get
+GET :- https://ai.nibog.in/webhook/v1/nibog/footer_setting/get
 
 responsive :-
 

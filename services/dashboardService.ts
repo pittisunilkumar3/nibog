@@ -324,7 +324,7 @@ export function clearDashboardCache() {
 // Fetch dashboard data from API endpoint
 export async function getAPIDashboardData(): Promise<APIDashboardResponse> {
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/dashboard/api', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/dashboard/api', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

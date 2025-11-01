@@ -1,4 +1,4 @@
-POST https://ai.alviongs.com/webhook/v1/nibog/homesection/create
+POST https://ai.nibog.in/webhook/v1/nibog/homesection/create
 
 payload :-
 
@@ -24,7 +24,7 @@ response :-
 
 
 
-GET https://ai.alviongs.com/webhook/v1/nibog/homesection/get
+GET https://ai.nibog.in/webhook/v1/nibog/homesection/get
 
 
 Response :-
@@ -48,7 +48,7 @@ Response :-
 
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/homesection/delete
+POST https://ai.nibog.in/webhook/v1/nibog/homesection/delete
 
 payload :-
 

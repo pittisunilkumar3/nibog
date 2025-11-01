@@ -550,7 +550,7 @@ export default function NewBookingPage() {
 
     try {
       console.log(`🎮 Fetching games for event ID: ${eventId} and child age: ${childAge} months`);
-      console.log(`📡 API endpoint: https://ai.alviongs.com/webhook/v1/nibog/events/get-games-by-ageandevent-new`);
+      console.log(`📡 API endpoint: https://ai.nibog.in/webhook/v1/nibog/events/get-games-by-ageandevent-new`);
       console.log(`📤 Request payload:`, { event_id: eventId, child_age: childAge });
 
       // Call the new API to get games by age and event
@@ -974,7 +974,7 @@ export default function NewBookingPage() {
       console.log("Creating booking with data:", bookingData)
 
       // Call the booking creation API (using the same endpoint as user panel)
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

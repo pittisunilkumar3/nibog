@@ -106,7 +106,7 @@ function makeAPICall(payload, testName) {
         console.log(`Transaction ID: ${payload.booking.transaction_id}`);
         
         const options = {
-            hostname: 'ai.alviongs.com',
+            hostname: 'ai.nibog.in',
             port: 443,
             path: '/webhook/v1/nibog/bookingsevents/create',
             method: 'POST',

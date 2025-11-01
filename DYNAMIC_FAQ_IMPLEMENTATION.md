@@ -18,7 +18,7 @@ export const FAQ_API = {
 };
 ```
 
-**API Endpoint**: `https://ai.alviongs.com/webhook/v1/nibog/faq/get-all`
+**API Endpoint**: `https://ai.nibog.in/webhook/v1/nibog/faq/get-all`
 
 ### 2. **FAQ Service** (`services/faqService.ts`)
 Created comprehensive FAQ service with the following functions:
@@ -101,7 +101,7 @@ CREATE TABLE faqs (
 
 ### Via API:
 ```bash
-POST https://ai.alviongs.com/webhook/v1/nibog/faq/create
+POST https://ai.nibog.in/webhook/v1/nibog/faq/create
 Content-Type: application/json
 
 {
@@ -235,7 +235,7 @@ To make FAQs appear on the website:
 
 - **Public FAQ Page**: `http://localhost:3111/faq`
 - **Admin FAQ Management**: `http://localhost:3111/admin/faq`
-- **API Endpoint**: `https://ai.alviongs.com/webhook/v1/nibog/faq/get-all`
+- **API Endpoint**: `https://ai.nibog.in/webhook/v1/nibog/faq/get-all`
 
 ---
 

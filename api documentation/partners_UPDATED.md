@@ -7,12 +7,12 @@ Complete API documentation for testing Partners CRUD operations built in n8n wit
 ## **Base URL**
 
 ```
-https://ai.alviongs.com/webhook
+https://ai.nibog.in/webhook
 ```
 
 **⚠️ Important Note:**  
 - All partner endpoints use this base URL **without** `/v1/nibog` prefix
-- Discovered working path: `https://ai.alviongs.com/webhook/partners/*`
+- Discovered working path: `https://ai.nibog.in/webhook/partners/*`
 
 ---
 
@@ -32,7 +32,7 @@ https://ai.alviongs.com/webhook
 
 * **Method:** `POST`
 * **Endpoint:** `/partners/create`
-* **Full URL:** `https://ai.alviongs.com/webhook/partners/create`
+* **Full URL:** `https://ai.nibog.in/webhook/partners/create`
 * **Body Type:** JSON (raw)
 
 **Request Body Example:**
@@ -69,7 +69,7 @@ https://ai.alviongs.com/webhook
 
 **cURL Example:**
 ```bash
-curl -X POST https://ai.alviongs.com/webhook/partners/create \
+curl -X POST https://ai.nibog.in/webhook/partners/create \
   -H "Content-Type: application/json" \
   -d '{
     "partner_name": "Partner A",
@@ -85,7 +85,7 @@ curl -X POST https://ai.alviongs.com/webhook/partners/create \
 
 * **Method:** `GET`
 * **Endpoint:** `/partners`
-* **Full URL:** `https://ai.alviongs.com/webhook/partners`
+* **Full URL:** `https://ai.nibog.in/webhook/partners`
 
 **Success Response Example (200 OK):**
 
@@ -119,7 +119,7 @@ curl -X POST https://ai.alviongs.com/webhook/partners/create \
 
 **cURL Example:**
 ```bash
-curl -X GET https://ai.alviongs.com/webhook/partners
+curl -X GET https://ai.nibog.in/webhook/partners
 ```
 
 ---
@@ -128,13 +128,13 @@ curl -X GET https://ai.alviongs.com/webhook/partners
 
 * **Method:** `GET`
 * **Endpoint:** `/partners/:id`
-* **Full URL:** `https://ai.alviongs.com/webhook/partners/:id`
+* **Full URL:** `https://ai.nibog.in/webhook/partners/:id`
 * **Path Parameter:** `id` → Partner ID to fetch
 
 **Example URL:**
 
 ```
-https://ai.alviongs.com/webhook/partners/1
+https://ai.nibog.in/webhook/partners/1
 ```
 
 **Success Response Example (200 OK):**
@@ -153,7 +153,7 @@ https://ai.alviongs.com/webhook/partners/1
 
 **cURL Example:**
 ```bash
-curl -X GET https://ai.alviongs.com/webhook/partners/1
+curl -X GET https://ai.nibog.in/webhook/partners/1
 ```
 
 ---
@@ -162,7 +162,7 @@ curl -X GET https://ai.alviongs.com/webhook/partners/1
 
 * **Method:** `PUT`
 * **Endpoint:** `/partners/update`
-* **Full URL:** `https://ai.alviongs.com/webhook/partners/update`
+* **Full URL:** `https://ai.nibog.in/webhook/partners/update`
 * **Body Type:** JSON (raw)
 
 **Request Body Example:**
@@ -193,7 +193,7 @@ curl -X GET https://ai.alviongs.com/webhook/partners/1
 
 **cURL Example:**
 ```bash
-curl -X PUT https://ai.alviongs.com/webhook/partners/update \
+curl -X PUT https://ai.nibog.in/webhook/partners/update \
   -H "Content-Type: application/json" \
   -d '{
     "id": 1,
@@ -210,13 +210,13 @@ curl -X PUT https://ai.alviongs.com/webhook/partners/update \
 
 * **Method:** `DELETE`
 * **Endpoint:** `/partners/:id`
-* **Full URL:** `https://ai.alviongs.com/webhook/partners/:id`
+* **Full URL:** `https://ai.nibog.in/webhook/partners/:id`
 * **Path Parameter:** `id` → Partner ID to delete
 
 **Example URL:**
 
 ```
-https://ai.alviongs.com/webhook/partners/1
+https://ai.nibog.in/webhook/partners/1
 ```
 
 **Success Response Example (200 OK):**
@@ -235,7 +235,7 @@ https://ai.alviongs.com/webhook/partners/1
 
 **cURL Example:**
 ```bash
-curl -X DELETE https://ai.alviongs.com/webhook/partners/1
+curl -X DELETE https://ai.nibog.in/webhook/partners/1
 ```
 
 ---
@@ -247,7 +247,7 @@ curl -X DELETE https://ai.alviongs.com/webhook/partners/1
 1. **Create a new collection** called "Partners API"
 2. **Set collection variable:**
    - Variable: `base_url`
-   - Value: `https://ai.alviongs.com/webhook`
+   - Value: `https://ai.nibog.in/webhook`
 
 3. **Create 5 requests:**
 

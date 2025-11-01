@@ -1,6 +1,6 @@
 // Test DELETE endpoint using POST method (as configured in n8n)
 
-const API_BASE_URL = 'https://ai.alviongs.com/webhook';
+const API_BASE_URL = 'https://ai.nibog.in/webhook';
 
 console.log('🧪 Testing DELETE Endpoint with POST Method\n');
 console.log('═══════════════════════════════════════════════════════\n');

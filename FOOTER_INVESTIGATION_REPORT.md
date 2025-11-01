@@ -7,7 +7,7 @@ I conducted a thorough investigation of the company name display issue in the fo
 ## 📋 Analysis Results
 
 ### 1. **API Data Flow Analysis** ✅
-- **API Endpoint**: `https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get`
+- **API Endpoint**: `https://ai.nibog.in/webhook/v1/nibog/footer_setting/get`
 - **API Status**: Working correctly
 - **Data Retrieved**: 
   ```json
@@ -118,7 +118,7 @@ Navigate to `/test-footer` to see:
 ### 2. **Browser Console Testing**
 ```javascript
 // Test API directly
-fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get')
+fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/get')
   .then(r => r.json())
   .then(console.log)
 

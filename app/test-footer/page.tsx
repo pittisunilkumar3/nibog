@@ -165,7 +165,7 @@ export default function TestFooterPage() {
           </CardHeader>
           <CardContent>
             <div className="space-y-2 text-sm font-mono">
-              <div>API Endpoint: https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get</div>
+              <div>API Endpoint: https://ai.nibog.in/webhook/v1/nibog/footer_setting/get</div>
               <div>Component: components/footer.tsx</div>
               <div>Service: services/footerSettingService.ts</div>
               <div>Test Page: app/test-footer/page.tsx</div>
@@ -176,7 +176,7 @@ export default function TestFooterPage() {
               <div className="mt-2 p-2 bg-muted rounded text-sm font-mono">
                 <div>// Test API directly:</div>
                 {(() => {
-                  fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get')
+                  fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/get')
                     .then(r => r.json())
                     .then(data => console.log(data));
                   return null;

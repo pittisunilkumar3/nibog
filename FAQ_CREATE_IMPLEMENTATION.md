@@ -11,7 +11,7 @@ Successfully implemented FAQ creation functionality in the admin panel using the
 Updated FAQ CREATE endpoint to use the correct URL:
 ```typescript
 export const FAQ_API = {
-  CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create", // POST
+  CREATE: "https://ai.nibog.in/webhook/nibog/v1/faq/create", // POST
   GET: `${API_BASE_URL}/faq/get`,
   GET_ALL: `${API_BASE_URL}/faq/get-all`,
   UPDATE: `${API_BASE_URL}/faq/update`,
@@ -113,7 +113,7 @@ Added categories matching your FAQ system:
 ## API Contract
 
 ### Request
-**Endpoint:** `POST https://ai.alviongs.com/webhook/nibog/v1/faq/create`
+**Endpoint:** `POST https://ai.nibog.in/webhook/nibog/v1/faq/create`
 
 **Payload:**
 ```json

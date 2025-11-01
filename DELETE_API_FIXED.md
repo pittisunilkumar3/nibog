@@ -2,7 +2,7 @@
 
 ## Problem
 ```
-Access to fetch at 'https://ai.alviongs.com/webhook/partners/delete' from origin 'http://localhost:3111' 
+Access to fetch at 'https://ai.nibog.in/webhook/partners/delete' from origin 'http://localhost:3111' 
 has been blocked by CORS policy: Response to preflight request doesn't pass access control check: 
 No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ```

@@ -1,6 +1,6 @@
 # created template
 
-POST https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/create
+POST https://ai.nibog.in/webhook/v1/nibog/emailtemplate/create
 
 payload:- 
 
@@ -27,7 +27,7 @@ response:-
 
 # get all templates
 
-GET https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/emailtemplate/get-all
 
 
 response:- 
@@ -55,7 +55,7 @@ response:-
 
 # get template by id
 
-POST https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/get
+POST https://ai.nibog.in/webhook/v1/nibog/emailtemplate/get
 
 payload:- 
 
@@ -81,7 +81,7 @@ response:-
 
 # delete template
 
-POST https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/delete
+POST https://ai.nibog.in/webhook/v1/nibog/emailtemplate/delete
 
 payload:- 
 
@@ -105,7 +105,7 @@ response:-
 
 # update template
 
-POST https://ai.alviongs.com/webhook/v1/nibog/emailtemplate/update
+POST https://ai.nibog.in/webhook/v1/nibog/emailtemplate/update
 
 payload:- 
 

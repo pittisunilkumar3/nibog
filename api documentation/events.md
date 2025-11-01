@@ -1,6 +1,6 @@
 ## create event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event/create
+POST https://ai.nibog.in/webhook/v1/nibog/event/create
 
 Payload
 
@@ -31,7 +31,7 @@ Response (201 Created)
 
 ## get event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event/get
+POST https://ai.nibog.in/webhook/v1/nibog/event/get
 {
     "id": 17
 }
@@ -54,7 +54,7 @@ Response (200 OK)
 
 ## get all events
 
-GET https://ai.alviongs.com/webhook/v1/nibog/event/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/event/get-all
 
 Response (200 OK)
 
@@ -107,7 +107,7 @@ Response (200 OK)
 
 ## update event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event/update
+POST https://ai.nibog.in/webhook/v1/nibog/event/update
 
 payload
 
@@ -139,7 +139,7 @@ response
 
 ## delete event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event/delete
+POST https://ai.nibog.in/webhook/v1/nibog/event/delete
 {
     "id": 17
 }
@@ -154,7 +154,7 @@ response
 
 ## Get Upcoming Events 
 
-GET https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events
+GET https://ai.nibog.in/webhook/v1/nibog/events/upcoming-events
 
 Response (200 OK)
 
@@ -223,7 +223,7 @@ Response (200 OK)
 
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/events/participants
+POST https://ai.nibog.in/webhook/v1/nibog/events/participants
 
 Payload:--
 {

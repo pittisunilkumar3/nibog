@@ -2,7 +2,7 @@
 
 ## Base URL
 ```
-https://ai.alviongs.com/webhook/v1/nibog
+https://ai.nibog.in/webhook/v1/nibog
 ```
 
 ## Endpoints
@@ -14,7 +14,7 @@ https://ai.alviongs.com/webhook/v1/nibog
 
 **Request:**
 ```http
-GET https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget
+GET https://ai.nibog.in/webhook/v1/nibog/refundpolicyget
 Content-Type: application/json
 ```
 
@@ -42,7 +42,7 @@ Content-Type: application/json
 
 **Request:**
 ```http
-POST https://ai.alviongs.com/webhook/v1/nibog/refundpolicy
+POST https://ai.nibog.in/webhook/v1/nibog/refundpolicy
 Content-Type: application/json
 ```
 
@@ -95,13 +95,13 @@ The refund policy admin page is located at:
 
 **Get Refund Policy:**
 ```bash
-curl -X GET "https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget" \
+curl -X GET "https://ai.nibog.in/webhook/v1/nibog/refundpolicyget" \
   -H "Content-Type: application/json"
 ```
 
 **Save Refund Policy:**
 ```bash
-curl -X POST "https://ai.alviongs.com/webhook/v1/nibog/refundpolicy" \
+curl -X POST "https://ai.nibog.in/webhook/v1/nibog/refundpolicy" \
   -H "Content-Type: application/json" \
   -d '{
     "text": "<h2>Refund Policy</h2><p>Your content here...</p>"
@@ -114,7 +114,7 @@ curl -X POST "https://ai.alviongs.com/webhook/v1/nibog/refundpolicy" \
 // Get Refund Policy
 const getRefundPolicy = async () => {
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/refundpolicyget', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -130,7 +130,7 @@ const getRefundPolicy = async () => {
 // Save Refund Policy
 const saveRefundPolicy = async (content) => {
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/refundpolicy', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/refundpolicy', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -15,7 +15,7 @@ Successfully implemented image update functionality for both event and game edit
 - **Path**: `/api/eventimages/update`
 - **Method**: POST
 - **Purpose**: Updates existing event image records
-- **External API**: `https://ai.alviongs.com/webhook/nibog/eventimage/updated`
+- **External API**: `https://ai.nibog.in/webhook/nibog/eventimage/updated`
 - **Payload**: 
   ```json
   {
@@ -31,7 +31,7 @@ Successfully implemented image update functionality for both event and game edit
 - **Path**: `/api/gamesimage/update`
 - **Method**: POST
 - **Purpose**: Updates existing game image records
-- **External API**: `https://ai.alviongs.com/webhook/nibog/gamesimage/update`
+- **External API**: `https://ai.nibog.in/webhook/nibog/gamesimage/update`
 - **Payload**:
   ```json
   {

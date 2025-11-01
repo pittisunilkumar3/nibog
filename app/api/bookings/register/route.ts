@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { BOOKING_API } from '@/config/api';
+import { cacheManager } from '@/lib/cache';
 
 export async function POST(request: Request) {
   try {
@@ -34,11 +35,20 @@ export async function POST(request: Request) {
       const responseData = JSON.parse(responseText);
       console.log("Server API route: Booking registration response:", responseData);
 
+      // Invalidate both bookings and complete_bookings cache after successful booking registration
+      console.log("Server API route: Invalidating bookings cache after successful registration");
+      cacheManager.invalidate('bookings');
+      cacheManager.invalidate('complete_bookings');
+
       return NextResponse.json(responseData, { status: 200 });
     } catch (parseError) {
       console.error("Server API route: Error parsing response:", parseError);
       // If parsing fails but we got a 200 status, consider it a success
       if (response.status >= 200 && response.status < 300) {
+        // Invalidate both caches even if parsing failed but status is success
+        console.log("Server API route: Invalidating bookings cache after successful registration (parse error)");
+        cacheManager.invalidate('bookings');
+        cacheManager.invalidate('complete_bookings');
         return NextResponse.json({ success: true }, { status: 200 });
       }
       // Otherwise, return the error

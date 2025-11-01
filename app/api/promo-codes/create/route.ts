@@ -61,7 +61,7 @@ export async function POST(request: Request) {
     }
 
     // Call the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/promocode/create";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/promocode/create";
     console.log("Server API route: Calling API URL:", apiUrl);
     console.log("Server API route: Payload being sent:", JSON.stringify(payload, null, 2));
 
@@ -130,7 +130,7 @@ export async function POST(request: Request) {
       // Wait a moment for the database to be updated
       await new Promise(resolve => setTimeout(resolve, 1000));
 
-      const verifyUrl = "https://ai.alviongs.com/webhook/v1/nibog/promocode/get-by-code";
+      const verifyUrl = "https://ai.nibog.in/webhook/v1/nibog/promocode/get-by-code";
       const verifyResponse = await fetch(verifyUrl, {
         method: "POST",
         headers: {

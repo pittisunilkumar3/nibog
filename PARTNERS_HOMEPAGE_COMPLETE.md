@@ -8,7 +8,7 @@ Updated the Partners section on the homepage to fetch data dynamically from the 
 ### 1. Updated `components/partners-section.tsx` ✅
 
 **Key Features:**
-- ✅ Fetches partners from API: `https://ai.alviongs.com/webhook/partners`
+- ✅ Fetches partners from API: `https://ai.nibog.in/webhook/partners`
 - ✅ Filters only **Active** partners
 - ✅ Sorts by `display_priority` (ascending order)
 - ✅ Fully responsive grid layout
@@ -34,7 +34,7 @@ interface Partner {
 useEffect(() => {
   const fetchPartners = async () => {
     try {
-      const response = await fetch('https://ai.alviongs.com/webhook/partners')
+      const response = await fetch('https://ai.nibog.in/webhook/partners')
       if (response.ok) {
         const data = await response.json()
         const activePartners = data
@@ -168,7 +168,7 @@ http://localhost:3111/admin/partners
 
 ### Endpoint
 ```
-GET https://ai.alviongs.com/webhook/partners
+GET https://ai.nibog.in/webhook/partners
 ```
 
 ### Expected Response

@@ -46,10 +46,10 @@ export async function POST(request: NextRequest) {
       };
 
       console.log('📡 Fallback: Fetching from external API directly:', apiPayload);
-      console.log('🔗 External API URL:', 'https://ai.alviongs.com/webhook/nibog/geteventwithimages/get');
+      console.log('🔗 External API URL:', 'https://ai.nibog.in/webhook/nibog/geteventwithimages/get');
 
       // Fetch from external API
-      const apiResponse = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+      const apiResponse = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

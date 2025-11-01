@@ -44,7 +44,7 @@ Formatted cities for dropdown: [16 cities]
 
 ### 3. API Endpoint Testing ✅
 
-**Endpoint**: `https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count`
+**Endpoint**: `https://ai.nibog.in/webhook/v1/nibog/city/get-all-city-event-count`
 
 **Response**:
 - Status: 200 OK

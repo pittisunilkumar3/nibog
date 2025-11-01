@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 
 export async function GET() {
   try {
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/addons/get-all";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/addons/get-all";
 
     // Create an AbortController for timeout
     const controller = new AbortController();

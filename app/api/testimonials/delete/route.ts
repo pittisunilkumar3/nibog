@@ -16,7 +16,7 @@ export async function DELETE(request: Request) {
     }
 
     // Call the external API to delete testimonial
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/testimonials/delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

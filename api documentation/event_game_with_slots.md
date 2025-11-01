@@ -1,6 +1,6 @@
 ## create event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/create
+POST https://ai.nibog.in/webhook/v1/nibog/event-game-slot/create
 
 Payload
 
@@ -38,7 +38,7 @@ Response (201 Created)
 
 ## get event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/get
+POST https://ai.nibog.in/webhook/v1/nibog/event-game-slot/get
 
 payload
 
@@ -67,7 +67,7 @@ Response (200 OK)
 
 ## get all events
 
-GET https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/event-game-slot/get-all
 
 [
   {
@@ -172,7 +172,7 @@ GET https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/get-all
 
 ## update event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/update
+POST https://ai.nibog.in/webhook/v1/nibog/event-game-slot/update
 
 
 payload
@@ -210,7 +210,7 @@ response 200 OK
 
 ## Delete event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/delete
+POST https://ai.nibog.in/webhook/v1/nibog/event-game-slot/delete
 
 payload
 

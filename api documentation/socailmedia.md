@@ -1,6 +1,6 @@
 ## create social media
 
-POST https://ai.alviongs.com/webhook/v1/nibog/socialmedia/create
+POST https://ai.nibog.in/webhook/v1/nibog/socialmedia/create
 
 Payload
 
@@ -27,7 +27,7 @@ Response
 
 ## get social media
 
-GET https://ai.alviongs.com/webhook/v1/nibog/socialmedia/get
+GET https://ai.nibog.in/webhook/v1/nibog/socialmedia/get
 
 
 Response

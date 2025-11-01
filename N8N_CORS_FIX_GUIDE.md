@@ -2,7 +2,7 @@
 
 ## Problem
 ```
-Access to fetch at 'https://ai.alviongs.com/webhook/partners/delete' from origin 'http://localhost:3111' 
+Access to fetch at 'https://ai.nibog.in/webhook/partners/delete' from origin 'http://localhost:3111' 
 has been blocked by CORS policy: Response to preflight request doesn't pass access control check: 
 No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ```
@@ -15,7 +15,7 @@ No 'Access-Control-Allow-Origin' header is present on the requested resource.
 ## Solution: Configure CORS in n8n Webhook
 
 ### Step 1: Open DELETE Workflow in n8n
-1. Go to https://ai.alviongs.com
+1. Go to https://ai.nibog.in
 2. Navigate to your **Partners Delete** workflow
 3. Find the **Webhook** node that triggers the workflow
 
@@ -152,7 +152,7 @@ If you want a simpler approach:
 
 ### Test 1: OPTIONS Request (Preflight)
 ```bash
-curl -X OPTIONS https://ai.alviongs.com/webhook/partners/delete \
+curl -X OPTIONS https://ai.nibog.in/webhook/partners/delete \
   -H "Access-Control-Request-Method: DELETE" \
   -H "Access-Control-Request-Headers: Content-Type" \
   -H "Origin: http://localhost:3111" \
@@ -169,7 +169,7 @@ Access-Control-Allow-Headers: Content-Type
 
 ### Test 2: Actual DELETE Request
 ```bash
-curl -X DELETE https://ai.alviongs.com/webhook/partners/delete \
+curl -X DELETE https://ai.nibog.in/webhook/partners/delete \
   -H "Content-Type: application/json" \
   -H "Origin: http://localhost:3111" \
   -d '{"id": 1}' \

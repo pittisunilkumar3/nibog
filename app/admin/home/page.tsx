@@ -22,7 +22,7 @@ export default function HomeSection() {
   // Function to refresh image data from server
   const refreshImages = async () => {
     try {
-      const res = await fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/get")
+      const res = await fetch("https://ai.nibog.in/webhook/v1/nibog/homesection/get")
       const data = await res.json()
       const safeData = Array.isArray(data) ? data.slice(0, 50) : []
 
@@ -243,7 +243,7 @@ export default function HomeSection() {
             const filename = f.url.split("/").pop();
             const rel_path = `public/images/blog/home/${filename}`;
             try {
-              const resp = await fetch("https://ai.alviongs.com/webhook/v1/nibog/homesection/create", {
+              const resp = await fetch("https://ai.nibog.in/webhook/v1/nibog/homesection/create", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({

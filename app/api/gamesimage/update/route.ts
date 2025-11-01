@@ -45,11 +45,11 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('🔄 Calling games image update endpoint:', webhookPayload)
-    console.log('📡 External webhook URL:', 'https://ai.alviongs.com/webhook/nibog/gamesimage/update')
+    console.log('📡 External webhook URL:', 'https://ai.nibog.in/webhook/nibog/gamesimage/update')
     console.log('💡 Using the correct update endpoint as specified by user')
 
     // Call the correct update endpoint as specified by user
-    const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

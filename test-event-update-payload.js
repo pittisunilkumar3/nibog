@@ -17,7 +17,7 @@ async function testCurrentEventUpdatePayload() {
   try {
     console.log('📡 Testing current payload format:', currentPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -58,7 +58,7 @@ async function testDocumentationPayload() {
   try {
     console.log('📡 Testing API documentation payload:', docPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -168,7 +168,7 @@ async function testWithHttpUrl() {
   try {
     console.log('📡 Testing with HTTP URL format:', httpPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

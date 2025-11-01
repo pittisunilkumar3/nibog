@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     console.log(`Fetching participants for event ID: ${eventId}`);
     
     // Try the new API endpoint first
-    const apiUrl = `https://ai.alviongs.com/webhook/v1/nibog/events/participants?event_id=${eventId}`;
+    const apiUrl = `https://ai.nibog.in/webhook/v1/nibog/events/participants?event_id=${eventId}`;
     console.log(`Using API URL: ${apiUrl}`);
     
     const response = await fetch(

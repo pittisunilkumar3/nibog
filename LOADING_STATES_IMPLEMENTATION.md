@@ -143,7 +143,7 @@ When a user selects a city from the dropdown, a loading overlay appears immediat
 ### API Calls
 1. **Cities API:** `getAllCities()` from `@/services/cityService`
    - Called on component mount via `useEffect`
-   - Endpoint: `https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count`
+   - Endpoint: `https://ai.nibog.in/webhook/v1/nibog/city/get-all-city-event-count`
 
 2. **Events API:** `getEventsByCityId(cityId)` from `@/services/eventService`
    - Called when city is selected via `handleCityChange`

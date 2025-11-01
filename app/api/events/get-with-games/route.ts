@@ -17,22 +17,22 @@ export async function POST(request: Request) {
 
     // Fetch data from multiple endpoints to get complete information
     const [eventsResponse, gameSlotsResponse, citiesResponse, venuesResponse] = await Promise.all([
-      fetch("https://ai.alviongs.com/webhook/v1/nibog/event/get-all", {
+      fetch("https://ai.nibog.in/webhook/v1/nibog/event/get-all", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
       }),
-      fetch("https://ai.alviongs.com/webhook/v1/nibog/event-game-slot/get-all", {
+      fetch("https://ai.nibog.in/webhook/v1/nibog/event-game-slot/get-all", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
       }),
-      fetch("https://ai.alviongs.com/webhook/v1/nibog/city/get-all", {
+      fetch("https://ai.nibog.in/webhook/v1/nibog/city/get-all", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",
       }),
-      fetch("https://ai.alviongs.com/webhook/v1/nibog/venues/get-all", {
+      fetch("https://ai.nibog.in/webhook/v1/nibog/venues/get-all", {
         method: "GET",
         headers: { "Content-Type": "application/json" },
         cache: "no-store",

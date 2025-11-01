@@ -3,7 +3,7 @@
  * Using the discovered working base URL
  */
 
-const BASE_URL = 'https://ai.alviongs.com/webhook';
+const BASE_URL = 'https://ai.nibog.in/webhook';
 
 // Color codes for console output
 const colors = {

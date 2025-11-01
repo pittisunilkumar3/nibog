@@ -193,7 +193,7 @@ SET DEFAULT 'https://www.linkedin.com/in/new-india-baby-olympicgames?utm_source=
 ```
 
 ### API Endpoint Updates
-Ensure the external API at `https://ai.alviongs.com/webhook/v1/nibog/` supports:
+Ensure the external API at `https://ai.nibog.in/webhook/v1/nibog/` supports:
 - `linkedin_url` field in POST requests to `/socialmedia/create`
 - `linkedin_url` field in GET responses from `/socialmedia/get`
 - `linkedin_url` field in footer_setting endpoints

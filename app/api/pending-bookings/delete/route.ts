@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     }
 
     // Delete from database via external API
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/pending-bookings/delete', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/pending-bookings/delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

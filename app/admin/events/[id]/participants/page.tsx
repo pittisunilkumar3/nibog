@@ -62,7 +62,7 @@ export default function ParticipantsPage({ params }: { params: { id: string } })
         }
 
         console.log('Fetching data for event:', params.id);
-        const response = await fetch(`https://ai.alviongs.com/webhook/v1/nibog/events/participants`, {
+        const response = await fetch(`https://ai.nibog.in/webhook/v1/nibog/events/participants`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

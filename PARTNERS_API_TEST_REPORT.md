@@ -52,7 +52,7 @@ The n8n hint message tells us:
 ## 🔧 Required Actions
 
 ### Action 1: Check n8n Workflow Status
-1. Log in to your n8n instance at `https://ai.alviongs.com`
+1. Log in to your n8n instance at `https://ai.nibog.in`
 2. Look for workflows named:
    - "Partners Create"
    - "Partners Get All"
@@ -172,7 +172,7 @@ http://localhost:5678/webhook/partners/create
 
 But it should be:
 ```
-https://ai.alviongs.com/webhook/v1/nibog/partners/create
+https://ai.nibog.in/webhook/v1/nibog/partners/create
 ```
 
 Update the documentation once workflows are working.

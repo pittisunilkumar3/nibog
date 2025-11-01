@@ -40,10 +40,10 @@ export async function POST(request: NextRequest) {
     };
 
     console.log('Sending to external webhook:', webhookPayload);
-    console.log('External webhook URL:', 'https://ai.alviongs.com/webhook/nibog/gamesimage/create');
+    console.log('External webhook URL:', 'https://ai.nibog.in/webhook/nibog/gamesimage/create');
 
     // Send to external webhook
-    const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+    const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

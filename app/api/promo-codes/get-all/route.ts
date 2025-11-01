@@ -5,7 +5,7 @@ export async function GET() {
     console.log("Server API route: Fetching all promo codes...");
 
     // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/promocode/get-all";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/promocode/get-all";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     // Set a timeout for the fetch request

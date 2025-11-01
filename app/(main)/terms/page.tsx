@@ -20,7 +20,7 @@ export default function TermsPage() {
       setError(null)
 
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandconditionsget', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/termsandconditionsget', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',

@@ -68,9 +68,9 @@ async function testGamesSecondaryApiDirectly() {
   
   try {
     console.log('📡 Testing games secondary API with payload:', testPayload);
-    console.log('🔗 API URL: https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+    console.log('🔗 API URL: https://ai.nibog.in/webhook/nibog/gamesimage/update');
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -246,9 +246,9 @@ async function testUserSpecifiedPayload() {
   
   try {
     console.log('📡 Testing with user specified payload format:', userPayload);
-    console.log('🔗 Calling: https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+    console.log('🔗 Calling: https://ai.nibog.in/webhook/nibog/gamesimage/update');
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(userPayload),
@@ -304,7 +304,7 @@ async function runGamesSecondaryApiTest() {
     console.log('\n🎯 WHAT THE FIX ACCOMPLISHES:');
     console.log('- ✅ Game details API: Called (was already working)');
     console.log('- ✅ Secondary games image API: Called (now fixed)');
-    console.log('- ✅ Correct endpoint: https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+    console.log('- ✅ Correct endpoint: https://ai.nibog.in/webhook/nibog/gamesimage/update');
     console.log('- ✅ Payload format: Exactly as user specified');
     console.log('- ✅ Works without new image: Priority-only changes work');
     console.log('- ✅ Works with new image: Upload + priority changes work');
@@ -341,7 +341,7 @@ async function runGamesSecondaryApiTest() {
   
   console.log('\n💡 SUMMARY:');
   console.log('✅ FIXED: Games edit page now calls secondary API on every "Save Changes"');
-  console.log('✅ FIXED: Uses correct endpoint https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+  console.log('✅ FIXED: Uses correct endpoint https://ai.nibog.in/webhook/nibog/gamesimage/update');
   console.log('✅ FIXED: Works with existing images (no new upload needed)');
   console.log('✅ FIXED: Uses exact payload format user specified');
   console.log('✅ FIXED: Both game details and image APIs are updated');

@@ -94,7 +94,7 @@ export default function EditTestimonialPage({ params }: Props) {
     // Fetch cities
     const fetchCities = async () => {
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/city/get-all')
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/city/get-all')
         if (!response.ok) {
           throw new Error('Failed to fetch cities')
         }
@@ -108,7 +108,7 @@ export default function EditTestimonialPage({ params }: Props) {
     // Fetch events
     const fetchEvents = async () => {
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/event/get-all')
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/event/get-all')
         if (!response.ok) {
           throw new Error('Failed to fetch events')
         }

@@ -1,4 +1,4 @@
-POST https://ai.alviongs.com/webhook/v1/nibog/event-registration/create
+POST https://ai.nibog.in/webhook/v1/nibog/event-registration/create
 
 Payload
 
@@ -42,7 +42,7 @@ Payload
 
 ## get all events
 
-GET https://ai.alviongs.com/webhook/v1/nibog/event-registration/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/event-registration/get-all
 
 [
   {
@@ -382,7 +382,7 @@ GET https://ai.alviongs.com/webhook/v1/nibog/event-registration/get-all
 ## get event
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-registration/get
+POST https://ai.nibog.in/webhook/v1/nibog/event-registration/get
 
 payload
 
@@ -449,7 +449,7 @@ response 200 OK
 ## delete event
 
 
-Delete https://ai.alviongs.com/webhook/v1/nibog/event-registration/delete
+Delete https://ai.nibog.in/webhook/v1/nibog/event-registration/delete
 
 payload
 
@@ -471,7 +471,7 @@ response 200 OK
 
 ## update event
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-registration/update
+POST https://ai.nibog.in/webhook/v1/nibog/event-registration/update
 
 
 payload
@@ -517,7 +517,7 @@ response 200 OK
 ## get event by city id
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-registration/getbycityid
+POST https://ai.nibog.in/webhook/v1/nibog/event-registration/getbycityid
 
 payload
 
@@ -599,7 +599,7 @@ response 200 OK
 
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/event-registration-new/get
+POST https://ai.nibog.in/webhook/v1/nibog/event-registration-new/get
 
 
 payload

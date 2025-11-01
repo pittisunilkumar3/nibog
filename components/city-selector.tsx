@@ -38,7 +38,7 @@ export default function CitySelector({ onCityChange }: CitySelectorProps) {
         setError(null);
         
         // Use the direct API endpoint since we're now allowing it in the middleware
-        const apiUrl = 'https://ai.alviongs.com/webhook/v1/nibog/city/get-all';
+        const apiUrl = 'https://ai.nibog.in/webhook/v1/nibog/city/get-all';
         console.log('Fetching cities from direct API endpoint...');
 
         const response = await fetch(apiUrl, {

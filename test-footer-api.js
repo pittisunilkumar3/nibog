@@ -22,7 +22,7 @@ const testFooterAPI = async () => {
   try {
     // Test 1: POST - Create/Update Footer Settings
     console.log('📤 Test 1: Creating/Updating footer settings...');
-    const postResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/post', {
+    const postResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/post', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ const testFooterAPI = async () => {
 
     // Test 2: GET - Retrieve Footer Settings
     console.log('\n📥 Test 2: Retrieving footer settings...');
-    const getResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get', {
+    const getResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/get', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -130,8 +130,8 @@ To run this test:
    f) Verify the data is loaded correctly
 
 3. API Endpoints:
-   - POST: https://ai.alviongs.com/webhook/v1/nibog/footer_setting/post
-   - GET: https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get
+   - POST: https://ai.nibog.in/webhook/v1/nibog/footer_setting/post
+   - GET: https://ai.nibog.in/webhook/v1/nibog/footer_setting/get
 
 4. Expected Behavior:
    - Footer component should display dynamic data from API

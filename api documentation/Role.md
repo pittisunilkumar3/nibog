@@ -1,6 +1,6 @@
 ## Create a Role
 
-POST https://ai.alviongs.com/webhook/v1/nibog/role/create
+POST https://ai.nibog.in/webhook/v1/nibog/role/create
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Response (201 Created)
 
 ## Get a Role
 
-POST https://ai.alviongs.com/webhook/vl/nibog/role/get
+POST https://ai.nibog.in/webhook/vl/nibog/role/get
 
 Content-Type: application/json
 
@@ -46,7 +46,7 @@ Response (201 Created)
 ## Get All Roles
 
 
-GET https://ai.alviongs.com/webhook/v1/nibog/role/list
+GET https://ai.nibog.in/webhook/v1/nibog/role/list
 
 Response (201 Created)
 
@@ -76,7 +76,7 @@ Response (201 Created)
 
 ## Update a Role
 
-POST https://ai.alviongs.com/webhook/vl/nibog/role/update
+POST https://ai.nibog.in/webhook/vl/nibog/role/update
 Content-Type: application/json
 
 {
@@ -100,7 +100,7 @@ Response (201 Created)
 
 ## Delete a Role
 
-DELETE https://ai.alviongs.com/webhook/vl/nibog/role/delete
+DELETE https://ai.nibog.in/webhook/vl/nibog/role/delete
 
 Content-Type: application/json
 

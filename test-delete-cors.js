@@ -1,7 +1,7 @@
 // Test DELETE endpoint CORS configuration
 // Run this script to verify CORS is working correctly
 
-const API_BASE_URL = 'https://ai.alviongs.com/webhook';
+const API_BASE_URL = 'https://ai.nibog.in/webhook';
 
 console.log('🧪 Testing DELETE Endpoint CORS Configuration\n');
 
@@ -139,7 +139,7 @@ async function runTests() {
     console.log('   Please follow the steps in N8N_CORS_FIX_GUIDE.md\n');
     
     console.log('QUICK FIX STEPS:');
-    console.log('1. Open n8n: https://ai.alviongs.com');
+    console.log('1. Open n8n: https://ai.nibog.in');
     console.log('2. Edit "Partners Delete" workflow');
     console.log('3. Add CORS headers to Webhook node:');
     console.log('   - Allow-Origin: *');

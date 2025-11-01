@@ -84,7 +84,7 @@
 
 **1. GET Content**
 ```
-https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget
+https://ai.nibog.in/webhook/v1/nibog/refundpolicyget
 ```
 - Fetches existing refund policy content
 - Returns HTML content and timestamp
@@ -92,7 +92,7 @@ https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget
 
 **2. POST/Update Content**
 ```
-https://ai.alviongs.com/webhook/v1/nibog/refundpolicy
+https://ai.nibog.in/webhook/v1/nibog/refundpolicy
 ```
 - Saves new or updated content
 - Accepts HTML formatted text

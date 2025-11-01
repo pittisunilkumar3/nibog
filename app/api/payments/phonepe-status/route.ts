@@ -162,7 +162,7 @@ export async function POST(request: Request) {
           console.log(`Server API route: ⚠️ IDEMPOTENCY CHECK: Checking for existing booking with reference: ${bookingRef}`);
 
           try {
-            const existingBookingResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/tickect/booking_ref/details', {
+            const existingBookingResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/tickect/booking_ref/details', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json'
@@ -429,7 +429,7 @@ export async function POST(request: Request) {
           // Create payment record
           console.log(`Server API route: Creating payment record for booking ID: ${bookingId}`);
           
-          const paymentResponse = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/create', {
+          const paymentResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/create', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

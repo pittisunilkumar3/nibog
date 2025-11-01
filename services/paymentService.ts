@@ -407,7 +407,7 @@ export async function getAllPayments(filters?: {
       return cached.data;
     }
 
-    const url = `https://ai.alviongs.com/webhook/v1/nibog/payments/get-all${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `https://ai.nibog.in/webhook/v1/nibog/payments/get-all${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -455,7 +455,7 @@ export async function getAllPayments(filters?: {
  */
 export async function getPaymentById(paymentId: number): Promise<Payment> {
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -508,7 +508,7 @@ export async function updatePaymentStatus(
 
     console.log('Updating payment status with payload:', payload);
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/update-status', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/update-status', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -553,7 +553,7 @@ export async function getPaymentAnalytics(filters?: {
     if (filters?.end_date) queryParams.append('end_date', filters.end_date);
     if (filters?.city_id) queryParams.append('city_id', filters.city_id.toString());
 
-    const url = `https://ai.alviongs.com/webhook/v1/nibog/payments/analytics${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const url = `https://ai.nibog.in/webhook/v1/nibog/payments/analytics${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
 
     const response = await fetch(url, {
       method: 'GET',
@@ -624,7 +624,7 @@ export async function exportPayments(filters: {
     if (filters.status) queryParams.append('status', filters.status); // Send status as-is, including "all"
     if (filters.city_id) queryParams.append('city_id', filters.city_id.toString());
 
-    const url = `https://ai.alviongs.com/webhook/v1/nibog/payments/export?${queryParams.toString()}`;
+    const url = `https://ai.nibog.in/webhook/v1/nibog/payments/export?${queryParams.toString()}`;
 
     console.log('Export filters received:', filters);
     console.log('Query parameters built:', queryParams.toString());
@@ -731,7 +731,7 @@ export async function createManualPayment(paymentData: ManualPaymentData): Promi
 
     console.log('💳 Creating manual payment with payload:', JSON.stringify(paymentPayload, null, 2));
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/payments/create', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -805,7 +805,7 @@ async function sendWhatsAppNotificationForManualPayment(bookingId: number, trans
     console.log(`📱 Fetching booking details for WhatsApp notification: ${bookingId}`);
 
     // Fetch booking details from the API
-    const bookingResponse = await fetch(`https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get/${bookingId}`);
+    const bookingResponse = await fetch(`https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get/${bookingId}`);
 
     if (!bookingResponse.ok) {
       throw new Error(`Failed to fetch booking details: ${bookingResponse.status}`);

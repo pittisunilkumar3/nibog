@@ -11,9 +11,9 @@ Successfully implemented FAQ listing functionality in the admin panel using the 
 Updated FAQ GET_ALL endpoint to use the correct URL:
 ```typescript
 export const FAQ_API = {
-  CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create",
+  CREATE: "https://ai.nibog.in/webhook/nibog/v1/faq/create",
   GET: `${API_BASE_URL}/faq/get`,
-  GET_ALL: "https://ai.alviongs.com/webhook/nibog/v1/faq/getall", // ✅ Updated
+  GET_ALL: "https://ai.nibog.in/webhook/nibog/v1/faq/getall", // ✅ Updated
   UPDATE: `${API_BASE_URL}/faq/update`,
   DELETE: `${API_BASE_URL}/faq/delete`,
 };
@@ -87,7 +87,7 @@ useEffect(() => {
 ## API Contract
 
 ### Request
-**Endpoint:** `GET https://ai.alviongs.com/webhook/nibog/v1/faq/getall`
+**Endpoint:** `GET https://ai.nibog.in/webhook/nibog/v1/faq/getall`
 
 **Payload:** `{}` (empty object or no payload)
 

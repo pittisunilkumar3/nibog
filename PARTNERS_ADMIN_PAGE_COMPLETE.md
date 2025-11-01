@@ -87,7 +87,7 @@ The partner form includes:
 
 ## 🔌 API Integration
 
-**Base URL:** `https://ai.alviongs.com/webhook`
+**Base URL:** `https://ai.nibog.in/webhook`
 
 ### Endpoints Used:
 

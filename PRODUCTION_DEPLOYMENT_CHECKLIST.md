@@ -101,8 +101,8 @@ ZAPTRA_API_TOKEN=ub94jy7OiCmCiggguxLZ2ETkbYkh5OtpNX3ZYISD737595b9
 - [x] **Domain Whitelist**: `www.nibog.in`
 
 ### 3. Database Endpoints
-- [x] **Booking API**: `https://ai.alviongs.com/webhook/v1/nibog/`
-- [x] **Payment API**: `https://ai.alviongs.com/webhook/v1/nibog/payments/create`
+- [x] **Booking API**: `https://ai.nibog.in/webhook/v1/nibog/`
+- [x] **Payment API**: `https://ai.nibog.in/webhook/v1/nibog/payments/create`
 - [x] **Status Updates**: Working correctly
 
 ## 🧪 Post-Deployment Testing

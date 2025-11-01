@@ -22,7 +22,7 @@ export async function POST(request: NextRequest) {
     console.log('Fetching customer profile for user_id:', user_id)
 
     // Make the request to the external API
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/customer/profile', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/customer/profile', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

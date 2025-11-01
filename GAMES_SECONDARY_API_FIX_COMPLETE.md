@@ -10,7 +10,7 @@
 **User Request**: 
 > "please fix this issue take game id from the url http://localhost:3111/admin/games/9/edit please update it i have same issue"
 
-**Specified API Endpoint**: `https://ai.alviongs.com/webhook/nibog/gamesimage/update`
+**Specified API Endpoint**: `https://ai.nibog.in/webhook/nibog/gamesimage/update`
 
 **Specified Payload Format**:
 ```json
@@ -27,8 +27,8 @@
 ### Two Issues Identified:
 
 **Issue 1: Wrong API Endpoint**
-- ❌ **Current**: `https://ai.alviongs.com/webhook/nibog/gamesimage/create`
-- ✅ **Should be**: `https://ai.alviongs.com/webhook/nibog/gamesimage/update`
+- ❌ **Current**: `https://ai.nibog.in/webhook/nibog/gamesimage/create`
+- ✅ **Should be**: `https://ai.nibog.in/webhook/nibog/gamesimage/update`
 
 **Issue 2: Secondary API Not Called**
 - ❌ **Current**: Only called when uploading new image files
@@ -48,14 +48,14 @@
 **Modified `app/api/gamesimage/update/route.ts`:**
 ```typescript
 // BEFORE - WRONG ENDPOINT
-const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(webhookPayload),
 })
 
 // AFTER - CORRECT ENDPOINT
-const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(webhookPayload),
@@ -104,7 +104,7 @@ Scenario: User changes priority from 4 to 5 (no new image)
 Scenario: User changes priority from 4 to 5 (no new image)
 - Game details API: ✅ Called
 - Secondary image API: ✅ Called with existing image URL + new priority
-- Endpoint: ✅ Correct (https://ai.alviongs.com/webhook/nibog/gamesimage/update)
+- Endpoint: ✅ Correct (https://ai.nibog.in/webhook/nibog/gamesimage/update)
 - External webhook: ✅ Receives exact payload format user specified
 - Result: Both game details AND image priority updated
 ```
@@ -141,7 +141,7 @@ Step 3: Show appropriate success message ✅
 
 ### 4. **Secondary API Call** (Now Working):
 ```
-POST https://ai.alviongs.com/webhook/nibog/gamesimage/update
+POST https://ai.nibog.in/webhook/nibog/gamesimage/update
 Content-Type: application/json
 
 {
@@ -155,7 +155,7 @@ Content-Type: application/json
 ## ✅ Verification Results
 
 ### All Test Cases Pass:
-- ✅ **Correct endpoint**: `https://ai.alviongs.com/webhook/nibog/gamesimage/update`
+- ✅ **Correct endpoint**: `https://ai.nibog.in/webhook/nibog/gamesimage/update`
 - ✅ **Priority-only changes**: Secondary API called with existing image URL
 - ✅ **New image uploads**: Secondary API called with new image URL  
 - ✅ **Payload format**: Exactly matches user specification
@@ -197,7 +197,7 @@ Content-Type: application/json
 - **Result**: Both game details AND image API are updated on every "Save Changes"
 
 ### ✅ **Technical Implementation**:
-- **API Endpoint**: Correct URL `https://ai.alviongs.com/webhook/nibog/gamesimage/update`
+- **API Endpoint**: Correct URL `https://ai.nibog.in/webhook/nibog/gamesimage/update`
 - **Payload Format**: Exactly as user specified
 - **Game ID**: Correctly extracted from URL (9)
 - **Priority Updates**: Work with or without new image uploads

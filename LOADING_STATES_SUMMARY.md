@@ -123,7 +123,7 @@ selectedCity: string       // Currently selected city name
 ```
 
 ### API Endpoints
-1. **Cities API:** `https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count`
+1. **Cities API:** `https://ai.nibog.in/webhook/v1/nibog/city/get-all-city-event-count`
    - Called on component mount
    - Fetches all available cities
 

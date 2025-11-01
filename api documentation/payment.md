@@ -1,6 +1,6 @@
 ## create payment
 
-POST https://ai.alviongs.com/webhook/v1/nibog/payments/create
+POST https://ai.nibog.in/webhook/v1/nibog/payments/create
 
 payload
 
@@ -55,7 +55,7 @@ insert into payments
 
 ## get all payments
 
-GET https://ai.alviongs.com/webhook/v1/nibog/payments/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/payments/get-all
 
 Response
 [
@@ -78,7 +78,7 @@ Response
 
 ## get payment by id
 
-POST https://ai.alviongs.com/webhook/v1/nibog/payments/get
+POST https://ai.nibog.in/webhook/v1/nibog/payments/get
 {
     "id": 10
 }
@@ -124,7 +124,7 @@ Response
 
 ## get payment analytics
 
-GET https://ai.alviongs.com/webhook/v1/nibog/payments/analytics
+GET https://ai.nibog.in/webhook/v1/nibog/payments/analytics
 
 Response
 [
@@ -148,7 +148,7 @@ Response
 
 ## update payment status
 
-POST https://ai.alviongs.com/webhook/v1/nibog/payments/update-status
+POST https://ai.nibog.in/webhook/v1/nibog/payments/update-status
 
 payload
 
@@ -175,7 +175,7 @@ Response
 
 ## export payments
 
-GET https://ai.alviongs.com/webhook/v1/nibog/payments/export
+GET https://ai.nibog.in/webhook/v1/nibog/payments/export
 
 query params
 

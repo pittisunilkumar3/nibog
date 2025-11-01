@@ -107,7 +107,7 @@ useEffect triggers
   ↓
 Calls getAllFAQs() from service
   ↓
-GET https://ai.alviongs.com/webhook/nibog/v1/faq/getall
+GET https://ai.nibog.in/webhook/nibog/v1/faq/getall
 ```
 
 ### 2. Data Processing
@@ -397,4 +397,4 @@ These are displayed only if:
 **Status:** ✅ Complete and Ready for Testing  
 **Public Page:** http://localhost:3111/faq  
 **Admin Page:** http://localhost:3111/admin/faq  
-**API Endpoint:** GET https://ai.alviongs.com/webhook/nibog/v1/faq/getall
+**API Endpoint:** GET https://ai.nibog.in/webhook/nibog/v1/faq/getall

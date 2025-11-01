@@ -1,12 +1,12 @@
 #!/bin/bash
 
 echo "=== TESTING BOOKING API WITH CURL ==="
-echo "Testing the exact API endpoint: https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create"
+echo "Testing the exact API endpoint: https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create"
 echo ""
 
 # Test 1: Your original payload
 echo "TEST 1: Your original payload with 2015-01-01"
-curl -X POST "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create" \
+curl -X POST "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create" \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 114,
@@ -47,7 +47,7 @@ echo ""
 
 # Test 2: Modified payload with different DOB
 echo "TEST 2: Modified payload with different DOB (2020-05-15)"
-curl -X POST "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create" \
+curl -X POST "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create" \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 114,
@@ -89,7 +89,7 @@ echo ""
 # Test 3: Current date DOB
 echo "TEST 3: Payload with current date DOB"
 CURRENT_DATE=$(date +%Y-%m-%d)
-curl -X POST "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create" \
+curl -X POST "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create" \
   -H "Content-Type: application/json" \
   -d '{
     "user_id": 114,

@@ -1,5 +1,5 @@
 // API Base URL
-export const API_BASE_URL = "https://ai.alviongs.com/webhook/v1/nibog";
+export const API_BASE_URL = "https://ai.nibog.in/webhook/v1/nibog";
 
 // Authentication API endpoints
 export const AUTH_API = {
@@ -76,8 +76,8 @@ export const EVENT_GAME_SLOT_API = {
 
 // Social Media API endpoints
 export const SOCIAL_MEDIA_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/socialmedia/create", // POST
-  GET: "https://ai.alviongs.com/webhook/v1/nibog/socialmedia/get", // GET
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/socialmedia/create", // POST
+  GET: "https://ai.nibog.in/webhook/v1/nibog/socialmedia/get", // GET
 };
 
 // Sports Importance API endpoints
@@ -96,8 +96,8 @@ export const GAME_IMPORTANCE_API = {
 
 // Email Settings API endpoints
 export const EMAIL_SETTING_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/emailsetting/create", // POST
-  GET: "https://ai.alviongs.com/webhook/v1/nibog/emailsetting/get", // GET
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/emailsetting/create", // POST
+  GET: "https://ai.nibog.in/webhook/v1/nibog/emailsetting/get", // GET
 };
 
 
@@ -105,8 +105,8 @@ export const EMAIL_SETTING_API = {
 
 // General Settings API endpoints
 export const GENERAL_SETTING_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/generalsetting/create", // POST
-  GET: "https://ai.alviongs.com/webhook/v1/nibog/generalsetting/get", // GET
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/generalsetting/create", // POST
+  GET: "https://ai.nibog.in/webhook/v1/nibog/generalsetting/get", // GET
 };
 
 
@@ -114,47 +114,47 @@ export const GENERAL_SETTING_API = {
 
 // User Authentication API endpoints
 export const USER_AUTH_API = {
-  REGISTER: "https://ai.alviongs.com/webhook/v1/nibog/user/register", // POST
-  LOGIN: "https://ai.alviongs.com/webhook/v1/nibog/user/login", // POST
+  REGISTER: "https://ai.nibog.in/webhook/v1/nibog/user/register", // POST
+  LOGIN: "https://ai.nibog.in/webhook/v1/nibog/user/login", // POST
 };
 
 // User Management API endpoints
 export const USER_API = {
-  GET_ALL: "https://ai.alviongs.com/webhook/v1/nibog/user/get-all", // GET
-  GET: "https://ai.alviongs.com/webhook/v1/nibog/user/get", // GET with id
-  UPDATE: "https://ai.alviongs.com/webhook/v1/nibog/user/edit", // POST - Using the edit endpoint as specified in the API docs
-  DELETE: "https://ai.alviongs.com/webhook/v1/nibog/user/delete", // POST
+  GET_ALL: "https://ai.nibog.in/webhook/v1/nibog/user/get-all", // GET
+  GET: "https://ai.nibog.in/webhook/v1/nibog/user/get", // GET with id
+  UPDATE: "https://ai.nibog.in/webhook/v1/nibog/user/edit", // POST - Using the edit endpoint as specified in the API docs
+  DELETE: "https://ai.nibog.in/webhook/v1/nibog/user/delete", // POST
 };
 
 // Booking API endpoints
 export const BOOKING_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create", // POST
-  GET_ALL: "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all", // GET
-  GET_USER_BOOKINGS: "https://ai.alviongs.com/webhook/v1/nibog/user/booking", // POST
-  UPDATE: "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/update", // POST
-  UPDATE_STATUS: "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/update-status", // POST
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create", // POST
+  GET_ALL: "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get-all", // GET
+  GET_USER_BOOKINGS: "https://ai.nibog.in/webhook/v1/nibog/user/booking", // POST
+  UPDATE: "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/update", // POST
+  UPDATE_STATUS: "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/update-status", // POST
 };
 
 // Promo Code API endpoints
 export const PROMO_CODE_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/promocode/create", // POST
-  GET_ALL: "https://ai.alviongs.com/webhook/v1/nibog/promocode/get-all", // GET
-  GET_BY_ID: "https://ai.alviongs.com/webhook/v1/nibog/promocode/get", // POST
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/promocode/create", // POST
+  GET_ALL: "https://ai.nibog.in/webhook/v1/nibog/promocode/get-all", // GET
+  GET_BY_ID: "https://ai.nibog.in/webhook/v1/nibog/promocode/get", // POST
 };
 
 // Payment API endpoints
 export const PAYMENT_API = {
-  CREATE: "https://ai.alviongs.com/webhook/v1/nibog/payments/create", // POST
-  GET_ALL: "https://ai.alviongs.com/webhook/v1/nibog/payments/get-all", // GET
-  GET_BY_ID: "https://ai.alviongs.com/webhook/v1/nibog/payments/get", // POST
-  UPDATE_STATUS: "https://ai.alviongs.com/webhook/v1/nibog/payments/update-status", // POST
-  ANALYTICS: "https://ai.alviongs.com/webhook/v1/nibog/payments/analytics", // GET
-  EXPORT: "https://ai.alviongs.com/webhook/v1/nibog/payments/export", // GET
+  CREATE: "https://ai.nibog.in/webhook/v1/nibog/payments/create", // POST
+  GET_ALL: "https://ai.nibog.in/webhook/v1/nibog/payments/get-all", // GET
+  GET_BY_ID: "https://ai.nibog.in/webhook/v1/nibog/payments/get", // POST
+  UPDATE_STATUS: "https://ai.nibog.in/webhook/v1/nibog/payments/update-status", // POST
+  ANALYTICS: "https://ai.nibog.in/webhook/v1/nibog/payments/analytics", // GET
+  EXPORT: "https://ai.nibog.in/webhook/v1/nibog/payments/export", // GET
 };
 
 // Event Details with Image API endpoints
 export const EVENT_DETAILS_API = {
-  GET_WITH_IMAGES: "https://ai.alviongs.com/webhook/nibog/getting/eventdetailswithimage", // GET
+  GET_WITH_IMAGES: "https://ai.nibog.in/webhook/nibog/getting/eventdetailswithimage", // GET
 };
 
 // Testimonials API endpoints
@@ -168,11 +168,11 @@ export const TESTIMONIALS_API = {
 
 // FAQ API endpoints
 export const FAQ_API = {
-  CREATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/create", // POST
-  GET_SINGLE: "https://ai.alviongs.com/webhook/nibog/v1/faq/get_single", // POST with id in body
-  GET_ALL: "https://ai.alviongs.com/webhook/nibog/v1/faq/getall", // GET
-  UPDATE: "https://ai.alviongs.com/webhook/nibog/v1/faq/updated", // POST
-  DELETE: "https://ai.alviongs.com/webhook/nibog/v1/faq/delete", // POST with id in body
+  CREATE: "https://ai.nibog.in/webhook/nibog/v1/faq/create", // POST
+  GET_SINGLE: "https://ai.nibog.in/webhook/nibog/v1/faq/get_single", // POST with id in body
+  GET_ALL: "https://ai.nibog.in/webhook/nibog/v1/faq/getall", // GET
+  UPDATE: "https://ai.nibog.in/webhook/nibog/v1/faq/updated", // POST
+  DELETE: "https://ai.nibog.in/webhook/nibog/v1/faq/delete", // POST with id in body
 };
 
 // PhonePe API endpoints are now in config/phonepe.ts

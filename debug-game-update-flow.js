@@ -138,7 +138,7 @@ async function testExternalWebhookDirect() {
   try {
     console.log('📡 Testing external webhook directly:', testPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

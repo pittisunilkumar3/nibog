@@ -2,7 +2,7 @@
 
 ## Create Add-on
 
-**POST** `https://ai.alviongs.com/webhook/v1/nibog/addons/create`
+**POST** `https://ai.nibog.in/webhook/v1/nibog/addons/create`
 
 ### Request Body
 
@@ -108,7 +108,7 @@
 
 ## Get Add-on by ID
 
-**POST** `https://ai.alviongs.com/webhook/v1/nibog/addons/get`
+**POST** `https://ai.nibog.in/webhook/v1/nibog/addons/get`
 
 ### Request Body
 
@@ -160,7 +160,7 @@
 
 ## Get All Add-ons
 
-**GET** `https://ai.alviongs.com/webhook/v1/nibog/addons/get-all`
+**GET** `https://ai.nibog.in/webhook/v1/nibog/addons/get-all`
 
 ### Response
 [
@@ -306,7 +306,7 @@
 
 ## update add-on
 
-**POST** `https://ai.alviongs.com/webhook/v1/nibog/addons/update`
+**POST** `https://ai.nibog.in/webhook/v1/nibog/addons/update`
 
 ### Request Body
 
@@ -374,7 +374,7 @@
 
 ## delete add-on
 
-**POST** `https://ai.alviongs.com/webhook/v1/nibog/addons/delete`
+**POST** `https://ai.nibog.in/webhook/v1/nibog/addons/delete`
 
 ### Request Body
 

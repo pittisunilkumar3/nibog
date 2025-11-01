@@ -25,7 +25,7 @@ Successfully implemented image upload functionality for event creation that uplo
 - **Path**: `/api/eventimages/webhook`
 - **Method**: POST
 - **Purpose**: Sends image data to external webhook
-- **External API**: `https://ai.alviongs.com/webhook/nibog/eventimage`
+- **External API**: `https://ai.nibog.in/webhook/nibog/eventimage`
 - **Payload Format**:
   ```json
   {

@@ -7,7 +7,7 @@ Here’s a clear Postman documentation for testing your **Partners CRUD API** bu
 Your n8n webhook base URL is:
 
 ```
-https://ai.alviongs.com/webhook
+https://ai.nibog.in/webhook
 ```
 
 **Note:** All partner endpoints use this base URL directly without `/v1/nibog` prefix.
@@ -96,7 +96,7 @@ https://ai.alviongs.com/webhook
 **Example URL:**
 
 ```
-http://ai.alviongs.com/webhook/partners/get_single
+http://ai.nibog.in/webhook/partners/get_single
 ```
 
 **Success Response Example (200 OK):**
@@ -168,14 +168,14 @@ http://ai.alviongs.com/webhook/partners/get_single
 **Example URL:**
 
 ```
-https://ai.alviongs.com/webhook/partners/delete
+https://ai.nibog.in/webhook/partners/delete
 ```
 
 **Example URL:**
 
 ```
 
-https://ai.alviongs.com/webhook/partners/delete
+https://ai.nibog.in/webhook/partners/delete
 ```
 
 **Success Response Example (200 OK):**

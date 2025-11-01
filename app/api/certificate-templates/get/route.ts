@@ -12,7 +12,7 @@ export async function POST(request: NextRequest) {
     }
 
     const response = await fetch(
-      'https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/get',
+      'https://ai.nibog.in/webhook/v1/nibog/certificate-templates/get',
       {
         method: 'POST',
         headers: {

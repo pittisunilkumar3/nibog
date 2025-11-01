@@ -43,7 +43,7 @@ I have tested all your Partners API endpoints and found that **the n8n workflows
 ## 🔧 What Needs to Be Done
 
 ### Step 1: Access n8n
-Go to your n8n instance: `https://ai.alviongs.com`
+Go to your n8n instance: `https://ai.nibog.in`
 
 ### Step 2: Check for Workflows
 Look for these workflows:
@@ -118,7 +118,7 @@ Your Partners API will be working when:
 
 ### Create Partner Request:
 ```bash
-POST https://ai.alviongs.com/webhook/v1/nibog/partners/create
+POST https://ai.nibog.in/webhook/v1/nibog/partners/create
 Body: {
   "partner_name": "Test Partner",
   "image_url": "https://example.com/logo.png",
@@ -145,7 +145,7 @@ Body: {
 ## 📞 Next Actions
 
 ### Immediate (YOU need to do this):
-1. 🔴 **Log in to n8n** at https://ai.alviongs.com
+1. 🔴 **Log in to n8n** at https://ai.nibog.in
 2. 🔴 **Check if Partner workflows exist**
 3. 🔴 **If they exist:** Activate them (toggle switch)
 4. 🔴 **If they don't exist:** Create them using the guide

@@ -38,7 +38,7 @@ This was the **same type of intermittent issue** that affected city loading, cau
 
 5. **CORS Timing Issues** ⚠️
    - Browser CORS preflight requests sometimes failed due to timing
-   - External API endpoint: `https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events-by-cityid`
+   - External API endpoint: `https://ai.nibog.in/webhook/v1/nibog/events/upcoming-events-by-cityid`
    - Intermittent failures due to network latency and server response time
 
 ---
@@ -79,7 +79,7 @@ export async function getEventsByCityId(
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
       
       // Fetch events with timeout
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events-by-cityid', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/events/upcoming-events-by-cityid', {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -337,7 +337,7 @@ This fix follows the **exact same pattern** used for the city loading fix:
 
 The events API endpoint is:
 ```
-https://ai.alviongs.com/webhook/v1/nibog/events/upcoming-events-by-cityid
+https://ai.nibog.in/webhook/v1/nibog/events/upcoming-events-by-cityid
 ```
 
 **Request Format**:

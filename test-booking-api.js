@@ -44,7 +44,7 @@ async function testBookingAPI() {
     console.log(JSON.stringify(payload, null, 2));
     
     try {
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

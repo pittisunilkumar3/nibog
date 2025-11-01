@@ -68,7 +68,7 @@ async function testDirectExternalAPI() {
   
   try {
     console.log('📡 Testing external API directly...');
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -102,7 +102,7 @@ async function testMappingSystem() {
     
     for (let apiId = 1; apiId <= 10; apiId++) {
       try {
-        const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+        const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',

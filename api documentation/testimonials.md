@@ -1,6 +1,6 @@
 ## create testimonial
 
-POST https://ai.alviongs.com/webhook/v1/nibog/testimonials/create
+POST https://ai.nibog.in/webhook/v1/nibog/testimonials/create
 
 payload
 
@@ -31,7 +31,7 @@ response
 
 ## get testimonial by id  
 
-POST https://ai.alviongs.com/webhook/v1/nibog/testimonials/get
+POST https://ai.nibog.in/webhook/v1/nibog/testimonials/get
 {
     "id": 0
 }
@@ -53,7 +53,7 @@ response
 
 ## get all testimonials
 
-GET https://ai.alviongs.com/webhook/v1/nibog/testimonials/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/testimonials/get-all
 
 response
 
@@ -72,7 +72,7 @@ response
 
 ## update testimonial
 
-POST https://ai.alviongs.com/webhook/v1/nibog/testimonials/update
+POST https://ai.nibog.in/webhook/v1/nibog/testimonials/update
 {
   "id": 1,
   "name": "Uma",
@@ -101,7 +101,7 @@ response
 
 ## delete testimonial
 
-POST https://ai.alviongs.com/webhook/v1/nibog/testimonials/delete
+POST https://ai.nibog.in/webhook/v1/nibog/testimonials/delete
 {
     "id": 1
 }

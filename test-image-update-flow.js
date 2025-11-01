@@ -17,7 +17,7 @@ console.log('📤 Event Image Update Payload:');
 console.log(JSON.stringify(testEventImageUpdate, null, 2));
 
 console.log('\n📍 Expected API Endpoint:');
-console.log('POST https://ai.alviongs.com/webhook/nibog/eventimage/updated');
+console.log('POST https://ai.nibog.in/webhook/nibog/eventimage/updated');
 
 console.log('\n📋 Expected Response Format:');
 console.log(`[
@@ -47,7 +47,7 @@ console.log('📤 Game Image Update Payload:');
 console.log(JSON.stringify(testGameImageUpdate, null, 2));
 
 console.log('\n📍 Expected API Endpoint:');
-console.log('POST https://ai.alviongs.com/webhook/nibog/gamesimage/update');
+console.log('POST https://ai.nibog.in/webhook/nibog/gamesimage/update');
 
 console.log('\n📋 Expected Response Format:');
 console.log(`[

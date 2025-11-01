@@ -7,11 +7,11 @@ When navigating to `http://localhost:3111/dashboard`, the page displayed an erro
 
 ### Root Cause
 
-The customer profile API endpoint at `https://ai.alviongs.com/webhook/v1/nibog/customer/profile` was being called directly from the browser (client-side), which resulted in a **CORS (Cross-Origin Resource Sharing) error**.
+The customer profile API endpoint at `https://ai.nibog.in/webhook/v1/nibog/customer/profile` was being called directly from the browser (client-side), which resulted in a **CORS (Cross-Origin Resource Sharing) error**.
 
 **Console Error:**
 ```
-Access to fetch at 'https://ai.alviongs.com/webhook/v1/nibog/customer/profile' 
+Access to fetch at 'https://ai.nibog.in/webhook/v1/nibog/customer/profile' 
 from origin 'http://localhost:3111' has been blocked by CORS policy: 
 Response to preflight request doesn't pass access control check: 
 No 'Access-Control-Allow-Origin' header is present on the requested resource.
@@ -63,7 +63,7 @@ export async function OPTIONS(request: NextRequest) {
 
 **Before:**
 ```typescript
-const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/customer/profile', {
+const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/customer/profile', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify({ user_id: userId }),
@@ -166,7 +166,7 @@ The API returns an array of objects (one per parent_id):
    - Validates user_id
    - Makes server-side fetch to external API
    ```
-   POST https://ai.alviongs.com/webhook/v1/nibog/customer/profile
+   POST https://ai.nibog.in/webhook/v1/nibog/customer/profile
    Body: { "user_id": 114 }
    ```
 
@@ -274,7 +274,7 @@ if (!session) {
 ### Environment Variables
 Consider adding API endpoint as environment variable:
 ```env
-EXTERNAL_API_BASE_URL=https://ai.alviongs.com/webhook/v1/nibog
+EXTERNAL_API_BASE_URL=https://ai.nibog.in/webhook/v1/nibog
 ```
 
 ### Production CORS

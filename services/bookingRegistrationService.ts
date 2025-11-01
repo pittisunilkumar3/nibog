@@ -63,7 +63,7 @@ export async function registerBooking(bookingData: BookingRegistrationData): Pro
     console.log("=== BOOKING REGISTRATION (PRODUCTION MODE) ===");
     console.log("Booking data to be registered:", JSON.stringify(bookingData, null, 2));
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

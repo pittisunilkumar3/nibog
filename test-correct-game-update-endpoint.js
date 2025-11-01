@@ -16,7 +16,7 @@ async function testGameImageUpdatedEndpoint() {
   try {
     console.log('📡 Testing /gamesimage/updated endpoint:', testPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -56,7 +56,7 @@ async function testEventUpdateForComparison() {
   try {
     console.log('📡 Testing event /eventimage/updated endpoint:', eventPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -94,11 +94,11 @@ async function testVariousGameEndpoints() {
   };
   
   const endpoints = [
-    'https://ai.alviongs.com/webhook/nibog/gamesimage/updated',
-    'https://ai.alviongs.com/webhook/nibog/gameimage/update',
-    'https://ai.alviongs.com/webhook/nibog/gameimage/updated',
-    'https://ai.alviongs.com/webhook/nibog/game-image/update',
-    'https://ai.alviongs.com/webhook/nibog/games/image/update'
+    'https://ai.nibog.in/webhook/nibog/gamesimage/updated',
+    'https://ai.nibog.in/webhook/nibog/gameimage/update',
+    'https://ai.nibog.in/webhook/nibog/gameimage/updated',
+    'https://ai.nibog.in/webhook/nibog/game-image/update',
+    'https://ai.nibog.in/webhook/nibog/games/image/update'
   ];
   
   const results = [];
@@ -219,7 +219,7 @@ async function runCorrectEndpointTest() {
   if (gameUpdatedResult.success || workingEndpoints.length > 0) {
     console.log('✅ FOUND WORKING UPDATE ENDPOINT!');
     const workingEndpoint = gameUpdatedResult.success 
-      ? 'https://ai.alviongs.com/webhook/nibog/gamesimage/updated'
+      ? 'https://ai.nibog.in/webhook/nibog/gamesimage/updated'
       : workingEndpoints[0].endpoint;
     
     console.log(`🎯 Use this endpoint: ${workingEndpoint}`);

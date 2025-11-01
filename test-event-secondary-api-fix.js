@@ -68,9 +68,9 @@ async function testSecondaryApiDirectly() {
   
   try {
     console.log('📡 Testing secondary API with payload:', testPayload);
-    console.log('🔗 API URL: https://ai.alviongs.com/webhook/nibog/eventimage/updated');
+    console.log('🔗 API URL: https://ai.nibog.in/webhook/nibog/eventimage/updated');
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

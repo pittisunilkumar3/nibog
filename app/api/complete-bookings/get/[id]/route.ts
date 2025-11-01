@@ -9,7 +9,7 @@ export async function GET(
     console.log(`Server API route: Fetching complete booking with ID: ${bookingId}`);
 
     // Forward the request to the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get-all";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     const response = await fetch(apiUrl, {

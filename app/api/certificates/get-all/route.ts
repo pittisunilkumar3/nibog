@@ -12,7 +12,7 @@ export async function GET(request: NextRequest) {
     console.log(`Fetching certificates with params: eventId=${eventId}, limit=${limit}, offset=${offset}, status=${status}`);
     
     // Build the query parameters for the external API
-    let apiUrl = 'https://ai.alviongs.com/webhook/v1/nibog/certificates/get-all';
+    let apiUrl = 'https://ai.nibog.in/webhook/v1/nibog/certificates/get-all';
     const params = new URLSearchParams();
     
     if (eventId) {

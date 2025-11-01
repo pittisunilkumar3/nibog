@@ -25,7 +25,7 @@ export async function POST(request: Request) {
     console.log("Server API route: Prepared payload:", JSON.stringify(payload, null, 2));
 
     // Call the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/promocode/delete";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/promocode/delete";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     const response = await fetch(apiUrl, {

@@ -20,7 +20,7 @@ export async function POST(request: NextRequest) {
     let imageData = null;
     try {
       const getResponse = await fetch(
-        'https://ai.alviongs.com/webhook/v1/nibog/homesection/get',
+        'https://ai.nibog.in/webhook/v1/nibog/homesection/get',
         {
           method: 'GET',
           headers: {
@@ -43,7 +43,7 @@ export async function POST(request: NextRequest) {
 
     // Delete the image record from the database via external API
     const response = await fetch(
-      'https://ai.alviongs.com/webhook/v1/nibog/homesection/delete',
+      'https://ai.nibog.in/webhook/v1/nibog/homesection/delete',
       {
         method: 'POST',
         headers: {

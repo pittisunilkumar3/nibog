@@ -9,9 +9,9 @@ The game image update functionality was not working when users clicked the "Save
 Through comprehensive debugging, I discovered the core issue:
 
 **External Update Endpoint Not Available:**
-- ❌ `POST https://ai.alviongs.com/webhook/nibog/gamesimage/update` returns 500 error
+- ❌ `POST https://ai.nibog.in/webhook/nibog/gamesimage/update` returns 500 error
 - ❌ Error message: `"Error in workflow"`
-- ✅ `POST https://ai.alviongs.com/webhook/nibog/gamesimage/create` works perfectly
+- ✅ `POST https://ai.nibog.in/webhook/nibog/gamesimage/create` works perfectly
 
 **Evidence:**
 ```json
@@ -45,14 +45,14 @@ Since the external update endpoint is not available, I implemented a solution th
 
 ```typescript
 // Before (not working):
-const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(webhookPayload),
 })
 
 // After (working):
-const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
   method: 'POST',
   headers: { 'Content-Type': 'application/json' },
   body: JSON.stringify(webhookPayload),
@@ -161,7 +161,7 @@ handleSubmit()
   → uploadGameImage() [uploads file]  
   → updateGameImage() [creates image record]
     → /api/gamesimage/update [internal API]
-      → https://ai.alviongs.com/webhook/nibog/gamesimage/create [external API]
+      → https://ai.nibog.in/webhook/nibog/gamesimage/create [external API]
         → New image record created ✅
 ```
 

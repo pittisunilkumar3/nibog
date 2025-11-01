@@ -17,7 +17,7 @@ async function handleDelete(request: Request) {
     console.log(`Server API route: Attempting to delete venue with ID: ${id}`);
 
     // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/venues/delete";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/venues/delete";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     const response = await fetch(apiUrl, {

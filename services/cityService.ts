@@ -27,7 +27,7 @@ export const getAllCities = async (maxRetries: number = 3, retryDelay: number = 
       const controller = new AbortController();
       const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
 
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/city/get-all-city-event-count', {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

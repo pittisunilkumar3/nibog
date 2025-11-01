@@ -70,7 +70,7 @@ async function testExternalAPIDirect(eventId) {
   console.log('-'.repeat(40));
   
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

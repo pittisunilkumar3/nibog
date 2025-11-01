@@ -20,7 +20,7 @@ export async function POST(request: Request) {
     // Call the external API to update testimonial
     console.log("Server API route: Calling external API to update testimonial");
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/testimonials/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/testimonials/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -45,10 +45,10 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('Sending to external update webhook:', webhookPayload)
-    console.log('External webhook URL:', 'https://ai.alviongs.com/webhook/nibog/eventimage/updated')
+    console.log('External webhook URL:', 'https://ai.nibog.in/webhook/nibog/eventimage/updated')
 
     // Send to external webhook
-    const webhookResponse = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/updated', {
+    const webhookResponse = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/updated', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

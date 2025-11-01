@@ -22,7 +22,7 @@ export async function POST(request: Request) {
     };
 
     // Forward the request to the external API
-    const apiUrl = "https://ai.alviongs.com/webhook/nibog/testmonialimages/getsingle";
+    const apiUrl = "https://ai.nibog.in/webhook/nibog/testmonialimages/getsingle";
     console.log("Server API route: Calling API URL:", apiUrl);
     console.log("Server API route: Payload:", JSON.stringify(payload, null, 2));
 

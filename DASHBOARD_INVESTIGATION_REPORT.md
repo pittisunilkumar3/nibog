@@ -207,7 +207,7 @@ if (isError || !customerProfile) {
 
 ### **Customer Profile API**
 - **Endpoint:** `POST /api/customer/profile` (Next.js proxy)
-- **External API:** `POST https://ai.alviongs.com/webhook/v1/nibog/customer/profile`
+- **External API:** `POST https://ai.nibog.in/webhook/v1/nibog/customer/profile`
 - **Request:** `{"user_id": 114}`
 - **Response:** Array of 20 objects (one per parent_id)
 
@@ -260,7 +260,7 @@ if (Array.isArray(result) && result.length > 0) {
 
 ### **Non-Critical Errors:**
 ```
-Access to fetch at 'https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get' 
+Access to fetch at 'https://ai.nibog.in/webhook/v1/nibog/footer_setting/get' 
 from origin 'http://localhost:3111' has been blocked by CORS policy
 ```
 **Impact:** None - Footer uses fallback data and displays correctly
@@ -319,7 +319,7 @@ Create a proxy route for footer settings API similar to customer profile:
 ```typescript
 // app/api/footer-settings/route.ts
 export async function GET() {
-  const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get')
+  const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/get')
   return NextResponse.json(await response.json())
 }
 ```

@@ -16,7 +16,7 @@ export async function POST(request: Request) {
     console.log(`Server API route: Fetching games for age: ${ageInMonths} months`);
 
     // Forward the request to the external API with the correct URL
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/game/get-by-age";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/game/get-by-age";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     // Use POST method with request body as specified in the API documentation

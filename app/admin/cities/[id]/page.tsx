@@ -21,7 +21,7 @@ async function fetchCityVenues(cityId: number) {
     // Approach 1: Direct API call with full URL - might have CORS issues
     try {
       console.log('Attempting direct API call');
-      const apiUrl = 'https://ai.alviongs.com/webhook/v1/nibog/venues/get-by-city-new';
+      const apiUrl = 'https://ai.nibog.in/webhook/v1/nibog/venues/get-by-city-new';
       const response = await fetch(apiUrl, {
         method: 'POST',
         headers: {
@@ -67,7 +67,7 @@ async function fetchCityEvents(cityId: number): Promise<EventData[]> {
   try {
     console.log(`Fetching events for city ID: ${cityId}`);
     
-    const apiUrl = 'https://ai.alviongs.com/webhook/v1/nibog/get-upcoming-event/bycity/id';
+    const apiUrl = 'https://ai.nibog.in/webhook/v1/nibog/get-upcoming-event/bycity/id';
     const response = await fetch(apiUrl, {
       method: 'POST',
       headers: {

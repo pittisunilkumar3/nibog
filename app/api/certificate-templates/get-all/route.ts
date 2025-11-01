@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 export async function GET(request: NextRequest) {
   try {
     const response = await fetch(
-      'https://ai.alviongs.com/webhook/v1/nibog/certificate-templates/get-all',
+      'https://ai.nibog.in/webhook/v1/nibog/certificate-templates/get-all',
       {
         method: 'GET',
         headers: {

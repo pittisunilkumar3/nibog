@@ -54,7 +54,7 @@ console.log(`DOB value: ${payload.child.date_of_birth}`);
 const postData = JSON.stringify(payload);
 
 const options = {
-  hostname: 'ai.alviongs.com',
+  hostname: 'ai.nibog.in',
   port: 443,
   path: '/webhook/v1/nibog/bookingsevents/create',
   method: 'POST',

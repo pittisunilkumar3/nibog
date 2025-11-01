@@ -292,7 +292,7 @@ export async function fetchAllAddOnsFromExternalApi(): Promise<AddOn[]> {
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/addons/get-all', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/addons/get-all', {
       method: "GET",
       headers: {
         "Content-Type": "application/json",

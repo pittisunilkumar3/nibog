@@ -1,5 +1,5 @@
 ## create venues
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/create
+POST https://ai.nibog.in/webhook/v1/nibog/venues/create
 
 {
   "venue_name": "NIBOG Stadium",
@@ -27,7 +27,7 @@ Response (201 Created)
 
 ## Get all venues
 
-GET https://ai.alviongs.com/webhook/v1/nibog/venues/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/venues/get-all
 
 Response (200 OK)
 
@@ -47,7 +47,7 @@ Response (200 OK)
 
 ## Get venue by ID
 
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/get
+POST https://ai.nibog.in/webhook/v1/nibog/venues/get
 {
     "id": 1
 }   
@@ -69,7 +69,7 @@ Response (200 OK)
 
 ## Update venue by ID
 
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/update
+POST https://ai.nibog.in/webhook/v1/nibog/venues/update
 {
   "id": 1,
   "venue_name": "NIBOG Stadium",
@@ -97,7 +97,7 @@ Response (200 OK)
 
 ## Delete venue by ID
 
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/delete
+POST https://ai.nibog.in/webhook/v1/nibog/venues/delete
 {
     "id": 1
 }   
@@ -112,7 +112,7 @@ Response (200 OK)
 
 ## Get all venues by city ID
 
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/get-by-city
+POST https://ai.nibog.in/webhook/v1/nibog/venues/get-by-city
 {
     "city_id": 2
 }   
@@ -137,7 +137,7 @@ Response (200 OK)
 
 ## Get all Venues with city details
 
-POST https://ai.alviongs.com/webhook/v1/nibog/venues/getall-with-city
+POST https://ai.nibog.in/webhook/v1/nibog/venues/getall-with-city
 
 payload
 

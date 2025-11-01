@@ -17,7 +17,7 @@ async function testUpdateEndpointWithCorrectPayload() {
   try {
     console.log('📡 Testing with API documentation payload:', correctPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ async function testWithGame9ExistingImage() {
         
         console.log('📡 Attempting update with existing image data:', updatePayload);
         
-        const updateResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+        const updateResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -154,7 +154,7 @@ async function testDirectoryPathIssue() {
   try {
     console.log('📡 Testing with correct directory path:', correctPathPayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/update', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/update', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

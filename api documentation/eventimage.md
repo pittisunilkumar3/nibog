@@ -1,6 +1,6 @@
 # Event Image create
 
-POST https://ai.alviongs.com/webhook/nibog/eventimage
+POST https://ai.nibog.in/webhook/nibog/eventimage
 
 Payload:-
 
@@ -31,7 +31,7 @@ Responsive:-
 # Getting the image 
 
 
-POST https://ai.alviongs.com/webhook/nibog/geteventwithimages/get
+POST https://ai.nibog.in/webhook/nibog/geteventwithimages/get
 
 payload :-
 
@@ -58,7 +58,7 @@ responsive :-
 # update event image 
 
 
-POST https://ai.alviongs.com/webhook/nibog/eventimage/updated
+POST https://ai.nibog.in/webhook/nibog/eventimage/updated
 
 payload :-
 
@@ -89,7 +89,7 @@ response :-
 # event details with image
 
 
-GET https://ai.alviongs.com/webhook/nibog/getting/eventdetailswithimage
+GET https://ai.nibog.in/webhook/nibog/getting/eventdetailswithimage
 
 
 

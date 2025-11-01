@@ -7,7 +7,7 @@ console.log('🔍 Debugging Footer Component...\n');
 const testFooterService = async () => {
   try {
     console.log('📡 Testing API call...');
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/footer_setting/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/footer_setting/get', {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

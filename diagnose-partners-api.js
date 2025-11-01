@@ -3,7 +3,7 @@
  * Detailed testing and recommendations
  */
 
-const BASE_URL = 'https://ai.alviongs.com/webhook';
+const BASE_URL = 'https://ai.nibog.in/webhook';
 
 const colors = {
   reset: '\x1b[0m',

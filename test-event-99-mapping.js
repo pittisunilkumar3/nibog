@@ -145,7 +145,7 @@ async function testExternalApiDirectly() {
     try {
       console.log(`📡 Testing external API with ID ${apiId}...`);
       
-      const response = await fetch(`https://ai.alviongs.com/webhook/nibog/eventimage/get`, {
+      const response = await fetch(`https://ai.nibog.in/webhook/nibog/eventimage/get`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

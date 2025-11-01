@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server';
+import { cacheManager } from '@/lib/cache';
 
 export async function POST(request: Request) {
   try {
@@ -17,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     // Try to update the booking using the general update endpoint
-    const updateUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/update";
+    const updateUrl = "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/update";
     console.log("Server API route: Calling external API:", updateUrl);
 
     const response = await fetch(updateUrl, {
@@ -50,7 +51,7 @@ export async function POST(request: Request) {
       
       const bookingStatus = statusMapping[paymentStatus.toLowerCase() as keyof typeof statusMapping] || 'Pending';
       
-      const statusResponse = await fetch("https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/update-status", {
+      const statusResponse = await fetch("https://ai.nibog.in/webhook/v1/nibog/bookingsevents/update-status", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -70,7 +71,12 @@ export async function POST(request: Request) {
 
       const statusData = await statusResponse.json();
       console.log("Booking status updated successfully:", statusData);
-      
+
+      // Invalidate both caches after successful update
+      console.log("Server API route: Invalidating bookings cache after status update");
+      cacheManager.invalidate('bookings');
+      cacheManager.invalidate('complete_bookings');
+
       return NextResponse.json({
         ...statusData,
         message: `Booking status updated to ${bookingStatus} (payment status: ${paymentStatus})`
@@ -79,6 +85,11 @@ export async function POST(request: Request) {
 
     const data = await response.json();
     console.log("External API response data:", data);
+
+    // Invalidate both caches after successful update
+    console.log("Server API route: Invalidating bookings cache after payment status update");
+    cacheManager.invalidate('bookings');
+    cacheManager.invalidate('complete_bookings');
 
     // Return the response from the external API
     return NextResponse.json(data, { status: 200 });

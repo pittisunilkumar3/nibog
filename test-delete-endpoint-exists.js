@@ -13,7 +13,7 @@ async function testGameDeleteEndpoint() {
   try {
     console.log('📡 Testing delete endpoint:', deletePayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/delete', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -50,7 +50,7 @@ async function testEventDeleteForComparison() {
   try {
     console.log('📡 Testing event delete endpoint:', deletePayload);
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/eventimage/delete', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/eventimage/delete', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -120,7 +120,7 @@ async function testDeleteThenCreateFlow() {
   try {
     console.log('📡 Creating new image:', createPayload);
     
-    const createResponse = await fetch('https://ai.alviongs.com/webhook/nibog/gamesimage/create', {
+    const createResponse = await fetch('https://ai.nibog.in/webhook/nibog/gamesimage/create', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

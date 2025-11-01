@@ -118,7 +118,7 @@ export default function TermsConditionsPage() {
       setIsLoading(true)
       try {
         // Fetch existing terms & conditions content from API
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandconditionsget', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/termsandconditionsget', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -171,7 +171,7 @@ export default function TermsConditionsPage() {
       const contentToSave = termsContent.websiteContent
 
       // Call the external API
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/termsandcondition', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/termsandcondition', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

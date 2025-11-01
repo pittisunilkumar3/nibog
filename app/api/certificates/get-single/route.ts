@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
     try {
       // Using the correct endpoint and method based on the API documentation
       const response = await fetch(
-        `https://ai.alviongs.com/webhook/v1/nibog/certificates/get`,
+        `https://ai.nibog.in/webhook/v1/nibog/certificates/get`,
         {
           method: 'POST', // Changed to POST based on API documentation
           headers: {

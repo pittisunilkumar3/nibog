@@ -3,7 +3,7 @@
  * Tests all CRUD operations for the Partners API
  */
 
-const BASE_URL = 'https://ai.alviongs.com/webhook';
+const BASE_URL = 'https://ai.nibog.in/webhook';
 
 // Color codes for console output
 const colors = {

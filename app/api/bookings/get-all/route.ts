@@ -1,9 +1,5 @@
 import { NextResponse } from 'next/server';
-
-// Simple in-memory cache to prevent excessive API calls
-let cachedData: any = null;
-let cacheTimestamp: number = 0;
-const CACHE_DURATION = 30000; // 30 seconds cache
+import { cacheManager } from '@/lib/cache';
 
 export async function GET(request: Request) {
   try {
@@ -14,21 +10,24 @@ export async function GET(request: Request) {
     const page = parseInt(searchParams.get('page') || '1', 10);
     const limit = parseInt(searchParams.get('limit') || '100', 10);
     const offset = (page - 1) * limit;
+    const forceRefresh = searchParams.get('forceRefresh') === 'true';
 
-    console.log(`Server API route: Pagination - page: ${page}, limit: ${limit}, offset: ${offset}`);
+    console.log(`Server API route: Pagination - page: ${page}, limit: ${limit}, offset: ${offset}, forceRefresh: ${forceRefresh}`);
 
     // Create cache key that includes pagination parameters
     const cacheKey = `bookings_${page}_${limit}`;
 
-    // Check if we have cached data that's still valid
-    const now = Date.now();
-    if (cachedData && cachedData.cacheKey === cacheKey && (now - cacheTimestamp) < CACHE_DURATION) {
-      console.log("Server API route: Returning cached paginated bookings data");
-      return NextResponse.json(cachedData.data, { status: 200 });
+    // Check if we have cached data that's still valid (skip cache if forceRefresh is true)
+    if (!forceRefresh) {
+      const cachedResponse = cacheManager.get('bookings', cacheKey);
+      if (cachedResponse) {
+        console.log("Server API route: Returning cached paginated bookings data");
+        return NextResponse.json(cachedResponse, { status: 200 });
+      }
     }
 
     // Forward the request to the external API with the correct URL (active events only)
-    const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all-active-event";
+    const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get-all-active-event";
     console.log("Server API route: Calling API URL:", apiUrl);
 
     // Set a timeout for the fetch request
@@ -137,12 +136,8 @@ export async function GET(request: Request) {
           }
         };
 
-        // Cache the successful response
-        cachedData = {
-          cacheKey,
-          data: paginatedResponse
-        };
-        cacheTimestamp = Date.now();
+        // Cache the successful response using the cache manager
+        cacheManager.set('bookings', paginatedResponse, cacheKey);
         console.log("Server API route: Cached paginated bookings data");
 
         return NextResponse.json(paginatedResponse, { status: 200 });

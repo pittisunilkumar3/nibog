@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { BOOKING_API } from '@/config/api';
+import { cacheManager } from '@/lib/cache';
 
 export async function POST(request: Request) {
   try {
@@ -95,7 +96,12 @@ export async function POST(request: Request) {
         { status: 500 }
       );
     }
-    
+
+    // Invalidate both bookings and complete_bookings cache so the new booking appears immediately
+    console.log("Server API route: Invalidating bookings cache after successful creation");
+    cacheManager.invalidate('bookings');
+    cacheManager.invalidate('complete_bookings');
+
     // Return the response with success status
     return NextResponse.json(data, { status: 200 });
   } catch (error: any) {

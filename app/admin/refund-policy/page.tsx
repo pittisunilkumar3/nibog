@@ -138,7 +138,7 @@ export default function RefundPolicyPage() {
       setIsLoading(true)
       try {
         // Fetch existing refund policy content from API
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/refundpolicyget', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -191,7 +191,7 @@ export default function RefundPolicyPage() {
       const contentToSave = refundContent.websiteContent
 
       // Call the external API
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/refundpolicy', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/refundpolicy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

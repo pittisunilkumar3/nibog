@@ -112,9 +112,9 @@ async function testExternalAPI() {
   console.log(JSON.stringify(testPayload, null, 2));
 
   try {
-    console.log('\n📍 Making request to: https://ai.alviongs.com/webhook/nibog/geteventwithimages/get');
+    console.log('\n📍 Making request to: https://ai.nibog.in/webhook/nibog/geteventwithimages/get');
     
-    const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+    const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

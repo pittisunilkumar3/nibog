@@ -10,7 +10,7 @@
 
 ### **External API Analysis**:
 ```
-📡 API Endpoint: https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage
+📡 API Endpoint: https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage
 ✅ Status: Now returning correct image URLs
 ✅ Data Quality: All image URLs match existing files
 ```
@@ -118,7 +118,7 @@ if (!existsSync(fullPath)) {
 ```typescript
 // Call the external API to get games with images with cache-busting
 const cacheBuster = Date.now();
-const apiUrl = `https://ai.alviongs.com/webhook/nibog/getting/gamedetailswithimage?_t=${cacheBuster}`;
+const apiUrl = `https://ai.nibog.in/webhook/nibog/getting/gamedetailswithimage?_t=${cacheBuster}`;
 
 const response = await fetch(apiUrl, {
   method: 'GET',

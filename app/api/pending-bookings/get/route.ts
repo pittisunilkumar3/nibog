@@ -17,11 +17,11 @@ export async function POST(request: Request) {
     }
 
     // Retrieve from database via external API
-    console.log(`📡 Calling external API: https://ai.alviongs.com/webhook/v1/nibog/pending-bookings/get`);
+    console.log(`📡 Calling external API: https://ai.nibog.in/webhook/v1/nibog/pending-bookings/get`);
     console.log(`📋 Request payload:`, JSON.stringify({ transaction_id: transaction_id }, null, 2));
 
     try {
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/pending-bookings/get', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/pending-bookings/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

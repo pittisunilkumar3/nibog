@@ -1,6 +1,6 @@
 ## create booking 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create
+POST https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create
 
 payload
 
@@ -98,7 +98,7 @@ Response
 
 ## get all bookings
 
-GET https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/bookingsevents/get-all
 
 
 response
@@ -252,7 +252,7 @@ response
 
 ## update booking status
 
-POST https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/update-status
+POST https://ai.nibog.in/webhook/v1/nibog/bookingsevents/update-status
 
 payload
 
@@ -295,7 +295,7 @@ response
 
 
 
-POST https://ai.alviongs.com/webhook/v1/nibog/getting/add-on/by-bookingid
+POST https://ai.nibog.in/webhook/v1/nibog/getting/add-on/by-bookingid
 
 Payload :-
 -----------

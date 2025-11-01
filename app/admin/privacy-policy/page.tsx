@@ -79,7 +79,7 @@ export default function PrivacyPolicyPage() {
       setIsLoading(true)
       try {
         // Fetch existing privacy policy content from API
-        const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/privacyandpolicyget', {
+        const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/privacyandpolicyget', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -132,7 +132,7 @@ export default function PrivacyPolicyPage() {
       const contentToSave = privacyContent.websiteContent
 
       // Call the external API
-      const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/privacyandpolicy', {
+      const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/privacyandpolicy', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

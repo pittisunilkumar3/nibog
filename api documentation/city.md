@@ -1,5 +1,5 @@
 ## create city
-POST  https://ai.alviongs.com/webhook/v1/nibog/city/create
+POST  https://ai.nibog.in/webhook/v1/nibog/city/create
 
 
 {
@@ -25,7 +25,7 @@ Response (201 Created)
 
 ## update city
 
-POST https://ai.alviongs.com/webhook/v1/nibog/city/update
+POST https://ai.nibog.in/webhook/v1/nibog/city/update
 
 {
   "id": 1,
@@ -51,7 +51,7 @@ Response (200 OK)
 
 ## get city
 
-POST https://ai.alviongs.com/webhook/v1/nibog/city/get
+POST https://ai.nibog.in/webhook/v1/nibog/city/get
 {
     "id": 1
 }
@@ -70,7 +70,7 @@ Response (200 OK)
 
 ## get all city
 
-GET https://ai.alviongs.com/webhook/v1/nibog/city/get-all
+GET https://ai.nibog.in/webhook/v1/nibog/city/get-all
 
 Response (200 OK)  
 [
@@ -94,7 +94,7 @@ Response (200 OK)
 
 ## delete city
 
-POST https://ai.alviongs.com/webhook/v1/nibog/city/delete
+POST https://ai.nibog.in/webhook/v1/nibog/city/delete
 {
     "id": 1
 }
@@ -110,7 +110,7 @@ Response (200 OK)
 
 
 
-GET https://ai.alviongs.com/webhook/v1/nibog/city/get-all-city-event-count
+GET https://ai.nibog.in/webhook/v1/nibog/city/get-all-city-event-count
 
 
 response (200 OK)

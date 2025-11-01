@@ -16,7 +16,7 @@ export interface CompletedEvent {
 
 export const fetchCompletedEvents = async (): Promise<CompletedEvent[]> => {
   try {
-    const response = await fetch('https://ai.alviongs.com/webhook/v1/nibog/complete/event')
+    const response = await fetch('https://ai.nibog.in/webhook/v1/nibog/complete/event')
     if (!response.ok) {
       throw new Error('Failed to fetch completed events')
     }

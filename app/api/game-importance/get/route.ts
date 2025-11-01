@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     console.log('Game importance API: Force refresh:', forceRefresh);
     console.log('Game importance API: Timestamp:', timestamp);
     
-    const response = await fetch(`https://ai.alviongs.com/webhook/v1/nibog/game-importance/get?t=${timestamp}`, {
+    const response = await fetch(`https://ai.nibog.in/webhook/v1/nibog/game-importance/get?t=${timestamp}`, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',

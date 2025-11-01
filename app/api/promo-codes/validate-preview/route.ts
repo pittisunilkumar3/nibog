@@ -16,7 +16,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    const n8nWebhookUrl = 'https://ai.alviongs.com/webhook/v1/nibog/promocode/preview-validation'
+    const n8nWebhookUrl = 'https://ai.nibog.in/webhook/v1/nibog/promocode/preview-validation'
 
     const n8nResponse = await fetch(n8nWebhookUrl, {
       method: 'POST',

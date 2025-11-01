@@ -29,7 +29,7 @@ export async function POST(request: Request) {
         console.log(`Server API route: Getting testimonial (attempt ${retries + 1}/${MAX_RETRIES})`);
         
         // Forward the request to the external API
-        const apiUrl = "https://ai.alviongs.com/webhook/v1/nibog/testimonials/get";
+        const apiUrl = "https://ai.nibog.in/webhook/v1/nibog/testimonials/get";
         console.log("Server API route: Calling API URL:", apiUrl);
 
         // Create an AbortController for timeout

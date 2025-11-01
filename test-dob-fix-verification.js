@@ -8,7 +8,7 @@ const https = require('https');
 // Test the external API directly
 async function testExternalAPI() {
     console.log("=== TESTING EXTERNAL BOOKING API ===");
-    console.log("URL: https://ai.alviongs.com/webhook/v1/nibog/bookingsevents/create");
+    console.log("URL: https://ai.nibog.in/webhook/v1/nibog/bookingsevents/create");
     
     // Test with different DOB values to verify they're being accepted
     const testCases = [
@@ -86,7 +86,7 @@ function makeAPICall(payload) {
         const postData = JSON.stringify(payload);
         
         const options = {
-            hostname: 'ai.alviongs.com',
+            hostname: 'ai.nibog.in',
             port: 443,
             path: '/webhook/v1/nibog/bookingsevents/create',
             method: 'POST',

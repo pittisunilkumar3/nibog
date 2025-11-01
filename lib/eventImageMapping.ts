@@ -29,7 +29,7 @@ export async function findApiIdForEvent(targetEventId: number): Promise<number |
   for (const apiId of searchRange) {
     try {
       // Call external API directly to avoid infinite recursion
-      const response = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+      const response = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ export async function fetchEventImagesWithMapping(eventId: number): Promise<any[
 
   // First, try the direct approach (event ID matches API ID) by calling external API
   try {
-    const directResponse = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+    const directResponse = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -118,7 +118,7 @@ export async function fetchEventImagesWithMapping(eventId: number): Promise<any[
 
   // Fetch using the correct API ID by calling external API directly
   try {
-    const mappedResponse = await fetch('https://ai.alviongs.com/webhook/nibog/geteventwithimages/get', {
+    const mappedResponse = await fetch('https://ai.nibog.in/webhook/nibog/geteventwithimages/get', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

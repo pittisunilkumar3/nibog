@@ -14,7 +14,7 @@
 - ✅ Made page fully responsive
 
 **Key Features:**
-- **Dynamic Content:** Fetches from `https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget`
+- **Dynamic Content:** Fetches from `https://ai.nibog.in/webhook/v1/nibog/refundpolicyget`
 - **Loading State:** Beautiful skeleton loader while fetching
 - **Error Handling:** Graceful fallback to default content if API fails
 - **Responsive Design:** Works perfectly on mobile, tablet, and desktop
@@ -93,7 +93,7 @@ Legal Section:
 
 ### Endpoint Used
 ```
-GET https://ai.alviongs.com/webhook/v1/nibog/refundpolicyget
+GET https://ai.nibog.in/webhook/v1/nibog/refundpolicyget
 ```
 
 ### Data Flow
