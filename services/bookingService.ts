@@ -325,6 +325,7 @@ export async function getBookingById(bookingId: string | number): Promise<Bookin
 
 // Interface for comprehensive ticket details based on the new API format
 export interface TicketDetails {
+  [x: string]: string;
   booking_id: number;
   booking_ref: string;
   booking_status: string;
