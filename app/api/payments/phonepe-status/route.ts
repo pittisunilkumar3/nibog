@@ -78,43 +78,47 @@ export async function POST(request: Request) {
 
           // Generate booking reference for consistency
           const bookingRef = generateConsistentBookingRef(transactionId);
-          console.log(`Server API route: 🔍 CHECKING for existing booking with reference: ${bookingRef}`);
+          console.log(`Server API route: 🔍 CHECKING for existing payment/booking with transaction ID: ${merchantTransactionId}`);
 
           // CHECK if booking exists (created by server callback) - DO NOT CREATE
+          // Look up by PAYMENT RECORD first since that's reliably stored with the transaction ID
           try {
-            const existingBookingResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/tickect/booking_ref/details', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                booking_ref_id: bookingRef
-              })
-            });
-
-            if (existingBookingResponse.ok) {
-              const existingBookings = await existingBookingResponse.json();
-              if (existingBookings && existingBookings.length > 0) {
-                console.log(`Server API route: ✅ Booking found - created by server callback`);
-                const existingBooking = existingBookings[0];
+            // First, check if payment record exists (which means booking was created)
+            const paymentCheckResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/get-all');
+            
+            if (paymentCheckResponse.ok) {
+              const allPayments = await paymentCheckResponse.json();
+              
+              // Find payment by phonepe_transaction_id or transaction_id
+              const existingPayment = allPayments.find((p: any) => 
+                p.phonepe_transaction_id === merchantTransactionId || 
+                p.transaction_id === transactionId
+              );
+              
+              if (existingPayment && existingPayment.booking_id) {
+                console.log(`Server API route: ✅ Payment and booking found for transaction ${merchantTransactionId}`);
+                console.log(`Server API route: Booking ID: ${existingPayment.booking_id}`);
+                
                 return NextResponse.json({
                   ...responseData,
                   bookingCreated: true,
-                  bookingId: existingBooking.booking_id,
+                  bookingId: existingPayment.booking_id,
                   paymentCreated: true,
                   bookingData: {
-                    booking_ref: bookingRef
+                    booking_ref: bookingRef,
+                    transaction_id: merchantTransactionId,
+                    booking_id: existingPayment.booking_id
                   },
                   message: "Booking created successfully by server"
                 }, { status: 200 });
               }
             }
           } catch (error) {
-            console.log(`Server API route: ⚠️ Error checking for existing booking:`, error);
+            console.log(`Server API route: ⚠️ Error checking for existing payment:`, error);
           }
 
           // Booking not found yet - server callback still processing
-          console.log(`Server API route: ⏳ Booking not found - server callback is processing...`);
+          console.log(`Server API route: ⏳ Payment/Booking not found - server callback is processing...`);
           console.log(`Server API route: ⚠️ Client should retry in a few seconds`);
           
           return NextResponse.json({
@@ -122,7 +126,8 @@ export async function POST(request: Request) {
             bookingCreated: false,
             bookingPending: true,
             bookingData: {
-              booking_ref: bookingRef
+              booking_ref: bookingRef,
+              transaction_id: merchantTransactionId
             },
             message: "Payment successful. Server is creating your booking..."
           }, { status: 200 });

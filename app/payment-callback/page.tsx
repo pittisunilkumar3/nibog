@@ -24,8 +24,12 @@ function PaymentCallbackContent() {
   const [processingBooking, setProcessingBooking] = useState(false)
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
+  const [hasRedirected, setHasRedirected] = useState(false)
 
   useEffect(() => {
+    // Prevent multiple executions
+    if (hasRedirected) return;
+
     const checkPaymentStatus = async (currentRetryCount = 0) => {
       try {
         setIsLoading(true)
@@ -92,9 +96,11 @@ function PaymentCallbackContent() {
                 }
 
                 // Check if booking exists (with retry logic for server callback delay)
-                const maxRetries = 10; // 10 retries over ~50 seconds
+                const maxRetries = 6; // 6 retries over ~18 seconds (reduced from 10)
                 let retryCount = 0;
                 let statusData = null;
+
+                console.log(`🔄 Starting booking check with ${maxRetries} retries...`);
 
                 while (retryCount <= maxRetries) {
                   const statusResponse = await fetch('/api/payments/phonepe-status', {
@@ -123,13 +129,14 @@ function PaymentCallbackContent() {
 
                   // If booking is still pending and we haven't hit max retries, wait and retry
                   if (statusData.bookingPending && retryCount < maxRetries) {
-                    console.log(`⏳ Booking pending - waiting 5 seconds before retry ${retryCount + 1}/${maxRetries}`);
-                    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                    console.log(`⏳ Booking pending - waiting 3 seconds before retry ${retryCount + 1}/${maxRetries}`);
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds (reduced from 5)
                     retryCount++;
                     continue;
                   }
 
                   // If no booking found and not pending, break
+                  console.log(`⚠️ Booking not found or not pending, exiting retry loop`);
                   break;
                 }
 
@@ -137,6 +144,8 @@ function PaymentCallbackContent() {
                 if (!statusData || !statusData.bookingCreated) {
                   console.error('❌ Booking not found after retries');
                   setError('Booking is taking longer than expected. Please check your email or contact support with your transaction ID.');
+                  setIsLoading(false);
+                  setIsRetrying(false);
                   return;
                 }
 
@@ -159,8 +168,16 @@ function PaymentCallbackContent() {
                 // Store the reference for later use
                 localStorage.setItem('lastBookingRef', actualBookingRef);
 
+                // Clear loading states before redirect
+                setIsLoading(false);
+                setIsRetrying(false);
+                setHasRedirected(true);
+
                 // Redirect to booking confirmation with the actual booking reference
-                router.push(`/booking-confirmation?ref=${encodeURIComponent(actualBookingRef)}`);
+                console.log(`🔄 Redirecting to booking confirmation page with ref: ${actualBookingRef}`);
+                setTimeout(() => {
+                  router.push(`/booking-confirmation?ref=${encodeURIComponent(actualBookingRef)}`);
+                }, 500); // Small delay to ensure state updates
                 return;
               } catch (error) {
                 console.error('Error getting actual booking reference:', error);
@@ -467,7 +484,7 @@ function PaymentCallbackContent() {
     }
 
     checkPaymentStatus()
-  }, [searchParams, router])
+  }, [searchParams, router, hasRedirected])
 
   return (
     <div className="container max-w-md mx-auto py-10">
@@ -555,6 +572,7 @@ function PaymentCallbackContent() {
             <Button
               className="w-full"
               onClick={() => bookingRef && router.push(`/booking-confirmation?ref=${encodeURIComponent(bookingRef)}`)}
+              disabled={!bookingRef}
             >
               View Booking Details
             </Button>
@@ -577,6 +595,23 @@ function PaymentCallbackContent() {
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 If payment was successful, it may take a few minutes to reflect
+              </p>
+            </div>
+          ) : isLoading && transactionId ? (
+            <div className="w-full space-y-2">
+              <Button
+                className="w-full"
+                variant="outline"
+                onClick={() => {
+                  const ref = bookingRef || generateConsistentBookingRef(transactionId);
+                  console.log(`Manual redirect to booking confirmation with ref: ${ref}`);
+                  router.push(`/booking-confirmation?ref=${encodeURIComponent(ref)}`);
+                }}
+              >
+                Continue to Booking (if stuck)
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                If the page is taking too long, click above to continue
               </p>
             </div>
           ) : null}

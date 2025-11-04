@@ -3,6 +3,7 @@ import { BOOKING_API } from '@/config/api';
 import { PHONEPE_CONFIG, generateSHA256Hash } from '@/config/phonepe';
 import { WhatsAppBookingData } from '@/services/whatsappService';
 import { formatDateForAPI } from '@/lib/utils';
+import { generateConsistentBookingRef } from '@/utils/bookingReference';
 
 // Cache successful transaction IDs to prevent duplicate processing
 let processedTransactions: Set<string> = new Set();
@@ -897,7 +898,10 @@ export async function POST(request: Request) {
           console.log('📧 Email settings retrieved successfully');
 
           // Generate booking confirmation HTML with actual data if available
-          const bookingRef = `B${String(bookingResult.bookingId).padStart(7, '0')}`;
+          // Use CONSISTENT booking reference format (PPT format)
+          const bookingRef = generateConsistentBookingRef(transactionId);
+          console.log(`📋 Generated consistent booking reference: ${bookingRef} for transaction: ${transactionId}`);
+          
           const htmlContent = generateBookingConfirmationHTML({
             bookingId: bookingResult.bookingId,
             bookingRef: bookingRef,
@@ -1033,7 +1037,10 @@ export async function POST(request: Request) {
           const userId = phoneMatch ? parseInt(phoneMatch[1]) : null;
 
           // Prepare notification data with actual booking information
-          const bookingRef = `B${String(bookingResult.bookingId).padStart(7, '0')}`;
+          // Use CONSISTENT booking reference format (PPT format)
+          const bookingRef = generateConsistentBookingRef(transactionId);
+          console.log(`🔔 Using consistent booking reference for notifications: ${bookingRef}`);
+          
           const notificationData = {
             bookingId: bookingResult.bookingId,
             bookingRef: bookingRef,
