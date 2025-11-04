@@ -25,6 +25,7 @@ function PaymentCallbackContent() {
   const [retryCount, setRetryCount] = useState(0)
   const [isRetrying, setIsRetrying] = useState(false)
   const [hasRedirected, setHasRedirected] = useState(false)
+  const [showManualOverride, setShowManualOverride] = useState(false)
 
   useEffect(() => {
     // Prevent multiple executions
@@ -97,6 +98,7 @@ function PaymentCallbackContent() {
 
                 // Check if booking exists (with retry logic for server callback delay)
                 const maxRetries = 6; // 6 retries over ~18 seconds (reduced from 10)
+                const fallbackThreshold = 3; // Allow fallback after 3 attempts (9 seconds)
                 let retryCount = 0;
                 let statusData = null;
 
@@ -118,8 +120,8 @@ function PaymentCallbackContent() {
                   console.log(`Payment status check (attempt ${retryCount + 1}/${maxRetries + 1}):`, statusData);
                   console.log('Status data bookingCreated:', statusData.bookingCreated);
                   console.log('Status data bookingPending:', statusData.bookingPending);
+                  console.log('Status data allowFallback:', statusData.allowFallback);
                   console.log('Status data bookingData:', statusData.bookingData);
-                  console.log('Status data bookingData.booking_ref:', statusData.bookingData?.booking_ref);
 
                   // If booking is created, break the retry loop
                   if (statusData.bookingCreated) {
@@ -127,10 +129,21 @@ function PaymentCallbackContent() {
                     break;
                   }
 
+                  // FALLBACK OPTION: If server allows fallback and we've waited enough, proceed
+                  if (statusData.allowFallback && retryCount >= fallbackThreshold && statusData.bookingData?.booking_ref) {
+                    console.log(`🔄 Server callback still processing after ${retryCount} attempts - using fallback reference`);
+                    console.log(`📋 Fallback booking reference: ${statusData.bookingData.booking_ref}`);
+                    
+                    // Mark as "created" so we can proceed with the fallback reference
+                    statusData.bookingCreated = true; // Use fallback path
+                    statusData.fallbackUsed = true;
+                    break;
+                  }
+
                   // If booking is still pending and we haven't hit max retries, wait and retry
                   if (statusData.bookingPending && retryCount < maxRetries) {
                     console.log(`⏳ Booking pending - waiting 3 seconds before retry ${retryCount + 1}/${maxRetries}`);
-                    await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds (reduced from 5)
+                    await new Promise(resolve => setTimeout(resolve, 3000)); // Wait 3 seconds
                     retryCount++;
                     continue;
                   }
@@ -143,7 +156,8 @@ function PaymentCallbackContent() {
                 // Check final status after retries
                 if (!statusData || !statusData.bookingCreated) {
                   console.error('❌ Booking not found after retries');
-                  setError('Booking is taking longer than expected. Please check your email or contact support with your transaction ID.');
+                  setError('Booking is taking longer than expected. You can try the manual override below or contact support.');
+                  setShowManualOverride(true); // Show the manual override button
                   setIsLoading(false);
                   setIsRetrying(false);
                   return;
@@ -153,7 +167,12 @@ function PaymentCallbackContent() {
                 let actualBookingRef = null;
                 if (statusData.bookingCreated && statusData.bookingData && statusData.bookingData.booking_ref) {
                   actualBookingRef = statusData.bookingData.booking_ref;
-                  console.log(`📋 Found actual booking reference from database: ${actualBookingRef}`);
+                  
+                  if (statusData.fallbackUsed) {
+                    console.log(`📋 Using fallback booking reference (server callback still processing): ${actualBookingRef}`);
+                  } else {
+                    console.log(`📋 Found actual booking reference from database: ${actualBookingRef}`);
+                  }
                 } else {
                   // Fallback: generate consistent booking reference from transaction ID
                   actualBookingRef = generateConsistentBookingRef(txnId);
@@ -605,13 +624,29 @@ function PaymentCallbackContent() {
                 onClick={() => {
                   const ref = bookingRef || generateConsistentBookingRef(transactionId);
                   console.log(`Manual redirect to booking confirmation with ref: ${ref}`);
-                  router.push(`/booking-confirmation?ref=${encodeURIComponent(ref)}`);
+                  router.push(`/booking-confirmation?ref=${encodeURIComponent(ref)}&fallback=true`);
                 }}
               >
                 Continue to Booking (if stuck)
               </Button>
               <p className="text-xs text-center text-muted-foreground">
                 If the page is taking too long, click above to continue
+              </p>
+            </div>
+          ) : showManualOverride && transactionId ? (
+            <div className="w-full space-y-2">
+              <Button
+                className="w-full"
+                onClick={() => {
+                  const ref = bookingRef || generateConsistentBookingRef(transactionId);
+                  console.log(`Manual override redirect to booking confirmation with ref: ${ref}`);
+                  router.push(`/booking-confirmation?ref=${encodeURIComponent(ref)}&fallback=true`);
+                }}
+              >
+                Continue to Booking
+              </Button>
+              <p className="text-xs text-center text-muted-foreground">
+                Your payment was successful. Server is still processing - check your email for confirmation.
               </p>
             </div>
           ) : null}

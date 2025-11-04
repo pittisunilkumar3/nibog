@@ -81,50 +81,70 @@ export async function POST(request: Request) {
           console.log(`Server API route: 🔍 CHECKING for existing payment/booking with transaction ID: ${merchantTransactionId}`);
 
           // CHECK if booking exists (created by server callback) - DO NOT CREATE
-          // Look up by PAYMENT RECORD first since that's reliably stored with the transaction ID
+          // Try multiple approaches to find the booking
+          let bookingFound = false;
+          let foundBookingId = null;
+          
           try {
-            // First, check if payment record exists (which means booking was created)
+            // Approach 1: Check payments table (most reliable)
+            console.log(`Server API route: 📊 Checking payments table...`);
             const paymentCheckResponse = await fetch('https://ai.nibog.in/webhook/v1/nibog/payments/get-all');
             
             if (paymentCheckResponse.ok) {
               const allPayments = await paymentCheckResponse.json();
+              console.log(`Server API route: Retrieved ${allPayments.length} payments`);
               
               // Find payment by phonepe_transaction_id or transaction_id
               const existingPayment = allPayments.find((p: any) => 
                 p.phonepe_transaction_id === merchantTransactionId || 
-                p.transaction_id === transactionId
+                p.transaction_id === transactionId ||
+                p.phonepe_transaction_id === transactionId ||
+                p.transaction_id === merchantTransactionId
               );
               
               if (existingPayment && existingPayment.booking_id) {
-                console.log(`Server API route: ✅ Payment and booking found for transaction ${merchantTransactionId}`);
-                console.log(`Server API route: Booking ID: ${existingPayment.booking_id}`);
-                
-                return NextResponse.json({
-                  ...responseData,
-                  bookingCreated: true,
-                  bookingId: existingPayment.booking_id,
-                  paymentCreated: true,
-                  bookingData: {
-                    booking_ref: bookingRef,
-                    transaction_id: merchantTransactionId,
-                    booking_id: existingPayment.booking_id
-                  },
-                  message: "Booking created successfully by server"
-                }, { status: 200 });
+                console.log(`Server API route: ✅ Payment found! Booking ID: ${existingPayment.booking_id}`);
+                bookingFound = true;
+                foundBookingId = existingPayment.booking_id;
+              } else {
+                console.log(`Server API route: ⚠️ No matching payment found in ${allPayments.length} records`);
+                console.log(`Server API route: Looking for: ${merchantTransactionId} or ${transactionId}`);
               }
+            } else {
+              console.log(`Server API route: ⚠️ Failed to fetch payments: ${paymentCheckResponse.status}`);
             }
           } catch (error) {
-            console.log(`Server API route: ⚠️ Error checking for existing payment:`, error);
+            console.log(`Server API route: ⚠️ Error checking payments:`, error);
           }
 
-          // Booking not found yet - server callback still processing
-          console.log(`Server API route: ⏳ Payment/Booking not found - server callback is processing...`);
-          console.log(`Server API route: ⚠️ Client should retry in a few seconds`);
+          // If booking found, return success
+          if (bookingFound && foundBookingId) {
+            return NextResponse.json({
+              ...responseData,
+              bookingCreated: true,
+              bookingId: foundBookingId,
+              paymentCreated: true,
+              bookingData: {
+                booking_ref: bookingRef,
+                transaction_id: merchantTransactionId,
+                booking_id: foundBookingId
+              },
+              message: "Booking created successfully by server"
+            }, { status: 200 });
+          }
+
+          // Booking not found yet - server callback still processing or failed
+          console.log(`Server API route: ⏳ Payment/Booking not found yet`);
+          console.log(`Server API route: This could mean:`);
+          console.log(`Server API route: 1. Server callback is still processing (retry)`);
+          console.log(`Server API route: 2. Server callback failed (client should proceed with fallback)`);
           
+          // After 3 retries (9 seconds), allow client to proceed with its own reference
           return NextResponse.json({
             ...responseData,
             bookingCreated: false,
             bookingPending: true,
+            allowFallback: true, // NEW: Tell client it can use fallback after some retries
             bookingData: {
               booking_ref: bookingRef,
               transaction_id: merchantTransactionId
