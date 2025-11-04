@@ -75,9 +75,9 @@ function PaymentCallbackContent() {
             // We just need to verify and show success, plus send backup email if needed
 
             if (txnId) {
-              // Get booking data from localStorage and call the payment status API to create the booking
+              // Get booking data from localStorage and call the payment status API to check the booking
               try {
-                console.log(`📋 Getting booking data and creating booking for transaction: ${txnId}`);
+                console.log(`📋 Checking booking status for transaction: ${txnId}`);
 
                 // Retrieve booking data from localStorage
                 let bookingDataFromStorage = null;
@@ -85,28 +85,60 @@ function PaymentCallbackContent() {
                   const storedData = localStorage.getItem('nibog_booking_data');
                   if (storedData) {
                     bookingDataFromStorage = JSON.parse(storedData);
-                    console.log('Retrieved booking data from localStorage for booking creation:', bookingDataFromStorage);
+                    console.log('Retrieved booking data from localStorage:', bookingDataFromStorage);
                   }
                 } catch (error) {
                   console.error('Error retrieving booking data from localStorage:', error);
                 }
 
-                const statusResponse = await fetch('/api/payments/phonepe-status', {
-                  method: 'POST',
-                  headers: {
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify({
-                    transactionId: txnId,
-                    bookingData: bookingDataFromStorage,
-                  }),
-                });
+                // Check if booking exists (with retry logic for server callback delay)
+                const maxRetries = 10; // 10 retries over ~50 seconds
+                let retryCount = 0;
+                let statusData = null;
 
-                const statusData = await statusResponse.json();
-                console.log('Payment status response:', statusData);
-                console.log('Status data bookingCreated:', statusData.bookingCreated);
-                console.log('Status data bookingData:', statusData.bookingData);
-                console.log('Status data bookingData.booking_ref:', statusData.bookingData?.booking_ref);
+                while (retryCount <= maxRetries) {
+                  const statusResponse = await fetch('/api/payments/phonepe-status', {
+                    method: 'POST',
+                    headers: {
+                      'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                      transactionId: txnId,
+                      bookingData: bookingDataFromStorage,
+                    }),
+                  });
+
+                  statusData = await statusResponse.json();
+                  console.log(`Payment status check (attempt ${retryCount + 1}/${maxRetries + 1}):`, statusData);
+                  console.log('Status data bookingCreated:', statusData.bookingCreated);
+                  console.log('Status data bookingPending:', statusData.bookingPending);
+                  console.log('Status data bookingData:', statusData.bookingData);
+                  console.log('Status data bookingData.booking_ref:', statusData.bookingData?.booking_ref);
+
+                  // If booking is created, break the retry loop
+                  if (statusData.bookingCreated) {
+                    console.log('✅ Booking found - created by server callback');
+                    break;
+                  }
+
+                  // If booking is still pending and we haven't hit max retries, wait and retry
+                  if (statusData.bookingPending && retryCount < maxRetries) {
+                    console.log(`⏳ Booking pending - waiting 5 seconds before retry ${retryCount + 1}/${maxRetries}`);
+                    await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds
+                    retryCount++;
+                    continue;
+                  }
+
+                  // If no booking found and not pending, break
+                  break;
+                }
+
+                // Check final status after retries
+                if (!statusData || !statusData.bookingCreated) {
+                  console.error('❌ Booking not found after retries');
+                  setError('Booking is taking longer than expected. Please check your email or contact support with your transaction ID.');
+                  return;
+                }
 
                 // Extract the actual booking reference from the response
                 let actualBookingRef = null;

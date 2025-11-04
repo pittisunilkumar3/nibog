@@ -48,7 +48,13 @@ const AuthContext = createContext<AuthContextType>({
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [mounted, setMounted] = useState(false)
   const router = useRouter()
+
+  // Prevent hydration mismatch
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   // Login function
   const login = useCallback((userData: User, token: string) => {
@@ -72,6 +78,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Check if user is logged in on initial load
   useEffect(() => {
+    if (!mounted) return
+
     const checkAuth = async () => {
       try {
         const isAuthenticated = await isClientAuthenticated()
@@ -92,7 +100,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     checkAuth()
-  }, [])
+  }, [mounted])
 
   return (
     <AuthContext.Provider

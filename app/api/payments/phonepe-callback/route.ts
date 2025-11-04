@@ -959,6 +959,61 @@ export async function POST(request: Request) {
               console.error(`📧 Failed to send admin notification email:`, adminEmailError);
               // Don't fail the entire process if admin email fails
             }
+
+            // Send ticket email after successful booking confirmation email
+            console.log(`🎫 Starting ticket email process...`);
+            try {
+              // Fetch ticket details using the booking reference
+              const { getTicketDetails } = await import('@/services/bookingService');
+              const ticketDetails = await getTicketDetails(bookingRef);
+
+              if (ticketDetails && ticketDetails.length > 0) {
+                console.log(`🎫 Retrieved ${ticketDetails.length} ticket details`);
+
+                // Prepare QR code data (same format as booking confirmation page)
+                const firstTicket = ticketDetails[0];
+                const qrCodeData = JSON.stringify({
+                  ref: bookingRef,
+                  id: bookingResult.bookingId,
+                  name: firstTicket.child_name || firstTicket.child_full_name || pendingBookingData?.childName || 'Child',
+                  game: firstTicket.custom_title || firstTicket.event_title || firstTicket.game_name || pendingBookingData?.eventTitle || 'NIBOG Event',
+                  slot_id: firstTicket.event_game_slot_id || firstTicket.booking_game_id || 0
+                });
+
+                // Import ticket email service
+                const { sendTicketEmail } = await import('@/services/ticketEmailService');
+
+                // Prepare ticket email data
+                const ticketEmailData = {
+                  bookingId: bookingResult.bookingId,
+                  bookingRef: bookingRef,
+                  parentName: pendingBookingData?.parentName || 'Valued Customer',
+                  parentEmail: pendingBookingData?.email || `customer-${transactionId.slice(-6)}@example.com`,
+                  childName: pendingBookingData?.childName || 'Child',
+                  eventTitle: pendingBookingData?.eventTitle || 'NIBOG Event',
+                  eventDate: pendingBookingData?.eventDate || new Date().toLocaleDateString(),
+                  eventVenue: pendingBookingData?.eventVenue || 'Main Stadium',
+                  eventCity: '', // City not available in pending booking data
+                  ticketDetails: ticketDetails,
+                  qrCodeData: qrCodeData
+                };
+
+                // Send ticket email
+                const ticketEmailResult = await sendTicketEmail(ticketEmailData);
+
+                if (ticketEmailResult.success) {
+                  console.log(`🎫 Ticket email sent successfully from server callback`);
+                } else {
+                  console.error(`🎫 Ticket email failed:`, ticketEmailResult.error);
+                }
+              } else {
+                console.log(`🎫 No ticket details found for booking reference: ${bookingRef}`);
+              }
+            } catch (ticketEmailError) {
+              console.error(`🎫 Failed to send ticket email:`, ticketEmailError);
+              console.error(`🎫 Ticket email error details:`, ticketEmailError instanceof Error ? ticketEmailError.message : 'Unknown error');
+              // Don't fail the entire process if ticket email fails
+            }
           } else {
             const errorData = await emailResponse.json();
             console.error(`📧 Email sending failed:`, errorData);
